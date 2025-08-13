@@ -1,0 +1,62 @@
+<!doctype html>
+
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brunbar</title>
+  <meta name="description" content="Brunbar – yhteystiedot">
+  <style>
+    :root {
+      /* Säädä tarvittaessa: violetin ja kullan sävyt poimittu kuvasta inspiroituen */
+      --purple: #3a006b;  /* tausta */
+      --gold:   #d4af37;  /* teksti / korostus */
+      --gold-weak: rgba(212, 175, 55, 0.6);
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      background: var(--purple); color: var(--gold);
+      display: grid; place-items: center; text-rendering: optimizeLegibility;
+    }
+    .card {
+      text-align: center; padding: clamp(2rem, 4vw, 4rem);
+      border: 2px solid var(--gold-weak); border-radius: 1.25rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    h1 {
+      font-size: clamp(2.25rem, 6vw, 4rem);
+      letter-spacing: 0.06em; margin: 0 0 1rem 0; font-weight: 700;
+    }
+    .sep { width: 90%; height: 1px; margin: 1rem auto 1.25rem; background: var(--gold-weak); }
+    .contact { font-size: clamp(1rem, 2.6vw, 1.25rem); line-height: 1.7; }
+    a { color: var(--gold); text-decoration-color: var(--gold-weak); }
+    a:hover, a:focus { text-decoration: underline; text-underline-offset: 3px; }
+    footer { position: fixed; inset: auto 0 1rem 0; text-align: center; font-size: .85rem; color: var(--gold-weak); }
+    /* Kulmakoristeet */
+    .corners::before, .corners::after {
+      content: ""; position: absolute; width: 70px; height: 70px; border: 3px solid var(--gold-weak);
+    }
+    .corners::before { left: 1rem; top: 1rem; border-right: none; border-bottom: none; border-color: var(--gold); }
+    .corners::after  { right: 1rem; bottom: 1rem; border-left: none; border-top: none; }
+    .wrap { position: relative; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="corners" aria-hidden="true"></div>
+    <section class="card" aria-label="Brunbar yhteystiedot">
+      <h1>BRUNBAR</h1>
+      <div class="sep" role="presentation"></div>
+      <p class="contact">
+        <strong>Sähköposti:</strong>
+        <a href="mailto:max.barman@brunbar.fi">max.barman@brunbar.fi</a><br>
+        <strong>Puhelin:</strong>
+        <a href="tel:+358449721998">044 972 1998</a>
+      </p>
+    </section>
+  </main>
+  <footer>© <span id="y"></span> Brunbar</footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear()</script>
+</body>
+</html>
