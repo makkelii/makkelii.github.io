@@ -59,12 +59,7 @@
 <div class="lightbox" id="lightbox"><button class="close" id="closeLb">✕</button><img id="lightImg" alt=""></div>
 
 <script>
-  // --- SÄÄDÄ TARVITTAESSA ---
-  const OWNER = "makkelii";
-  const REPO  = "makkelii.github.io";
-  // --------------------------
-
-  // Tuetut kategoriat (kansion nimet voivat olla isolla/ pienellä)
+  // Kategoriat (hakemistonimi voi olla iso/pieni)
   const CATS = [
     { key:"Magneetit",   label:"Magneetit" },
     { key:"Sormukset",   label:"Sormukset" },
@@ -73,153 +68,72 @@
     { key:"Riipukset",   label:"Riipukset" },
   ];
 
-  const catsEl = document.getElementById('cats');
-  const galEl  = document.getElementById('gallery');
-  const errEl  = document.getElementById('status');
-  const listEl = document.getElementById('list');
-  const countEl= document.getElementById('count');
+  const catsEl=document.getElementById('cats'), galEl=document.getElementById('gallery'),
+        errEl=document.getElementById('status'), listEl=document.getElementById('list'),
+        countEl=document.getElementById('count');
 
-  let currentCat = 'all';
-  let allFiles = []; // {path, cat, name}
-  const selected = new Set();
-
-  const toTitle = s => s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g, m=>m.toUpperCase());
-  const isImg   = p => /\.(jpg|jpeg|png|gif|webp)$/i.test(p);
-  const showErr = (m,detail) => { errEl.style.display='block'; errEl.textContent = m + (detail?`\n${detail}`:''); };
-
-  const updateList = () => { const arr=[...selected].sort(); listEl.value = arr.join('\n'); countEl.textContent = arr.length; };
+  let currentCat='all'; let allFiles=[]; const selected=new Set();
+  const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
+  const isImg=p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p);
+  const showErr=m=>{errEl.style.display='block'; errEl.textContent=m;};
+  const updateList=()=>{const a=[...selected].sort(); listEl.value=a.join('\n'); countEl.textContent=a.length;};
 
   function addFigure(path){
-    const name = path.split('/').pop();
-    const cap  = toTitle(name.replace(/\.[^.]+$/,''));
-    const fig  = document.createElement('figure');
-    fig.dataset.file = path;
-    fig.innerHTML = `<span class="tick" title="Valitse"></span>
-                     <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
-                     <figcaption>${cap}</figcaption>`;
+    const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
+    const fig=document.createElement('figure'); fig.dataset.file=path;
+    fig.innerHTML=`<span class="tick" title="Valitse"></span>
+                   <img src="${path}" alt="${cap}" loading="lazy">
+                   <figcaption>${cap}</figcaption>`;
     galEl.appendChild(fig);
   }
+  function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
+  function renderCats(counts){ const total=Object.values(counts).reduce((a,b)=>a+b,0);
+    const make=(k,l,c)=>{const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b;};
+    catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total)); CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
+  }
+  function showGallery(){ galEl.innerHTML=''; const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat); list.forEach(f=>addFigure(f.path)); }
 
-  function renderCats(counts){
-    const total = Object.values(counts).reduce((a,b)=>a+b,0);
-    const make = (key,label,count)=>{ const b=document.createElement('button');
-      b.className='cat-btn'+(key===currentCat?' active':''); b.dataset.key=key; b.textContent=`${label} (${count})`; return b; };
-    catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total));
-    CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
-  }
-  function countsFrom(list){
-    const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o;
-  }
-  function showGallery(){
-    galEl.innerHTML='';
-    const items = currentCat==='all' ? allFiles : allFiles.filter(f=>f.cat===currentCat);
-    items.forEach(f=>addFigure(f.path));
-  }
-
-  async function getDefaultBranch(){
-    const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`);
-    if(!r.ok) throw new Error(`Repo meta ${r.status}`);
-    const j = await r.json();
-    return j.default_branch || 'main';
-  }
-
-  // Haetaan koko puu yhdellä pyynnöllä
-  async function fetchTree(branch){
-    const url = `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error(`Tree ${r.status}`);
-    return r.json();
-  }
-
-  function detectImagesRoot(paths){
-    // Palauta "images" kansion oikea kirjainkoko (images / Images / IMAGES ...)
-    const hit = paths.find(p => /^images\//i.test(p));
-    if (!hit) return null;
-    return hit.split('/')[0]; // ensimmäinen segmentti
-  }
-
-  async function loadAll(){
+  async function loadFromManifest(){
     try{
-      const branch = await getDefaultBranch();
-      const tree   = await fetchTree(branch);
-      if(!tree || !Array.isArray(tree.tree)) throw new Error('Tree missing');
+      const res=await fetch('images/manifest.json', {cache:'no-store'});
+      if(!res.ok){ showErr('Manifestia ei löytynyt. Lisää ohjeen mukainen workflow tai luo images/manifest.json käsin.'); renderCats(countsFrom([])); return; }
+      const manifest=await res.json();
+      const files=(manifest.files||[]).filter(isImg);
 
-      // Lista kaikista poluista (vain blob-tyypit)
-      const blobs  = tree.tree.filter(n => n.type === 'blob').map(n => n.path);
-      // Selvitä juuren oikea kirjainkoko
-      const imagesRoot = detectImagesRoot(blobs);
-      if(!imagesRoot){ renderCats(countsFrom([])); showErr('Kuvakansiota "images" ei löytynyt repon juuresta.'); return; }
+      // Selvitä images-juuren nimi (images/ tai Images/)
+      const rootGuess = files.length ? files[0].split('/')[0] : 'images';
+      const catRegex = CATS.map(c=>({ key:c.key, re:new RegExp(`^${rootGuess}/${c.key}/`, 'i') }));
 
-      // Muodosta regexit kategorioille (case-insensitive, sallii alikansiot)
-      const catRegex = CATS.map(c => ({ 
-        key:c.key, 
-        re: new RegExp(`^${imagesRoot}/${c.key}/`, 'i')
-      }));
+      const imgs = files.filter(p => catRegex.some(c=>c.re.test(p)));
+      if(imgs.length===0){ renderCats(countsFrom([])); showErr('Manifestissa ei ole kuvia kategorioiden alla.'); return; }
 
-      // Poimi kuvat
-      const imgs = blobs.filter(p => isImg(p) && catRegex.some(c => c.re.test(p)));
-      if(imgs.length===0){ renderCats(countsFrom([])); showErr('Kuvia ei löytynyt kategorioiden alta.'); return; }
-
-      // Rakenna meta
       allFiles = imgs.map(p=>{
-        const seg = p.split('/');
-        const actualCat = seg[1]; // imagesRoot / <cat> / ...
-        // Mapataan <cat> → meidän avain (case-insensitiivisesti)
-        const key = (CATS.find(c => c.key.toLowerCase() === actualCat.toLowerCase())||{}).key || actualCat;
-        return { path: p, cat: key, name: seg.pop() };
+        const part=p.split('/')[1]; // kategorian kansio manifestissa
+        const key=(CATS.find(c=>c.key.toLowerCase()===part.toLowerCase())||{}).key || part;
+        return { path:p, cat:key, name:p.split('/').pop() };
       }).sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
       renderCats(countsFrom(allFiles));
       showGallery();
-
-    }catch(e){
-      console.error(e);
-      showErr('Kuvien haku epäonnistui.', String(e && e.message || e));
-    }
+    }catch(e){ console.error(e); showErr('Manifestin luku epäonnistui.'); }
   }
 
   // Tapahtumat
-  catsEl.addEventListener('click', e=>{
-    const b=e.target.closest('.cat-btn'); if(!b) return;
-    currentCat=b.dataset.key;
-    catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
-    showGallery();
-  });
-
-  galEl.addEventListener('click', e=>{
-    if(e.target.classList.contains('tick')){
-      const fig=e.target.closest('figure'), name=fig.dataset.file.split('/').pop();
-      fig.classList.toggle('selected');
-      fig.classList.contains('selected') ? selected.add(name) : selected.delete(name);
-      updateList(); return;
-    }
-  });
-
-  // Lightbox
-  galEl.addEventListener('click', e=>{
-    const img=e.target.closest('img'); if(!img) return;
-    const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
-    li.src=img.src; li.alt=img.alt||''; lb.classList.add('open');
-  });
+  catsEl.addEventListener('click', e=>{ const b=e.target.closest('.cat-btn'); if(!b) return; currentCat=b.dataset.key;
+    catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b)); showGallery(); });
+  galEl.addEventListener('click', e=>{ if(e.target.classList.contains('tick')){ const f=e.target.closest('figure'), n=f.dataset.file.split('/').pop();
+    f.classList.toggle('selected'); f.classList.contains('selected')?selected.add(n):selected.delete(n); updateList(); }});
+  galEl.addEventListener('click', e=>{ const img=e.target.closest('img'); if(!img) return; const lb=document.getElementById('lightbox'); const li=document.getElementById('lightImg'); li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); });
   document.getElementById('closeLb').onclick=()=>document.getElementById('lightbox').classList.remove('open');
   document.getElementById('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox') e.currentTarget.classList.remove('open'); });
-
-  // Nappulat
-  document.getElementById('toggleAll').onclick=()=>{
-    const figs=[...galEl.querySelectorAll('figure')];
-    const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
-    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
-    else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
-    updateList();
-  };
+  document.getElementById('toggleAll').onclick=()=>{ const figs=[...galEl.querySelectorAll('figure')]; const allSel=figs.length&&figs.every(f=>f.classList.contains('selected'));
+    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); } else { figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); } updateList(); };
   document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
-
   const dl=(fn,txt)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'})); a.download=fn; a.click(); };
   document.getElementById('downloadTxt').onclick=()=>dl('valitut-kuvat.txt',[...selected].sort().join('\n'));
   document.getElementById('downloadCsv').onclick=()=>dl('valitut-kuvat.csv','file,title\n'+[...selected].sort().map(n=>`"${n.replace(/"/g,'""')}","${toTitle(n.replace(/\.[^.]+$/,'')).replace(/"/g,'""')}"`).join('\n'));
 
-  // Käynnistä
-  loadAll();
+  loadFromManifest();
 </script>
 </body>
 </html>
