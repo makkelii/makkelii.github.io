@@ -99,7 +99,7 @@
   }
   function showGallery(){ galEl.innerHTML=''; const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat); list.forEach(f=>addFigure(f.path)); }
 
-  // Lataa manifesti (ei käytä API:a)
+  // Lataa manifesti (ei käytä GitHub API:a)
   async function loadFromManifest(){
     try{
       const res=await fetch('images/manifest.json', {cache:'no-store'});
@@ -108,21 +108,17 @@
       const files=(manifest.files||[]).filter(isImg);
       if(!files.length){ renderCats(countsFrom([])); showErr('Manifesti löytyi, mutta kuvapolkuja ei ole.'); return; }
 
-      // Päättele images-juuren nimi (images/ tai Images/)
+      // Päättele images-juuri (images/ tai Images/) ja mapppaa kategorioihin (case-insensitive)
       const rootGuess = files[0].split('/')[0];
-
-      // Suodata kategorioihin (case-insensitive)
-      const byCat = [];
       const regs = CATS.map(c=>({key:c.key, re:new RegExp(`^${rootGuess}/${c.key}/`, 'i')}));
+      const byCat = [];
       for(const p of files){
         const hit = regs.find(r=>r.re.test(p));
         if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); }
       }
       if(!byCat.length){ renderCats(countsFrom([])); showErr('Kuvia ei löytynyt tuetuista kategorioista.'); return; }
 
-      // Järjestys: kategoria, sitten nimi
       allFiles = byCat.sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-
       renderCats(countsFrom(allFiles));
       showGallery();
     }catch(e){ console.error(e); renderCats(countsFrom([])); showErr('Manifestin luku epäonnistui.'); }
@@ -153,31 +149,29 @@
   });
   document.getElementById('closeLb').onclick=()=>{ const lb=document.getElementById('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
 
-  // Napit
-  document.getElementById('toggleAll').onclick=()=>{
-    const figs=[...galEl.querySelectorAll('figure')];
-    const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
-    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
-    else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
-    updateList();
-  };
-  document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
-
-  // Lataukset
+  // TXT-lataus (yksi nimi per rivi)
   document.getElementById('downloadTxt').onclick=()=>{
     const rows=[...selected].sort().join('\n');
     const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/plain;charset=utf-8'})); a.download='valitut-kuvat.txt'; a.click();
   };
 
-  // CSV: otsikot "Tuote,koko,Kpl" + yksi rivi per valittu nimi
+  // CSV-lataus: A1=Tuote, B1-D1 tyhjät, E1=Koko, F1=Kpl; Rivi 2 tyhjä; nimilistaus alkaa riviltä 3 sarakkeessa A
   document.getElementById('downloadCsv').onclick=()=>{
-    const header='Tuote,koko,Kpl\n';
-    const rows=[...selected].sort().map(name=>{
-      const tuote=name.replace(/"/g,'""');
-      return `"${tuote}","",""`;
+    // Header: "Tuote" + 3 tyhjää (B,C,D) + "Koko","Kpl"  ->  Tuote,,,,Koko,Kpl
+    const header = 'Tuote,,,,Koko,Kpl\n';
+    // Tyhjä rivi 2
+    const blankRow = '\n';
+    // Riviltä 3 alkaen: nimi sarakkeeseen A, B–F tyhjät (eli yhteensä 6 kenttää, 1 arvo + 5 tyhjää = 5 pilkkua)
+    const body = [...selected].sort().map(name => {
+      const tuote = name.replace(/"/g,'""');
+      return `"${tuote}",,,,,`;
     }).join('\n');
-    const csv=header+rows;
-    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='valitut-kuvat.csv'; a.click();
+
+    const csv = header + blankRow + body;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.download = 'valitut-kuvat.csv';
+    a.click();
   };
 
   // Käyntiin
