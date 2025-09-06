@@ -34,7 +34,7 @@
     .lightbox img { max-width:min(92vw,1200px); max-height:86vh; border-radius:12px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
     .lightbox .close { position:fixed; top:1rem; right:1rem; width:42px; height:42px; border-radius:50%; background:#ffffff; color:#111; border:none; font-size:20px; font-weight:700; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.25); }
     .back { display:inline-block; margin:1rem 0; padding:.6rem 1rem; background:var(--gold); color:var(--purple); border-radius:8px; text-decoration:none; font-weight:700; }
-    .error { background:#fff3f3; border:1px solid #ffd1d1; color:#7a0000; padding:.75rem; border-radius:8px; }
+    .error { background:#fff3f3; border:1px solid #ffd1d1; color:#7a0000; padding:.75rem; border-radius:8px; display:none; }
   </style>
 </head>
 <body>
@@ -42,7 +42,7 @@
 
   <main class="wrap">
     <section>
-      <div id="status" class="error" style="display:none"></div>
+      <div id="status" class="error"></div>
       <div class="gallery" id="gallery"></div>
       <a href="index.html" class="back">← Takaisin</a>
     </section>
@@ -67,65 +67,79 @@
   </div>
 
   <script>
-    // --- SÄÄDÄ TÄMÄT ---
+    // --- SÄÄDÄ NÄMÄ TARVITTAESSA ---
     const OWNER  = "makkelii";
     const REPO   = "makkelii.github.io";
-    // --------------------
+    const IMAGES_DIR = "images"; // kaikki kuvat ja alikansiot tämän alla
+    // --------------------------------
 
     const gallery  = document.getElementById("gallery");
     const statusEl = document.getElementById("status");
     const selected = new Set();
     const listEl   = document.getElementById("list");
     const countEl  = document.getElementById("count");
-    const IMAGES_DIR = "images";
 
-    const toTitle = s => s.trim().replace(/\s+/g,' ').replace(/(^|\\s)\\S/g, m => m.toUpperCase());
+    const toTitle = s => s.trim().replace(/\s+/g,' ').replace(/(^|\s)\S/g, m => m.toUpperCase());
     const showError = msg => { statusEl.style.display = 'block'; statusEl.textContent = msg; };
 
     const updateList = () => {
       const arr = Array.from(selected).sort();
-      listEl.value = arr.join('\\n');     // rivinvaihto
+      listEl.value = arr.join('\n');        // yksi rivi per valinta
       countEl.textContent = arr.length;
     };
 
-    function addFigure(fileName){
-      const path = `${IMAGES_DIR}/${fileName}`;
-      const base = fileName.replace(/\\.[^.]+$/,'').replace(/[-_]/g,' ');
+    function addFigure(filePath){ // esim. images/kansio/nimi.jpg
+      const fileName = filePath.split('/').pop();
+      const base = fileName.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
       const cap  = toTitle(base);
       const fig = document.createElement('figure');
-      fig.dataset.file = path;
+      fig.dataset.file = filePath;
       fig.dataset.caption = base;
-      fig.innerHTML = \`
+      fig.innerHTML = `
         <span class="tick" title="Valitse"></span>
-        <img src="\${path}" alt="\${cap}">
-        <figcaption>\${cap}</figcaption>
-      \`;
+        <img src="${filePath}" alt="${cap}">
+        <figcaption>${cap}</figcaption>
+      `;
       gallery.appendChild(fig);
     }
 
     async function getDefaultBranch(){
-      const r = await fetch(\`https://api.github.com/repos/\${OWNER}/\${REPO}\`, { headers: { 'Accept':'application/vnd.github+json' }});
+      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`, { headers: { 'Accept':'application/vnd.github+json' }});
       if(!r.ok) throw new Error('Repoa ei löytynyt tai repo on yksityinen.');
       const meta = await r.json();
       return meta.default_branch || 'main';
     }
 
+    // Listaa KAIKKI kuvat rekursiivisesti images/-kansion alta
+    async function listDir(path, branch, acc){
+      const api = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${branch}`;
+      const res = await fetch(api, { headers: { 'Accept':'application/vnd.github+json' }});
+      if(!res.ok) return;
+      const data = await res.json();
+      if(!Array.isArray(data)) return;
+      for (const item of data) {
+        if (item.type === 'dir') {
+          await listDir(item.path, branch, acc);
+        } else if (item.type === 'file') {
+          const name = item.name.toLowerCase();
+          if (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || name.endsWith('.webp') || name.endsWith('.gif')) {
+            acc.push(item.path); // esim. images/ali/nimi.jpg
+          }
+        }
+      }
+    }
+
     async function loadImages(){
       try {
         const branch = await getDefaultBranch();
-        const api = \`https://api.github.com/repos/\${OWNER}/\${REPO}/contents/\${IMAGES_DIR}?ref=\${branch}\`;
-        const res = await fetch(api, { headers: { 'Accept':'application/vnd.github+json' }});
-        if(!res.ok) throw new Error(\`GitHub API virhe: \${res.status}\`);
-        const data = await res.json();
-        if(!Array.isArray(data)) throw new Error('Odottamaton vastaus API:lta.');
-        const exts = ['.jpg','.jpeg','.png','.webp','.gif'];
-        const files = data.filter(x => x.type === 'file' && exts.some(e => x.name.toLowerCase().endsWith(e)));
-        if(files.length === 0){
-          showError('Kansiosta images/ ei löytynyt kuvatiedostoja. Varmista, että kuvat on commitoitu oikeaan kansioon.');
+        const files = [];
+        await listDir(IMAGES_DIR, branch, files);
+        if (files.length === 0) {
+          showError('Kuvia ei löytynyt kansiosta "images" (myös alikansiot käyty). Varmista, että kuvat on commitoitu.');
           return;
         }
-        files.sort((a,b)=> a.name.localeCompare(b.name,'fi'));
-        files.forEach(f => addFigure(f.name));
+        files.sort((a,b)=> a.localeCompare(b, 'fi'));
+        files.forEach(p => addFigure(p));
       } catch (e){
         console.error(e);
         showError('Kuvien haku epäonnistui. Tarkista: 1) Repo on julkinen, 2) OWNER/REPO oikein, 3) kansio images/ on olemassa ja sisältää kuvia.');
@@ -150,13 +164,13 @@
     lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
 
-    // Täpät (talleta vain tiedostonimi, ilman "images/")
+    // Täpät: talleta listaan VAIN tiedostonimi (poista "images/")
     gallery.addEventListener('click', (e) => {
       const tick = e.target.closest('.tick');
       if (!tick) return;
       const fig = tick.closest('figure');
-      const full = (fig.dataset.file || fig.querySelector('img')?.getAttribute('src') || '').replace(/^\\//,'');
-      const filenameOnly = full.replace(/^images\\//, '');
+      const full = (fig.dataset.file || fig.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
+      const filenameOnly = full.replace(/^images\//, '');
       if (fig.classList.toggle('selected')) selected.add(filenameOnly);
       else selected.delete(filenameOnly);
       updateList();
@@ -172,8 +186,8 @@
       } else {
         figs.forEach(f => {
           f.classList.add('selected');
-          const full = (f.dataset.file || f.querySelector('img')?.getAttribute('src') || '').replace(/^\\//,'');
-          const filenameOnly = full.replace(/^images\\//, '');
+          const full = (f.dataset.file || f.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
+          const filenameOnly = full.replace(/^images\//, '');
           if (filenameOnly) selected.add(filenameOnly);
         });
       }
@@ -195,14 +209,14 @@
     };
     document.getElementById('downloadTxt').addEventListener('click', () => {
       const arr = Array.from(selected).sort();
-      download('valitut-kuvat.txt', arr.join('\\n'));
+      download('valitut-kuvat.txt', arr.join('\n'));
     });
     document.getElementById('downloadCsv').addEventListener('click', () => {
       const rows = Array.from(selected).sort().map(filenameOnly => {
-        const title = filenameOnly.replace(/\\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/(^|\\s)\\S/g, m => m.toUpperCase());
-        return \`"\${filenameOnly.replace(/"/g,'""')}","\${title.replace(/"/g,'""')}"\`;
+        const title = filenameOnly.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/(^|\s)\S/g, m => m.toUpperCase());
+        return `"${filenameOnly.replace(/"/g,'""')}","${title.replace(/"/g,'""')}"`;
       });
-      download('valitut-kuvat.csv', 'file,title\\n' + rows.join('\\n'));
+      download('valitut-kuvat.csv', 'file,title\n' + rows.join('\n'));
     });
 
     // Käyntiin
