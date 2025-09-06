@@ -31,7 +31,7 @@
     .note { font-size:.85rem; color:#666; margin-top:.5rem; }
     .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.75); display:none; align-items:center; justify-content:center; padding:2rem; z-index:9999; }
     .lightbox.open { display:flex; }
-    .lightbox img { max-width:min(92vw,1200px); max-height:86vh; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+    .lightbox img { max-width:min(92vw,1200px); max-height:86vh; border-radius:12px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
     .lightbox .close { position:fixed; top:1rem; right:1rem; width:42px; height:42px; border-radius:50%; background:#ffffff; color:#111; border:none; font-size:20px; font-weight:700; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.25); }
     .back { display:inline-block; margin:1rem 0; padding:.6rem 1rem; background:var(--gold); color:var(--purple); border-radius:8px; text-decoration:none; font-weight:700; }
   </style>
@@ -66,27 +66,31 @@
 
   <script>
     // SÄÄDÄ NÄMÄ tarvittaessa omaan käyttäjään/repoon/branchiin:
-    const OWNER = "makkelii";
-    const REPO  = "makkelii.github.io";
-    const BRANCH = "main"; // jos käytät muuta: vaihda
-    const IMAGES_DIR = "images";
+    const OWNER  = "makkelii";
+    const REPO   = "makkelii.github.io";
+    const BRANCH = "main";       // muuta jos käytät muuta branchia
+    const IMAGES_DIR = "images"; // kuvat tässä kansiossa
     const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${IMAGES_DIR}?ref=${BRANCH}`;
 
-    const toTitle = s => s.trim().replace(/\s+/g,' ').replace(/(^|\s)\S/g, m => m.toUpperCase());
-
-    const gallery = document.getElementById("gallery");
+    const gallery  = document.getElementById("gallery");
     const selected = new Set();
-    const listEl = document.getElementById('list');
-    const countEl = document.getElementById('count');
-    const updateList = () => { const arr=[...selected].sort(); listEl.value = arr.join('\\n'); countEl.textContent = arr.length; };
+    const listEl   = document.getElementById("list");
+    const countEl  = document.getElementById("count");
 
-    // Rakenna yhden kuvan kortti
+    const toTitle = s => s.trim().replace(/\s+/g,' ').replace(/(^|\s)\S/g, m => m.toUpperCase());
+    const updateList = () => {
+      const arr = Array.from(selected).sort();
+      listEl.value = arr.join('\n');     // rivinvaihto jokaisen väliin
+      countEl.textContent = arr.length;
+    };
+
     function addFigure(fileName){
-      const path = `${IMAGES_DIR}/${fileName}`;
-      const base = fileName.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+      const path = `${IMAGES_DIR}/${fileName}`;            // esim. images/kuva.jpg (src)
+      const base = fileName.replace(/\.[^.]+$/,'')         // pelkkä nimi ilman päätettä
+                           .replace(/[-_]/g,' ');
       const cap  = toTitle(base);
       const fig = document.createElement('figure');
-      fig.dataset.file = path;
+      fig.dataset.file = path;              // säilytetään täysi polku dataan
       fig.dataset.caption = base;
       fig.innerHTML = `
         <span class="tick" title="Valitse"></span>
@@ -96,21 +100,14 @@
       gallery.appendChild(fig);
     }
 
-    // Hae kuvat GitHub API:sta
     async function loadImages(){
       try {
         const res = await fetch(API_URL, { headers: { 'Accept': 'application/vnd.github+json' } });
-        if(!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+        if(!res.ok) throw new Error(\`GitHub API error: \${res.status}\`);
         const data = await res.json();
         const exts = ['.jpg','.jpeg','.png','.webp','.gif'];
         const files = data.filter(x => x.type === 'file' && exts.some(e => x.name.toLowerCase().endsWith(e)));
-        if(files.length === 0){
-          const p = document.createElement('p');
-          p.textContent = 'Kansiossa ei ole kuvia (images/).';
-          gallery.appendChild(p);
-          return;
-        }
-        files.sort((a,b)=> a.name.localeCompare(b.name, 'fi'));
+        files.sort((a,b)=> a.name.localeCompare(b.name,'fi'));
         files.forEach(f => addFigure(f.name));
       } catch (e){
         console.error(e);
@@ -125,7 +122,7 @@
     const lbImg = document.getElementById('lightImg');
     const closeLb = document.getElementById('closeLb');
     gallery.addEventListener('click', (e) => {
-      if (e.target.closest('.tick')) return;
+      if (e.target.closest('.tick')) return; // ei lightboxia täppää klikattaessa
       const img = e.target.closest('img');
       if (!img) return;
       lbImg.src = img.src;
@@ -138,39 +135,60 @@
     lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
 
-    // Täpät
+    // Täppä: lisää/poista listalta VAIN tiedostonimi (ilman "images/")
     gallery.addEventListener('click', (e) => {
       const tick = e.target.closest('.tick');
       if (!tick) return;
       const fig = tick.closest('figure');
-      const file = (fig.dataset.file || fig.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
-      if (fig.classList.toggle('selected')) selected.add(file); else selected.delete(file);
+      const full = (fig.dataset.file || fig.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
+      const filenameOnly = full.replace(/^images\//, ''); // poista "images/"
+      if (fig.classList.toggle('selected')) selected.add(filenameOnly);
+      else selected.delete(filenameOnly);
       updateList();
     });
 
-    // Nappulat
+    // Valitse kaikki / poista kaikki (listaan vain tiedostonimi)
     document.getElementById('toggleAll').addEventListener('click', () => {
       const figs = Array.from(document.querySelectorAll('figure'));
       const allSelected = figs.length && figs.every(f => f.classList.contains('selected'));
-      if (allSelected) { figs.forEach(f => f.classList.remove('selected')); selected.clear(); }
-      else { figs.forEach(f => { f.classList.add('selected'); const file=(f.dataset.file||f.querySelector('img')?.getAttribute('src')||'').replace(/^\//,''); if (file) selected.add(file); }); }
+      if (allSelected) {
+        figs.forEach(f => f.classList.remove('selected'));
+        selected.clear();
+      } else {
+        figs.forEach(f => {
+          f.classList.add('selected');
+          const full = (f.dataset.file || f.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
+          const filenameOnly = full.replace(/^images\//, '');
+          if (filenameOnly) selected.add(filenameOnly);
+        });
+      }
       updateList();
     });
-    document.getElementById('clear').addEventListener('click', () => { document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); selected.clear(); updateList(); });
 
+    // Tyhjennä
+    document.getElementById('clear').addEventListener('click', () => {
+      document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected'));
+      selected.clear();
+      updateList();
+    });
+
+    // Lataukset: TXT ja CSV vain tiedostonimi + otsikko
     const download = (filename, text) => {
       const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     };
-    document.getElementById('downloadTxt').addEventListener('click', () => download('valitut-kuvat.txt', [...selected].sort().join('\\n')));
+    document.getElementById('downloadTxt').addEventListener('click', () => {
+      const arr = Array.from(selected).sort();
+      download('valitut-kuvat.txt', arr.join('\n')); // rivinvaihto
+    });
     document.getElementById('downloadCsv').addEventListener('click', () => {
-      const rows = [...selected].sort().map(path => {
-        const name = path.split('/').pop().replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
-        const title = toTitle(name);
-        return `"${path.replace(/"/g,'""')}","${title.replace(/"/g,'""')}"`;
+      const rows = Array.from(selected).sort().map(filenameOnly => {
+        const title = filenameOnly.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ')
+                                  .replace(/(^|\s)\S/g, m => m.toUpperCase());
+        return `"${filenameOnly.replace(/"/g,'""')}","${title.replace(/"/g,'""')}"`;
       });
-      download('valitut-kuvat.csv', 'file,title\\n' + rows.join('\\n'));
+      download('valitut-kuvat.csv', 'file,title\n' + rows.join('\n'));
     });
 
     // Käyntiin
