@@ -9,46 +9,249 @@ layout: none
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Suomen 585 Oy – Kuvagalleria</title>
   <style>
-    :root { --purple:#3a006b; --gold:#d4af37; }
-    body { margin:0; font-family:sans-serif; background:#f8f8f8; color:#333; }
+    :root { --purple:#3a006b; --gold:#d4af37; --ink:#333; --bg:#f8f8f8; }
+
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--ink); }
     header { background:var(--purple); color:var(--gold); padding:1rem; text-align:center; }
-    .wrap { max-width:1100px; margin:0 auto; padding:1rem; }
+    .wrap { max-width:1200px; margin:0 auto; padding:1rem; display:grid; grid-template-columns: 1fr 300px; gap:1rem; }
     .gallery {
       display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
-      gap:1rem; margin:1rem 0;
+      gap:1rem; align-content:start;
     }
     figure {
-      background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:.5rem;
-      box-shadow:0 2px 6px rgba(0,0,0,.06); text-align:center;
+      position:relative; background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:.5rem;
+      box-shadow:0 2px 6px rgba(0,0,0,.06); text-align:center; margin:0;
+      transition: transform .08s ease-in-out;
     }
-    figure img { width:100%; height:auto; border-radius:8px; }
-    figcaption { margin-top:.5rem; color:#555; font-size:.95rem; }
-    .back {
-      display:inline-block; margin:1rem 0; padding:.6rem 1rem;
-      background:var(--gold); color:var(--purple); border-radius:8px; text-decoration:none; font-weight:700;
+    figure:hover { transform: translateY(-2px); }
+    figure img { width:100%; height:auto; border-radius:8px; cursor:zoom-in; }
+    figcaption { margin-top:.5rem; color:#555; font-size:.95rem; min-height:1.5em; }
+
+    /* Valintatäppä (overlay) */
+    .tick {
+      position:absolute; left:.6rem; top:.6rem;
+      width:32px; height:32px; border-radius:50%;
+      background: rgba(255,255,255,.9); border:2px solid #ccc; display:grid; place-items:center;
+      cursor:pointer; user-select:none; font-weight:700; font-size:16px; color:#2a2a2a;
+      transition: all .12s;
+    }
+    .tick:hover { border-color:#999; }
+    .selected .tick { background: var(--gold); border-color: var(--gold); color: #2d2050; }
+    .tick::after { content: "✓"; opacity:0; }
+    .selected .tick::after { opacity:1; }
+
+    /* Sivupaneeli */
+    aside {
+      background:#fff; border:1px solid #e5e5e5; border-radius:12px; padding:1rem;
+      box-shadow:0 2px 6px rgba(0,0,0,.06); position:sticky; top:1rem; height:max-content;
+    }
+    aside h2 { font-size:1.05rem; margin:.2rem 0 .6rem; color:#222; }
+    .pill { display:inline-block; background:#f2f2f2; padding:.25rem .6rem; border-radius:999px; font-size:.85rem; color:#444; }
+    .listarea { width:100%; min-height:160px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.9rem; }
+    .btns { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.6rem; }
+    .btn {
+      border:none; padding:.55rem .8rem; border-radius:10px; font-weight:600; cursor:pointer;
+      background:#efefef;
+    }
+    .btn.primary { background:var(--gold); color:#2d2050; }
+    .btn.danger { background:#ffe8e8; color:#8a0000; }
+    .note { font-size:.85rem; color:#666; margin-top:.5rem; }
+
+    /* Lightbox */
+    .lightbox {
+      position:fixed; inset:0; background:rgba(0,0,0,.75); display:none; align-items:center; justify-content:center; padding:2rem; z-index:9999;
+    }
+    .lightbox.open { display:flex; }
+    .lightbox img { max-width:min(92vw,1200px); max-height:86vh; border-radius:12px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+    .lightbox .close {
+      position:fixed; top:1rem; right:1rem; width:42px; height:42px; border-radius:50%;
+      background:#ffffff; color:#111; border:none; font-size:20px; font-weight:700; cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,.25);
     }
   </style>
 </head>
 <body>
   <header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
+
   <main class="wrap">
-    <div class="gallery">
-      {%- assign files = site.static_files -%}
-      {%- for f in files -%}
-        {%- assign p = f.path | downcase -%}
-        {%- if p contains '/images/' and (p contains '.jpg' or p contains '.jpeg' or p contains '.png' or p contains '.webp' or p contains '.gif') -%}
-          {%- assign base = f.name
-            | replace:'.jpg','' | replace:'.jpeg','' | replace:'.png',''
-            | replace:'.webp','' | replace:'.gif','' -%}
-          {%- assign caption_raw = base | replace:'-',' ' | replace:'_',' ' -%}
-          <figure data-caption="{{ caption_raw }}">
-            <img src="{{ f.path | relative_url }}" alt="{{ caption_raw }}">
-            <figcaption></figcaption>
-          </figure>
-        {%- endif -%}
-      {%- endfor -%}
-    </div>
+    <section>
+      <div class="gallery" id="gallery">
+        {%- assign files = site.static_files -%}
+        {%- for f in files -%}
+          {%- assign p = f.path | downcase -%}
+          {%- if p contains '/images/' and (p contains '.jpg' or p contains '.jpeg' or p contains '.png' or p contains '.webp' or p contains '.gif') -%}
+            {%- assign base = f.name
+              | replace:'.jpg','' | replace:'.jpeg','' | replace:'.png',''
+              | replace:'.webp','' | replace:'.gif','' -%}
+            {%- assign caption_raw = base | replace:'-',' ' | replace:'_',' ' -%}
+            <figure data-file="{{ f.path | relative_url }}" data-caption="{{ caption_raw }}">
+              <span class="tick" title="Valitse"></span>
+              <img src="{{ f.path | relative_url }}" alt="{{ caption_raw }}">
+              <figcaption></figcaption>
+            </figure>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </section>
 
-    <a href="index.html" class="back">← Takaisin</a>
-  </ma
+    <aside>
+      <h2>Valitut kuvat <span class="pill" id="count">0</span></h2>
+      <textarea id="list" class="listarea" placeholder="Valittujen tiedostonimet näkyvät tässä…"></textarea>
+      <div class="btns">
+        <button class="btn danger" id="clear">Tyhjennä</button>
+        <button class="btn" id="downloadTxt">Lataa lista (.txt)</button>
+        <button class="btn" id="downloadCsv">Lataa CSV</button>
+        <button class="btn primary" id="toggleAll">Valitse kaikki / poista kaikki</button>
+      </div>
+      <p class="note">Vinkki: nimeä kuvat selkeästi (esim. <code>kitara-riipus.jpg</code>). Kuvateksti muodostuu automaattisesti nimestä.</p>
+      <p><a href="index.html" class="btn" style="text-decoration:none">← Takaisin etusivulle</a></p>
+    </aside>
+  </main>
 
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="close" id="closeLb" aria-label="Sulje">✕</button>
+    <img id="lightImg" src="" alt="">
+  </div>
+
+  <script>
+    // ========== Apurit ==========
+    const toTitle = (s) => s.trim().replace(/\s+/g,' ').replace(/(^|\s)\S/g, m => m.toUpperCase());
+
+    // ========== Alusta kuvatekstit ==========
+    document.querySelectorAll('figure').forEach(fig => {
+      const raw = (fig.dataset.caption || '').replace(/[-_]/g,' ');
+      const caption = toTitle(raw);
+      const img = fig.querySelector('img');
+      const cap = fig.querySelector('figcaption');
+      img.alt = caption;
+      cap.textContent = caption;
+    });
+
+    // ========== Lightbox ==========
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightImg');
+    const closeLb = document.getElementById('closeLb');
+
+    document.getElementById('gallery').addEventListener('click', (e) => {
+      const img = e.target.closest('img');
+      if (!img) return;
+      // Älä avaa lightboxia jos klikattiin täppää
+      if (e.target.closest('.tick')) return;
+      lbImg.src = img.src;
+      lbImg.alt = img.alt || '';
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden','false');
+    });
+
+    const closeLightbox = () => {
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden','true');
+      lbImg.src = '';
+    };
+    closeLb.addEventListener('click', closeLightbox);
+    lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+    // ========== Valinnat & vienti ==========
+    const selected = new Set();
+    const listEl = document.getElementById('list');
+    const countEl = document.getElementById('count');
+
+    const updateList = () => {
+      const arr = Array.from(selected).sort();
+      listEl.value = arr.join('\n');
+      countEl.textContent = arr.length;
+    };
+
+    // Täpän klikkaus
+    document.getElementById('gallery').addEventListener('click', (e) => {
+      const tick = e.target.closest('.tick');
+      if (!tick) return;
+      const fig = tick.closest('figure');
+      const file = fig.dataset.file || (fig.querySelector('img')?.getAttribute('src')) || '';
+      if (fig.classList.toggle('selected')) {
+        selected.add(file.replace(/^\\//,''));
+      } else {
+        selected.delete(file.replace(/^\\//,''));
+      }
+      updateList();
+    });
+
+    // Valitse kaikki / poista kaikki
+    document.getElementById('toggleAll').addEventListener('click', () => {
+      const figs = Array.from(document.querySelectorAll('figure'));
+      const allSelected = figs.every(f => f.classList.contains('selected'));
+      if (allSelected) {
+        figs.forEach(f => f.classList.remove('selected'));
+        selected.clear();
+      } else {
+        figs.forEach(f => {
+          f.classList.add('selected');
+          const file = (f.dataset.file || f.querySelector('img')?.getAttribute('src') || '').replace(/^\\//,'');
+          if (file) selected.add(file);
+        });
+      }
+      updateList();
+    });
+
+    // Tyhjennä
+    document.getElementById('clear').addEventListener('click', () => {
+      document.querySelectorAll('figure.selected').forEach(f => f.classList.remove('selected'));
+      selected.clear();
+      updateList();
+    });
+
+    // Lataa tiedosto apuri
+    const download = (filename, text) => {
+      const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      a.remove(); URL.revokeObjectURL(url);
+    };
+
+    // Lataa TXT
+    document.getElementById('downloadTxt').addEventListener('click', () => {
+      const arr = Array.from(selected).sort();
+      download('valitut-kuvat.txt', arr.join('\\n'));
+    });
+
+    // Lataa CSV (tiedostonimi, otsikko)
+    document.getElementById('downloadCsv').addEventListener('click', () => {
+      const rows = Array.from(selected).sort().map(path => {
+        const name = path.split('/').pop().replace(/\\.[^.]+$/,'').replace(/[-_]/g,' ');
+        const title = toTitle(name);
+        return `"${path.replace(/"/g,'""')}","${title.replace(/"/g,'""')}"`;
+      });
+      download('valitut-kuvat.csv', 'file,title\\n' + rows.join('\\n'));
+    });
+
+    // ====== VAIHTOEHTO ILMAN JEKYLLIÄ ======
+    // Jos et käytä Jekylliä (Liquid ei renderöidy), poista reposista .nojekyll TAI
+    // täytä alla oleva IMAGES-lista tiedostonimillä ja poista kommenttimerkit:
+    /*
+    const IMAGES = ["kitara-riipus.jpg","kivisormus.jpg","sydan-kaulakoru.webp"];
+    const gal = document.getElementById('gallery');
+    if (gal.children.length === 0) {
+      IMAGES.forEach(fn => {
+        const path = 'images/' + fn;
+        const base = fn.replace(/\\.[^.]+$/,'').replace(/[-_]/g,' ');
+        const cap  = toTitle(base);
+        const fig = document.createElement('figure');
+        fig.dataset.file = path;
+        fig.dataset.caption = base;
+        fig.innerHTML = \`
+          <span class="tick" title="Valitse"></span>
+          <img src="\${path}" alt="\${cap}">
+          <figcaption>\${cap}</figcaption>
+        \`;
+        gal.appendChild(fig);
+      });
+    }
+    */
+  </script>
+</body>
+</html>
