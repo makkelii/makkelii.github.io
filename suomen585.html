@@ -1,218 +1,225 @@
 <!doctype html>
 <html lang="fi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Suomen 585 Oy – Kuvagalleria</title>
-  <style>
-    :root { --purple:#3a006b; --gold:#d4af37; --ink:#333; --bg:#f8f8f8; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink); }
-    header { background:var(--purple); color:var(--gold); padding:1rem; text-align:center; }
-    .wrap { max-width:1200px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 300px; gap:1rem; align-items:start; }
-    .cats { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.75rem; }
-    .cat-btn { border:1px solid #e0e0e0; background:#fff; padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; }
-    .cat-btn.active { background:var(--gold); color:#2d2050; border-color:var(--gold); }
-    .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; }
-    figure { position:relative; background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:.5rem; box-shadow:0 2px 6px rgba(0,0,0,.06); margin:0; text-align:center; }
-    figure img { width:100%; height:auto; border-radius:8px; cursor:zoom-in; aspect-ratio:1/1; object-fit:cover; }
-    figcaption { margin-top:.5rem; font-size:.9rem; color:#555; min-height:1.4em; }
-    .tick { position:absolute; left:.6rem; top:.6rem; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.92); border:2px solid #ccc; display:grid; place-items:center; font-weight:700; cursor:pointer; }
-    .selected .tick { background:var(--gold); border-color:var(--gold); color:#2d2050; }
-    .tick::after { content:"✓"; opacity:0; }
-    .selected .tick::after { opacity:1; }
-    aside { background:#fff; border:1px solid #e5e5e5; border-radius:12px; padding:1rem; box-shadow:0 2px 6px rgba(0,0,0,.06); height:max-content; position:sticky; top:1rem; }
-    textarea { width:100%; min-height:150px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .btns { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.5rem; }
-    .btn { border:none; padding:.6rem 1rem; border-radius:8px; cursor:pointer; font-weight:600; background:#efefef; }
-    .btn.primary { background:var(--gold); color:#2d2050; }
-    .btn.danger { background:#ffe8e8; color:#800; }
-    .back { display:inline-block; margin-top:1rem; }
-    .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:9999; }
-    .lightbox.open { display:flex; }
-    .lightbox img { max-width:90vw; max-height:85vh; border-radius:10px; }
-    .lightbox .close { position:absolute; top:1rem; right:1rem; background:#fff; border:none; border-radius:50%; width:40px; height:40px; font-size:20px; cursor:pointer; }
-    .error { background:#ffecec; border:1px solid #ffb3b3; color:#900; padding:.6rem; border-radius:8px; margin-bottom:.75rem; display:none; white-space:pre-wrap; }
-    @media(max-width:860px){ .wrap{grid-template-columns:1fr;} aside{position:relative; top:auto;} }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suomen 585 Oy – Kuvagalleria</title>
+<style>
+  :root { --purple:#3a006b; --gold:#d4af37; --ink:#333; --bg:#f8f8f8; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:var(--purple);color:var(--gold);padding:1rem;text-align:center}
+  .wrap{max-width:1200px;margin:0 auto;padding:1rem;display:grid;grid-template-columns:1fr 300px;gap:1rem;align-items:start}
+  .cats{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem}
+  .cat-btn{border:1px solid #e0e0e0;background:#fff;padding:.55rem .9rem;border-radius:999px;cursor:pointer;font-weight:600}
+  .cat-btn.active{background:var(--gold);color:#2d2050;border-color:var(--gold)}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+  figure{position:relative;background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:.5rem;box-shadow:0 2px 6px rgba(0,0,0,.06);margin:0;text-align:center}
+  figure img{width:100%;height:auto;border-radius:8px;cursor:zoom-in;aspect-ratio:1/1;object-fit:cover}
+  figcaption{margin-top:.5rem;font-size:.9rem;color:#555;min-height:1.4em}
+  .tick{position:absolute;left:.6rem;top:.6rem;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #ccc;display:grid;place-items:center;font-weight:700;cursor:pointer}
+  .selected .tick{background:var(--gold);border-color:var(--gold);color:#2d2050}
+  .tick::after{content:"✓";opacity:0}.selected .tick::after{opacity:1}
+  aside{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1rem;box-shadow:0 2px 6px rgba(0,0,0,.06);height:max-content;position:sticky;top:1rem}
+  textarea{width:100%;min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+  .btn{border:none;padding:.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;background:#efefef}
+  .btn.primary{background:var(--gold);color:#2d2050}
+  .btn.danger{background:#ffe8e8;color:#800}
+  .back{display:inline-block;margin-top:1rem}
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:9999}
+  .lightbox.open{display:flex}.lightbox img{max-width:90vw;max-height:85vh;border-radius:10px}
+  .lightbox .close{position:absolute;top:1rem;right:1rem;background:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer}
+  .error{background:#ffecec;border:1px solid #ffb3b3;color:#900;padding:.6rem;border-radius:8px;margin-bottom:.75rem;display:none;white-space:pre-wrap}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:relative;top:auto}}
+</style>
 </head>
 <body>
-  <header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
-  <main class="wrap">
-    <section>
-      <div id="status" class="error"></div>
-      <div class="cats" id="cats"></div>
-      <div class="gallery" id="gallery"></div>
-      <a href="index.html" class="btn primary back">← Takaisin</a>
-    </section>
-    <aside>
-      <h2>Valitut kuvat <span id="count">0</span></h2>
-      <textarea id="list" placeholder="Valittujen kuvatiedostojen nimet… (yksi per rivi)"></textarea>
-      <div class="btns">
-        <button class="btn danger" id="clear">Tyhjennä</button>
-        <button class="btn" id="downloadTxt">Lataa TXT</button>
-        <button class="btn" id="downloadCsv">Lataa CSV</button>
-        <button class="btn primary" id="toggleAll">Valitse kaikki (näkyvät)</button>
-      </div>
-    </aside>
-  </main>
+<header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
 
-  <div class="lightbox" id="lightbox"><button class="close" id="closeLb">✕</button><img id="lightImg" alt=""></div>
+<main class="wrap">
+  <section>
+    <div id="status" class="error"></div>
+    <div class="cats" id="cats"></div>
+    <div class="gallery" id="gallery"></div>
+    <a href="index.html" class="btn primary back">← Takaisin</a>
+  </section>
+  <aside>
+    <h2>Valitut kuvat <span id="count">0</span></h2>
+    <textarea id="list" placeholder="Valittujen kuvatiedostojen nimet… (yksi per rivi)"></textarea>
+    <div class="btns">
+      <button class="btn danger" id="clear">Tyhjennä</button>
+      <button class="btn" id="downloadTxt">Lataa TXT</button>
+      <button class="btn" id="downloadCsv">Lataa CSV</button>
+      <button class="btn primary" id="toggleAll">Valitse kaikki (näkyvät)</button>
+    </div>
+  </aside>
+</main>
 
-  <script>
-    // — Vaihda tarvittaessa —
-    const OWNER = "makkelii";
-    const REPO  = "makkelii.github.io";
+<div class="lightbox" id="lightbox"><button class="close" id="closeLb">✕</button><img id="lightImg" alt=""></div>
 
-    const CATEGORIES = [
-      { key: "Magneetit",   label: "Magneetit" },
-      { key: "Sormukset",   label: "Sormukset" },
-      { key: "Ranneketjut", label: "Ranneketjut" },
-      { key: "Kaulaketjut", label: "Kaulaketjut" },
-      { key: "Riipukset",   label: "Riipukset" },
-    ];
+<script>
+  // --- SÄÄDÄ TARVITTAESSA ---
+  const OWNER = "makkelii";
+  const REPO  = "makkelii.github.io";
+  // --------------------------
 
-    const catsEl=document.getElementById('cats'), gallery=document.getElementById('gallery'),
-          statusEl=document.getElementById('status'), listEl=document.getElementById('list'),
-          countEl=document.getElementById('count');
+  // Tuetut kategoriat (kansion nimet voivat olla isolla/ pienellä)
+  const CATS = [
+    { key:"Magneetit",   label:"Magneetit" },
+    { key:"Sormukset",   label:"Sormukset" },
+    { key:"Ranneketjut", label:"Ranneketjut" },
+    { key:"Kaulaketjut", label:"Kaulaketjut" },
+    { key:"Riipukset",   label:"Riipukset" },
+  ];
 
-    let currentCat="all", allFiles=[], selected=new Set();
+  const catsEl = document.getElementById('cats');
+  const galEl  = document.getElementById('gallery');
+  const errEl  = document.getElementById('status');
+  const listEl = document.getElementById('list');
+  const countEl= document.getElementById('count');
 
-    const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
-    const isImage=name=>/\.(jpg|jpeg|png|gif|webp)$/i.test(name);
-    const showError=msg=>{statusEl.style.display='block';statusEl.textContent=msg;};
-    const updateList=()=>{const arr=[...selected].sort();listEl.value=arr.join('\n');countEl.textContent=arr.length;};
+  let currentCat = 'all';
+  let allFiles = []; // {path, cat, name}
+  const selected = new Set();
 
-    // GitHub API helpers
-    async function getDefaultBranch(){
-      const r=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`);
-      if(!r.ok) throw new Error('Repo ei aukea API:ssa.');
-      const meta=await r.json(); return meta.default_branch||'main';
-    }
-    async function listOnce(path, branch){
-      const base=`https://api.github.com/repos/${OWNER}/${REPO}/contents`;
-      const url = path ? `${base}/${encodeURIComponent(path).replace(/%2F/g,'/')}`+`?ref=${branch}` : `${base}?ref=${branch}`;
-      const r=await fetch(url); if(!r.ok) return null;
-      const data=await r.json(); return Array.isArray(data)?data:null;
-    }
-    async function findImagesRoot(branch){
-      for(const cand of ['images','Images']){ const d=await listOnce(cand,branch); if(d) return cand; }
-      const root=await listOnce('',branch);
-      if(root){ const hit=root.filter(x=>x.type==='dir').find(d=>d.name.toLowerCase()==='images'); if(hit) return hit.name; }
-      return null;
-    }
-    async function listDirRecursive(path, branch, acc){
-      const data=await listOnce(path,branch); if(!data) return;
-      for(const it of data){
-        if(it.type==='dir') await listDirRecursive(it.path,branch,acc);
-        else if(it.type==='file' && isImage(it.name)) acc.push(it.path);
-      }
-    }
+  const toTitle = s => s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g, m=>m.toUpperCase());
+  const isImg   = p => /\.(jpg|jpeg|png|gif|webp)$/i.test(p);
+  const showErr = (m,detail) => { errEl.style.display='block'; errEl.textContent = m + (detail?`\n${detail}`:''); };
 
-    function renderCategories(counts){
-      const total=Object.values(counts).reduce((a,b)=>a+b,0);
-      const makeBtn=(key,label,count)=>{ const b=document.createElement('button');
-        b.className='cat-btn'+(key===currentCat?' active':''); b.dataset.key=key; b.textContent=`${label} (${count})`; return b; };
-      catsEl.innerHTML=''; catsEl.appendChild(makeBtn('all','Kaikki',total));
-      CATEGORIES.forEach(c=>catsEl.appendChild(makeBtn(c.key,c.label,counts[c.key]||0)));
-    }
-    function computeCounts(list){
-      const counts=Object.fromEntries(CATEGORIES.map(c=>[c.key,0]));
-      list.forEach(f=>{ if(counts[f.cat]!=null) counts[f.cat]++; });
-      return counts;
-    }
-    function addFigure(path){
-      const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
-      const fig=document.createElement('figure'); fig.dataset.file=path;
-      fig.innerHTML=`<span class="tick" title="Valitse"></span><img src="${path}" alt="${cap}" loading="lazy"><figcaption>${cap}</figcaption>`;
-      gallery.appendChild(fig);
-    }
-    function showGallery(){
-      gallery.innerHTML='';
-      const subset=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat);
-      subset.forEach(f=>addFigure(f.path));
-    }
+  const updateList = () => { const arr=[...selected].sort(); listEl.value = arr.join('\n'); countEl.textContent = arr.length; };
 
-    async function loadAll(){
-      try{
-        const branch=await getDefaultBranch();
-        const root=await findImagesRoot(branch);
-        if(!root){ showError('Kansiota "images" / "Images" ei löytynyt.'); renderCategories(Object.fromEntries(CATEGORIES.map(c=>[c.key,0]))); return; }
+  function addFigure(path){
+    const name = path.split('/').pop();
+    const cap  = toTitle(name.replace(/\.[^.]+$/,''));
+    const fig  = document.createElement('figure');
+    fig.dataset.file = path;
+    fig.innerHTML = `<span class="tick" title="Valitse"></span>
+                     <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
+                     <figcaption>${cap}</figcaption>`;
+    galEl.appendChild(fig);
+  }
 
-        // kartoita rootin alikansiot case-insensitiivisesti
-        const rootList=await listOnce(root,branch) || [];
-        const dirMap=new Map(); rootList.filter(x=>x.type==='dir').forEach(d=>dirMap.set(d.name.toLowerCase(), d.name));
+  function renderCats(counts){
+    const total = Object.values(counts).reduce((a,b)=>a+b,0);
+    const make = (key,label,count)=>{ const b=document.createElement('button');
+      b.className='cat-btn'+(key===currentCat?' active':''); b.dataset.key=key; b.textContent=`${label} (${count})`; return b; };
+    catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total));
+    CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
+  }
+  function countsFrom(list){
+    const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o;
+  }
+  function showGallery(){
+    galEl.innerHTML='';
+    const items = currentCat==='all' ? allFiles : allFiles.filter(f=>f.cat===currentCat);
+    items.forEach(f=>addFigure(f.path));
+  }
 
-        // renderöi napit ensin (0-laskureilla), jotta UI ei ole tyhjä
-        renderCategories(Object.fromEntries(CATEGORIES.map(c=>[c.key,0])));
+  async function getDefaultBranch(){
+    const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`);
+    if(!r.ok) throw new Error(`Repo meta ${r.status}`);
+    const j = await r.json();
+    return j.default_branch || 'main';
+  }
 
-        // listaa kuvat
-        const files=[];
-        for(const c of CATEGORIES){
-          const realDir=dirMap.get(c.key.toLowerCase());
-          if(realDir) await listDirRecursive(`${root}/${realDir}`,branch,files);
-        }
-        if(files.length===0){ showError('Kuvia ei löytynyt kategorioiden alta.'); return; }
+  // Haetaan koko puu yhdellä pyynnöllä
+  async function fetchTree(branch){
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(`Tree ${r.status}`);
+    return r.json();
+  }
 
-        // rakenna meta (cat = kategorian avain case-insensitiivisesti)
-        allFiles = files.map(p=>{
-          const seg=p.split('/'); const actualCat=seg[1]; // 0=root,1=cat
-          const mapped=CATEGORIES.find(c=>c.key.toLowerCase()===actualCat.toLowerCase())?.key || actualCat;
-          return { path:p, cat:mapped, name:seg.pop() };
-        }).sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+  function detectImagesRoot(paths){
+    // Palauta "images" kansion oikea kirjainkoko (images / Images / IMAGES ...)
+    const hit = paths.find(p => /^images\//i.test(p));
+    if (!hit) return null;
+    return hit.split('/')[0]; // ensimmäinen segmentti
+  }
 
-        // päivitä laskurit ja näytä kuvat
-        renderCategories(computeCounts(allFiles));
-        showGallery();
+  async function loadAll(){
+    try{
+      const branch = await getDefaultBranch();
+      const tree   = await fetchTree(branch);
+      if(!tree || !Array.isArray(tree.tree)) throw new Error('Tree missing');
 
-      }catch(e){ console.error(e); showError('Kuvien haku epäonnistui. Tarkista, että repo on julkinen.'); }
-    }
+      // Lista kaikista poluista (vain blob-tyypit)
+      const blobs  = tree.tree.filter(n => n.type === 'blob').map(n => n.path);
+      // Selvitä juuren oikea kirjainkoko
+      const imagesRoot = detectImagesRoot(blobs);
+      if(!imagesRoot){ renderCats(countsFrom([])); showErr('Kuvakansiota "images" ei löytynyt repon juuresta.'); return; }
 
-    // kategoriat
-    catsEl.addEventListener('click',e=>{
-      const b=e.target.closest('.cat-btn'); if(!b) return;
-      currentCat=b.dataset.key;
-      catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+      // Muodosta regexit kategorioille (case-insensitive, sallii alikansiot)
+      const catRegex = CATS.map(c => ({ 
+        key:c.key, 
+        re: new RegExp(`^${imagesRoot}/${c.key}/`, 'i')
+      }));
+
+      // Poimi kuvat
+      const imgs = blobs.filter(p => isImg(p) && catRegex.some(c => c.re.test(p)));
+      if(imgs.length===0){ renderCats(countsFrom([])); showErr('Kuvia ei löytynyt kategorioiden alta.'); return; }
+
+      // Rakenna meta
+      allFiles = imgs.map(p=>{
+        const seg = p.split('/');
+        const actualCat = seg[1]; // imagesRoot / <cat> / ...
+        // Mapataan <cat> → meidän avain (case-insensitiivisesti)
+        const key = (CATS.find(c => c.key.toLowerCase() === actualCat.toLowerCase())||{}).key || actualCat;
+        return { path: p, cat: key, name: seg.pop() };
+      }).sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+
+      renderCats(countsFrom(allFiles));
       showGallery();
-    });
 
-    // täpät
-    gallery.addEventListener('click',e=>{
-      if(e.target.classList.contains('tick')){
-        const fig=e.target.closest('figure'), name=fig.dataset.file.split('/').pop();
-        fig.classList.toggle('selected');
-        fig.classList.contains('selected') ? selected.add(name) : selected.delete(name);
-        updateList(); return;
-      }
-    });
+    }catch(e){
+      console.error(e);
+      showErr('Kuvien haku epäonnistui.', String(e && e.message || e));
+    }
+  }
 
-    // lightbox
-    gallery.addEventListener('click',e=>{
-      const img=e.target.closest('img'); if(!img) return;
-      const lb=document.getElementById('lightbox'); const li=document.getElementById('lightImg');
-      li.src=img.src; li.alt=img.alt||''; lb.classList.add('open');
-    });
-    document.getElementById('closeLb').onclick=()=>document.getElementById('lightbox').classList.remove('open');
-    document.getElementById('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') e.currentTarget.classList.remove('open'); });
+  // Tapahtumat
+  catsEl.addEventListener('click', e=>{
+    const b=e.target.closest('.cat-btn'); if(!b) return;
+    currentCat=b.dataset.key;
+    catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+    showGallery();
+  });
 
-    // napit
-    document.getElementById('toggleAll').onclick=()=>{
-      const figs=[...gallery.querySelectorAll('figure')];
-      const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
-      if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
-      else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
-      updateList();
-    };
-    document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
+  galEl.addEventListener('click', e=>{
+    if(e.target.classList.contains('tick')){
+      const fig=e.target.closest('figure'), name=fig.dataset.file.split('/').pop();
+      fig.classList.toggle('selected');
+      fig.classList.contains('selected') ? selected.add(name) : selected.delete(name);
+      updateList(); return;
+    }
+  });
 
-    const download=(fn,text)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})); a.download=fn; a.click(); };
-    document.getElementById('downloadTxt').onclick=()=>download('valitut-kuvat.txt',[...selected].sort().join('\n'));
-    document.getElementById('downloadCsv').onclick=()=>{
-      const rows=[...selected].sort().map(n=>`"${n.replace(/"/g,'""')}","${toTitle(n.replace(/\.[^.]+$/,'')).replace(/"/g,'""')}"`);
-      download('valitut-kuvat.csv','file,title\n'+rows.join('\n'));
-    };
+  // Lightbox
+  galEl.addEventListener('click', e=>{
+    const img=e.target.closest('img'); if(!img) return;
+    const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
+    li.src=img.src; li.alt=img.alt||''; lb.classList.add('open');
+  });
+  document.getElementById('closeLb').onclick=()=>document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox') e.currentTarget.classList.remove('open'); });
 
-    loadAll();
-  </script>
+  // Nappulat
+  document.getElementById('toggleAll').onclick=()=>{
+    const figs=[...galEl.querySelectorAll('figure')];
+    const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
+    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
+    else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
+    updateList();
+  };
+  document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
+
+  const dl=(fn,txt)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'})); a.download=fn; a.click(); };
+  document.getElementById('downloadTxt').onclick=()=>dl('valitut-kuvat.txt',[...selected].sort().join('\n'));
+  document.getElementById('downloadCsv').onclick=()=>dl('valitut-kuvat.csv','file,title\n'+[...selected].sort().map(n=>`"${n.replace(/"/g,'""')}","${toTitle(n.replace(/\.[^.]+$/,'')).replace(/"/g,'""')}"`).join('\n'));
+
+  // Käynnistä
+  loadAll();
+</script>
 </body>
 </html>
