@@ -18,14 +18,18 @@
 
     header { background:var(--purple); color:var(--gold); padding:1rem; text-align:center; }
 
-    /* Kaksi palstaa: galleria + sivupaneeli */
     .wrap {
       max-width:1200px; margin:0 auto; padding:1rem;
-      display:grid; grid-template-columns: 1fr 300px; gap:1rem;
-      align-items:start;
+      display:grid; grid-template-columns: 1fr 300px; gap:1rem; align-items:start;
     }
 
-    /* Galleria: skaalautuva ruudukko */
+    /* Kategoriat */
+    .cats { display:flex; flex-wrap:wrap; gap:.5rem; margin:0 0 .75rem 0; }
+    .cat-btn {
+      border:1px solid #e0e0e0; background:#fff; padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600;
+    }
+    .cat-btn.active { background:var(--gold); color:#2d2050; border-color:var(--gold); }
+
     .gallery {
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -59,7 +63,6 @@
     .tick::after { content: "✓"; opacity:0; }
     .selected .tick::after { opacity:1; }
 
-    /* Sivupaneeli */
     aside {
       background:#fff; border:1px solid #e5e5e5; border-radius:12px; padding:1rem;
       box-shadow:0 2px 6px rgba(0,0,0,.06); position:sticky; top:1rem; height:max-content;
@@ -76,7 +79,6 @@
     .btn.danger { background:#ffe8e8; color:#8a0000; }
     .back { display:inline-block; margin:1rem 0; padding:.7rem 1rem; background:var(--gold); color:var(--purple); border-radius:8px; text-decoration:none; font-weight:700; }
 
-    /* Lightbox */
     .lightbox {
       position:fixed; inset:0; background:rgba(0,0,0,.75); display:none; align-items:center; justify-content:center; padding:2rem; z-index:9999;
     }
@@ -89,22 +91,13 @@
       touch-action: manipulation;
     }
 
-    /* Animaatioiden minimointi käyttäjän asetuksen mukaan */
-    @media (prefers-reduced-motion: reduce) {
-      * { transition:none !important; }
-    }
-
-    /* Mobiili-optimointi */
-    @media (max-width: 900px) {
-      .wrap { grid-template-columns: 1fr; }
-      aside { position:relative; top:auto; }
-    }
+    @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } aside { position:relative; top:auto; } }
     @media (max-width: 560px) {
       .gallery { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:.75rem; }
       figure { padding:.4rem; }
       .tick { width:44px; height:44px; font-size:20px; left:.5rem; top:.5rem; }
-      .btns { gap:.5rem; }
-      .btn { flex:1 1 calc(50% - .5rem); } /* napit kahteen kolumniin pienellä näytöllä */
+      .btn { flex:1 1 calc(50% - .5rem); }
       .listarea { min-height:140px; }
     }
 
@@ -117,6 +110,10 @@
   <main class="wrap">
     <section>
       <div id="status" class="error"></div>
+
+      <!-- Kategoriapainikkeet -->
+      <div class="cats" id="cats"></div>
+
       <div class="gallery" id="gallery"></div>
       <a href="index.html" class="back">← Takaisin</a>
     </section>
@@ -130,7 +127,7 @@
         <button class="btn" id="downloadCsv">Lataa CSV</button>
         <button class="btn primary" id="toggleAll">Valitse kaikki / poista kaikki</button>
       </div>
-      <p class="note">Vinkki: nimeä kuvat selkeästi (esim. <code>kitara-riipus.jpg</code>). Kuvateksti muodostuu automaattisesti nimestä.</p>
+      <p class="note">Vinkki: nimeä kuvat selkeästi (esim. <code>ketjut/kulta-ketju.jpg</code>, <code>sormukset/kivisormus.jpg</code>). Kuvateksti muodostuu automaattisesti tiedostonimestä.</p>
     </aside>
   </main>
 
@@ -144,14 +141,24 @@
     // --- SÄÄDÄ NÄMÄ TARVITTAESSA ---
     const OWNER  = "makkelii";
     const REPO   = "makkelii.github.io";
-    const IMAGES_DIR = "images"; // kaikki kuvat ja alikansiot tämän alla
+    const IMAGES_ROOT = "images"; // juurikansio
+    // Kategoriat: ali­kansiot images-juuren alla
+    const CATEGORIES = [
+      { key: "ketjut",    label: "Ketjut" },
+      { key: "sormukset", label: "Sormukset" },
+      { key: "magneetit", label: "Magneetit" },
+    ];
     // --------------------------------
 
-    const gallery  = document.getElementById("gallery");
-    const statusEl = document.getElementById("status");
+    const catsEl   = document.getElementById('cats');
+    const gallery  = document.getElementById('gallery');
+    const statusEl = document.getElementById('status');
     const selected = new Set();
-    const listEl   = document.getElementById("list");
-    const countEl  = document.getElementById("count");
+    const listEl   = document.getElementById('list');
+    const countEl  = document.getElementById('count');
+
+    let currentCat = "all"; // "all" tai category.key
+    let allFiles = [];      // {path:"images/.../file.jpg", cat:"ketjut", name:"file.jpg"}
 
     const toTitle = s => s.trim().replace(/\s+/g,' ').replace(/(^|\s)\S/g, m => m.toUpperCase());
     const showError = msg => { statusEl.style.display = 'block'; statusEl.textContent = msg; };
@@ -162,7 +169,12 @@
       countEl.textContent = arr.length;
     };
 
-    function addFigure(filePath){ // esim. images/kansio/nimi.jpg
+    function isImageName(name) {
+      const n = name.toLowerCase();
+      return n.endsWith('.jpg') || n.endsWith('.jpeg') || n.endsWith('.png') || n.endsWith('.webp') || n.endsWith('.gif');
+    }
+
+    function addFigure(filePath){ // esim. images/ketjut/nimi.jpg
       const fileName = filePath.split('/').pop();
       const base = fileName.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
       const cap  = toTitle(base);
@@ -184,9 +196,9 @@
       return meta.default_branch || 'main';
     }
 
-    // Listaa KAIKKI kuvat rekursiivisesti images/-kansion alta
-    async function listDir(path, branch, acc){
-      const api = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${branch}`;
+    // Listaa rekursiivisesti annetun polun (dirPath) sisällön
+    async function listDir(dirPath, branch, acc){
+      const api = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${dirPath}?ref=${branch}`;
       const res = await fetch(api, { headers: { 'Accept':'application/vnd.github+json' }});
       if(!res.ok) return;
       const data = await res.json();
@@ -194,31 +206,82 @@
       for (const item of data) {
         if (item.type === 'dir') {
           await listDir(item.path, branch, acc);
-        } else if (item.type === 'file') {
-          const name = item.name.toLowerCase();
-          if (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || name.endsWith('.webp') || name.endsWith('.gif')) {
-            acc.push(item.path); // esim. images/ali/nimi.jpg
-          }
+        } else if (item.type === 'file' && isImageName(item.name)) {
+          acc.push(item.path); // esim. images/ketjut/nimi.jpg
         }
       }
     }
 
-    async function loadImages(){
+    function renderCategories(counts){
+      // "Kaikki" + määritellyt kategoriat
+      const makeBtn = (key, label, count) => {
+        const b = document.createElement('button');
+        b.className = 'cat-btn' + (currentCat === key ? ' active' : '');
+        b.dataset.key = key;
+        b.textContent = `${label} (${count})`;
+        return b;
+      };
+      catsEl.innerHTML = '';
+      const total = Object.values(counts).reduce((a,b)=>a+b,0);
+      catsEl.appendChild(makeBtn('all','Kaikki', total));
+      CATEGORIES.forEach(c => catsEl.appendChild(makeBtn(c.key, c.label, counts[c.key] || 0)));
+    }
+
+    function computeCounts(list){
+      const counts = {};
+      CATEGORIES.forEach(c => counts[c.key]=0);
+      list.forEach(f => { if (counts[f.cat] != null) counts[f.cat]++; });
+      return counts;
+    }
+
+    function showGallery(){
+      gallery.innerHTML = '';
+      const subset = (currentCat === 'all') ? allFiles : allFiles.filter(f => f.cat === currentCat);
+      subset.forEach(f => addFigure(f.path));
+    }
+
+    async function loadAll(){
       try {
         const branch = await getDefaultBranch();
+        // Hae vain MÄÄRITELLYT kategoriakansiot
         const files = [];
-        await listDir(IMAGES_DIR, branch, files);
+        for (const c of CATEGORIES) {
+          await listDir(`${IMAGES_ROOT}/${c.key}`, branch, files);
+        }
         if (files.length === 0) {
-          showError('Kuvia ei löytynyt kansiosta "images" (myös alikansiot käyty). Varmista, että kuvat on commitoitu.');
+          showError('Kuvia ei löytynyt kansioista: images/ketjut, images/sormukset, images/magneetit. Lisää kuvat näihin alikansioihin.');
           return;
         }
-        files.sort((a,b)=> a.localeCompare(b, 'fi'));
-        files.forEach(p => addFigure(p));
+        // Muodosta meta: path + cat
+        allFiles = files.map(p => {
+          const segs = p.split('/');
+          const cat = segs.length >= 3 ? segs[1+1] /* images/<cat>/... */ : '';
+          return { path: p, cat, name: segs.pop() };
+        }).filter(f => CATEGORIES.some(c => c.key === f.cat));
+
+        // Järjestys: kategoria, sitten nimi
+        allFiles.sort((a,b) => (a.cat === b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi')));
+
+        // Renderöi kategoriat ja galleria
+        const counts = computeCounts(allFiles);
+        renderCategories(counts);
+        showGallery();
       } catch (e){
         console.error(e);
-        showError('Kuvien haku epäonnistui. Tarkista: 1) Repo on julkinen, 2) OWNER/REPO oikein, 3) kansio images/ on olemassa ja sisältää kuvia.');
+        showError('Kuvien haku epäonnistui. Tarkista että repo on julkinen, OWNER/REPO oikein ja kansiot olemassa.');
       }
     }
+
+    // Kategoriapainikkeiden klikkaus
+    catsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.cat-btn');
+      if (!btn) return;
+      currentCat = btn.dataset.key;
+      // Päivitä aktiivinen nappi
+      catsEl.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b === btn));
+      // Näytä valitun kategorian kuvat
+      showGallery();
+    });
 
     // Lightbox
     const lb = document.getElementById('lightbox');
@@ -238,19 +301,19 @@
     lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
 
-    // Täpät: talleta listaan VAIN tiedostonimi (poista "images/")
+    // Täpät: tallenna listaan VAIN tiedostonimi (poista "images/" ja kategoriopolku)
     gallery.addEventListener('click', (e) => {
       const tick = e.target.closest('.tick');
       if (!tick) return;
       const fig = tick.closest('figure');
-      const full = (fig.dataset.file || fig.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
-      const filenameOnly = full.replace(/^images\//, '');
+      const fullPath = (fig.dataset.file || fig.querySelector('img')?.getAttribute('src') || '').replace(/^\//,''); // images/ketjut/nimi.jpg
+      const filenameOnly = fullPath.split('/').pop(); // pelkkä nimi
       if (fig.classList.toggle('selected')) selected.add(filenameOnly);
       else selected.delete(filenameOnly);
       updateList();
     });
 
-    // Valitse kaikki / poista kaikki
+    // Valitse kaikki / poista kaikki (vain näkyvät kuvat)
     document.getElementById('toggleAll').addEventListener('click', () => {
       const figs = Array.from(document.querySelectorAll('figure'));
       const allSelected = figs.length && figs.every(f => f.classList.contains('selected'));
@@ -261,7 +324,7 @@
         figs.forEach(f => {
           f.classList.add('selected');
           const full = (f.dataset.file || f.querySelector('img')?.getAttribute('src') || '').replace(/^\//,'');
-          const filenameOnly = full.replace(/^images\//, '');
+          const filenameOnly = full.split('/').pop();
           if (filenameOnly) selected.add(filenameOnly);
         });
       }
@@ -294,7 +357,7 @@
     });
 
     // Käyntiin
-    loadImages();
+    loadAll();
   </script>
 </body>
 </html>
