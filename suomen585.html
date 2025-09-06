@@ -1,1 +1,54 @@
+---
+layout: none
+---
+
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suomen 585 Oy – Kuvagalleria</title>
+  <style>
+    :root { --purple:#3a006b; --gold:#d4af37; }
+    body { margin:0; font-family:sans-serif; background:#f8f8f8; color:#333; }
+    header { background:var(--purple); color:var(--gold); padding:1rem; text-align:center; }
+    .wrap { max-width:1100px; margin:0 auto; padding:1rem; }
+    .gallery {
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+      gap:1rem; margin:1rem 0;
+    }
+    figure {
+      background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:.5rem;
+      box-shadow:0 2px 6px rgba(0,0,0,.06); text-align:center;
+    }
+    figure img { width:100%; height:auto; border-radius:8px; }
+    figcaption { margin-top:.5rem; color:#555; font-size:.95rem; }
+    .back {
+      display:inline-block; margin:1rem 0; padding:.6rem 1rem;
+      background:var(--gold); color:var(--purple); border-radius:8px; text-decoration:none; font-weight:700;
+    }
+  </style>
+</head>
+<body>
+  <header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
+  <main class="wrap">
+    <div class="gallery">
+      {%- assign files = site.static_files -%}
+      {%- for f in files -%}
+        {%- assign p = f.path | downcase -%}
+        {%- if p contains '/images/' and (p contains '.jpg' or p contains '.jpeg' or p contains '.png' or p contains '.webp' or p contains '.gif') -%}
+          {%- assign base = f.name
+            | replace:'.jpg','' | replace:'.jpeg','' | replace:'.png',''
+            | replace:'.webp','' | replace:'.gif','' -%}
+          {%- assign caption_raw = base | replace:'-',' ' | replace:'_',' ' -%}
+          <figure data-caption="{{ caption_raw }}">
+            <img src="{{ f.path | relative_url }}" alt="{{ caption_raw }}">
+            <figcaption></figcaption>
+          </figure>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <a href="index.html" class="back">← Takaisin</a>
+  </ma
 
