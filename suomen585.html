@@ -194,7 +194,6 @@
         // Kerää polut kategorioittain
         const wanted = CATEGORIES.map(c => ({ key:c.key, label:c.label, dirName: (dirMapLC.get(c.key.toLowerCase()) || null) }));
         // Diagnostiikka
-        showDiag(`Kuvajuuri: ${root}\nKategoriat: ` + wanted.map(w=>`${w.label}: ${w.dirName ? root+'/'+w.dirName : 'PUUTTUU'}`).join(' | '));
 
         const files = [];
         for (const w of wanted) {
