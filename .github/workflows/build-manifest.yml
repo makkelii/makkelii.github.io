@@ -1,1 +1,36 @@
+name: Build gallery manifest
+on:
+  push:
+    paths:
+      - 'images/**'
+      - '.github/workflows/build-manifest.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate manifest.json from images
+        shell: bash
+        run: |
+          shopt -s globstar nullglob nocaseglob
+          mkdir -p images
+          out="images/manifest.json"
+          printf '{\n  "generated":"%s",\n  "files":[\n' "$(date -u +%FT%TZ)" > "$out"
+          first=1
+          for f in images/**/*.{jpg,jpeg,png,webp,gif,JPG,JPEG,PNG,WEBP,GIF}; do
+            [ -f "$f" ] || continue
+            if [ $first -eq 0 ]; then printf ",\n" >> "$out"; fi
+            first=0
+            printf '    "%s"' "$f" >> "$out"
+          done
+          printf '\n  ]\n}\n' >> "$out"
+
+      - name: Commit manifest.json
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update images/manifest.json"
+          file_pattern: images/manifest.json
 
