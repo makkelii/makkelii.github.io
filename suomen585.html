@@ -15,7 +15,7 @@
   .cat-btn.active{background:var(--gold);color:#2d2050;border-color:var(--gold)}
   .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
   figure{position:relative;background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:.5rem;box-shadow:0 2px 6px rgba(0,0,0,.06);margin:0;text-align:center}
-  figure img{width:100%;height:auto;border-radius:8px;cursor:zoom-in;aspect-ratio:1/1;object-fit:cover}
+  figure img{width:100%;height:auto;border-radius:8px;cursor:zoom-in;aspect-ratio:1/1;object-fit:cover;display:block}
   figcaption{margin-top:.5rem;font-size:.9rem;color:#555;min-height:1.4em}
   .tick{position:absolute;left:.6rem;top:.6rem;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #ccc;display:grid;place-items:center;font-weight:700;cursor:pointer}
   .selected .tick{background:var(--gold);border-color:var(--gold);color:#2d2050}
@@ -56,10 +56,13 @@
   </aside>
 </main>
 
-<div class="lightbox" id="lightbox"><button class="close" id="closeLb">✕</button><img id="lightImg" alt=""></div>
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="close" id="closeLb" aria-label="Sulje">✕</button>
+  <img id="lightImg" alt="">
+</div>
 
 <script>
-  // Kategoriat (hakemistonimi voi olla iso/pieni)
+  // Kategoriat (kansionimi voi olla iso/pieni repoissa)
   const CATS = [
     { key:"Magneetit",   label:"Magneetit" },
     { key:"Sormukset",   label:"Sormukset" },
@@ -73,66 +76,111 @@
         countEl=document.getElementById('count');
 
   let currentCat='all'; let allFiles=[]; const selected=new Set();
+
   const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
   const isImg=p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p);
   const showErr=m=>{errEl.style.display='block'; errEl.textContent=m;};
   const updateList=()=>{const a=[...selected].sort(); listEl.value=a.join('\n'); countEl.textContent=a.length;};
 
+  // UI helperit
   function addFigure(path){
     const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
     const fig=document.createElement('figure'); fig.dataset.file=path;
     fig.innerHTML=`<span class="tick" title="Valitse"></span>
-                   <img src="${path}" alt="${cap}" loading="lazy">
+                   <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
                    <figcaption>${cap}</figcaption>`;
     galEl.appendChild(fig);
   }
   function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
-  function renderCats(counts){ const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  function renderCats(counts){
+    const total=Object.values(counts).reduce((a,b)=>a+b,0);
     const make=(k,l,c)=>{const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b;};
     catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total)); CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
   }
   function showGallery(){ galEl.innerHTML=''; const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat); list.forEach(f=>addFigure(f.path)); }
 
+  // Lataa manifesti (ei käytä API:a)
   async function loadFromManifest(){
     try{
       const res=await fetch('images/manifest.json', {cache:'no-store'});
-      if(!res.ok){ showErr('Manifestia ei löytynyt. Lisää ohjeen mukainen workflow tai luo images/manifest.json käsin.'); renderCats(countsFrom([])); return; }
+      if(!res.ok){ renderCats(countsFrom([])); showErr('Manifestia ei löytynyt. Varmista, että Actions-workflow on lisätty ja ajettu.'); return; }
       const manifest=await res.json();
       const files=(manifest.files||[]).filter(isImg);
+      if(!files.length){ renderCats(countsFrom([])); showErr('Manifesti löytyi, mutta kuvapolkuja ei ole.'); return; }
 
-      // Selvitä images-juuren nimi (images/ tai Images/)
-      const rootGuess = files.length ? files[0].split('/')[0] : 'images';
-      const catRegex = CATS.map(c=>({ key:c.key, re:new RegExp(`^${rootGuess}/${c.key}/`, 'i') }));
+      // Päättele images-juuren nimi (images/ tai Images/)
+      const rootGuess = files[0].split('/')[0];
 
-      const imgs = files.filter(p => catRegex.some(c=>c.re.test(p)));
-      if(imgs.length===0){ renderCats(countsFrom([])); showErr('Manifestissa ei ole kuvia kategorioiden alla.'); return; }
+      // Suodata kategorioihin (case-insensitive)
+      const byCat = [];
+      const regs = CATS.map(c=>({key:c.key, re:new RegExp(`^${rootGuess}/${c.key}/`, 'i')}));
+      for(const p of files){
+        const hit = regs.find(r=>r.re.test(p));
+        if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); }
+      }
+      if(!byCat.length){ renderCats(countsFrom([])); showErr('Kuvia ei löytynyt tuetuista kategorioista.'); return; }
 
-      allFiles = imgs.map(p=>{
-        const part=p.split('/')[1]; // kategorian kansio manifestissa
-        const key=(CATS.find(c=>c.key.toLowerCase()===part.toLowerCase())||{}).key || part;
-        return { path:p, cat:key, name:p.split('/').pop() };
-      }).sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+      // Järjestys: kategoria, sitten nimi
+      allFiles = byCat.sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
       renderCats(countsFrom(allFiles));
       showGallery();
-    }catch(e){ console.error(e); showErr('Manifestin luku epäonnistui.'); }
+    }catch(e){ console.error(e); renderCats(countsFrom([])); showErr('Manifestin luku epäonnistui.'); }
   }
 
   // Tapahtumat
-  catsEl.addEventListener('click', e=>{ const b=e.target.closest('.cat-btn'); if(!b) return; currentCat=b.dataset.key;
-    catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b)); showGallery(); });
-  galEl.addEventListener('click', e=>{ if(e.target.classList.contains('tick')){ const f=e.target.closest('figure'), n=f.dataset.file.split('/').pop();
-    f.classList.toggle('selected'); f.classList.contains('selected')?selected.add(n):selected.delete(n); updateList(); }});
-  galEl.addEventListener('click', e=>{ const img=e.target.closest('img'); if(!img) return; const lb=document.getElementById('lightbox'); const li=document.getElementById('lightImg'); li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); });
-  document.getElementById('closeLb').onclick=()=>document.getElementById('lightbox').classList.remove('open');
-  document.getElementById('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox') e.currentTarget.classList.remove('open'); });
-  document.getElementById('toggleAll').onclick=()=>{ const figs=[...galEl.querySelectorAll('figure')]; const allSel=figs.length&&figs.every(f=>f.classList.contains('selected'));
-    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); } else { figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); } updateList(); };
-  document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
-  const dl=(fn,txt)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'})); a.download=fn; a.click(); };
-  document.getElementById('downloadTxt').onclick=()=>dl('valitut-kuvat.txt',[...selected].sort().join('\n'));
-  document.getElementById('downloadCsv').onclick=()=>dl('valitut-kuvat.csv','file,title\n'+[...selected].sort().map(n=>`"${n.replace(/"/g,'""')}","${toTitle(n.replace(/\.[^.]+$/,'')).replace(/"/g,'""')}"`).join('\n'));
+  catsEl.addEventListener('click', e=>{
+    const b=e.target.closest('.cat-btn'); if(!b) return;
+    currentCat=b.dataset.key;
+    catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+    showGallery();
+  });
 
+  galEl.addEventListener('click', e=>{
+    if(e.target.classList.contains('tick')){
+      const fig=e.target.closest('figure'), n=fig.dataset.file.split('/').pop();
+      fig.classList.toggle('selected');
+      fig.classList.contains('selected') ? selected.add(n) : selected.delete(n);
+      updateList();
+    }
+  });
+
+  // Lightbox
+  galEl.addEventListener('click', e=>{
+    const img=e.target.closest('img'); if(!img) return;
+    const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
+    li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
+  });
+  document.getElementById('closeLb').onclick=()=>{ const lb=document.getElementById('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
+
+  // Napit
+  document.getElementById('toggleAll').onclick=()=>{
+    const figs=[...galEl.querySelectorAll('figure')];
+    const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
+    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
+    else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
+    updateList();
+  };
+  document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
+
+  // Lataukset
+  document.getElementById('downloadTxt').onclick=()=>{
+    const rows=[...selected].sort().join('\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/plain;charset=utf-8'})); a.download='valitut-kuvat.txt'; a.click();
+  };
+
+  // CSV: otsikot "Tuote,koko,Kpl" + yksi rivi per valittu nimi
+  document.getElementById('downloadCsv').onclick=()=>{
+    const header='Tuote,koko,Kpl\n';
+    const rows=[...selected].sort().map(name=>{
+      const tuote=name.replace(/"/g,'""');
+      return `"${tuote}","",""`;
+    }).join('\n');
+    const csv=header+rows;
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='valitut-kuvat.csv'; a.click();
+  };
+
+  // Käyntiin
   loadFromManifest();
 </script>
 </body>
