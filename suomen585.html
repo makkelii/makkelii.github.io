@@ -40,7 +40,9 @@
   <header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
   <main class="wrap">
     <section>
+      <!-- Virheilmoitus näkyy vain tarvittaessa -->
       <div id="status" class="error"></div>
+
       <div class="cats" id="cats"></div>
       <div class="gallery" id="gallery"></div>
       <a href="index.html" class="btn primary back">← Takaisin</a>
@@ -60,12 +62,11 @@
   <div class="lightbox" id="lightbox"><button class="close" id="closeLb">✕</button><img id="lightImg" alt=""></div>
 
   <script>
-    // --- VAIHDA NÄMÄ tarvittaessa omiksi ---
+    // --- Vaihda tarvittaessa omiksi ---
     const OWNER = "makkelii";
     const REPO  = "makkelii.github.io";
-    // ---------------------------------------
+    // ----------------------------------
 
-    // Kategoriat, jotka haluamme tukea
     const CATEGORIES = [
       { key: "Magneetit",   label: "Magneetit" },
       { key: "Sormukset",   label: "Sormukset" },
@@ -74,80 +75,65 @@
       { key: "Riipukset",   label: "Riipukset" },
     ];
 
-    // --- Elementit ---
     const catsEl   = document.getElementById('cats');
     const gallery  = document.getElementById('gallery');
     const statusEl = document.getElementById('status');
     const listEl   = document.getElementById('list');
     const countEl  = document.getElementById('count');
 
-    let currentCat = "all";        // "all" tai jokin CATEGORIES.key
-    let allFiles   = [];           // { path, cat, name }
-    const selected = new Set();    // tiedostonimet ilman polkua
+    let currentCat = "all";
+    let allFiles   = [];
+    const selected = new Set();
 
-    // --- Apurit ---
-    const toTitle = s => s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g, m => m.toUpperCase());
-    const isImage = name => /\.(jpg|jpeg|png|gif|webp)$/i.test(name);
+    const toTitle = s => s.replace(/[-_]/g,' ').trim().replace(/(^|\\s)\\S/g, m => m.toUpperCase());
+    const isImage = name => /\\.(jpg|jpeg|png|gif|webp)$/i.test(name);
     const showError = msg => { statusEl.style.display='block'; statusEl.textContent = msg; };
-    const showDiag  = msg => { statusEl.style.display='block'; statusEl.textContent = msg; statusEl.style.background='#fff7e6'; statusEl.style.borderColor='#ffd18a'; statusEl.style.color='#7a4b00'; };
 
-    const updateList = () => { const arr=[...selected].sort(); listEl.value = arr.join('\n'); countEl.textContent = arr.length; };
+    const updateList = () => { const arr=[...selected].sort(); listEl.value = arr.join('\\n'); countEl.textContent = arr.length; };
 
     function addFigure(path){
       const name = path.split('/').pop();
-      const cap  = toTitle(name.replace(/\.[^.]+$/,''));
+      const cap  = toTitle(name.replace(/\\.[^.]+$/,''));
       const fig  = document.createElement('figure');
       fig.dataset.file = path;
-      fig.innerHTML = `
+      fig.innerHTML = \`
         <span class="tick" title="Valitse"></span>
-        <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
-        <figcaption>${cap}</figcaption>
-      `;
+        <img src="\${path}" alt="\${cap}" loading="lazy" referrerpolicy="no-referrer">
+        <figcaption>\${cap}</figcaption>
+      \`;
       gallery.appendChild(fig);
     }
 
-    // --- GitHub API ---
     async function getDefaultBranch(){
-      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`);
+      const r = await fetch(\`https://api.github.com/repos/\${OWNER}/\${REPO}\`);
       if(!r.ok) throw new Error('Repo ei aukea API:ssa (onko julkinen?)');
       const meta = await r.json();
       return meta.default_branch || 'main';
     }
-
     async function listOnce(path, branch){
-      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${branch}`);
+      const r = await fetch(\`https://api.github.com/repos/\${OWNER}/\${REPO}/contents/\${path}?ref=\${branch}\`);
       if(!r.ok) return null;
       const data = await r.json();
       return Array.isArray(data) ? data : null;
     }
-
-    // Etsi kuvarenkaan JUURI: yritä "images", "Images" ja mikä tahansa juurihakemisto jonka nimi case-insensitiivisesti on "images"
     async function findImagesRoot(branch){
-      // kokeile suoraan images ja Images
       for (const cand of ['images','Images']) {
         const data = await listOnce(cand, branch);
         if (data) return cand;
       }
-      // skannaa juuren hakemistot ja etsi "images" case-insensitiivisesti
       const root = await listOnce('', branch);
       if (root) {
-        const dirs = root.filter(x => x.type==='dir');
-        const hit  = dirs.find(d => d.name.toLowerCase() === 'images');
-        if (hit) return hit.name; // palautetaan oikea kirjainkoko
+        const hit = root.filter(x=>x.type==='dir').find(d => d.name.toLowerCase()==='images');
+        if (hit) return hit.name;
       }
       return null;
     }
-
-    // Listaa rekursiivisesti
     async function listDirRecursive(path, branch, acc){
       const data = await listOnce(path, branch);
       if(!data) return;
       for (const it of data) {
-        if (it.type === 'dir') {
-          await listDirRecursive(it.path, branch, acc);
-        } else if (it.type === 'file' && isImage(it.name)) {
-          acc.push(it.path);
-        }
+        if (it.type === 'dir') await listDirRecursive(it.path, branch, acc);
+        else if (it.type === 'file' && isImage(it.name)) acc.push(it.path);
       }
     }
 
@@ -157,20 +143,18 @@
         const b = document.createElement('button');
         b.className = 'cat-btn' + (key===currentCat ? ' active' : '');
         b.dataset.key = key;
-        b.textContent = `${label} (${count})`;
+        b.textContent = \`\${label} (\${count})\`;
         return b;
       };
       catsEl.innerHTML = '';
       catsEl.appendChild(makeBtn('all','Kaikki', total));
       CATEGORIES.forEach(c => catsEl.appendChild(makeBtn(c.key, c.label, counts[c.key] || 0)));
     }
-
     function computeCounts(list){
       const counts = Object.fromEntries(CATEGORIES.map(c=>[c.key,0]));
       list.forEach(f => { if (counts[f.cat] != null) counts[f.cat]++; });
       return counts;
     }
-
     function showGallery(){
       gallery.innerHTML = '';
       const subset = currentCat==='all' ? allFiles : allFiles.filter(f => f.cat === currentCat);
@@ -181,45 +165,27 @@
       try {
         const branch = await getDefaultBranch();
         const root   = await findImagesRoot(branch);
-        if (!root) {
-          showError('Kuvakansiota ei löytynyt. Luo repoosi hakemisto nimeltä "images" (tai "Images") ja lisää kategoriakansiot sen alle.');
-          return;
-        }
+        if (!root) { showError('Kuvakansiota ei löytynyt. Luo repoosi hakemisto nimeltä "images" (tai "Images") ja lisää kategoriakansiot sen alle.'); return; }
 
-        // Selvitä, mikä kansion NIMI vastaa mitäkin kategoriaa (case-insensitiivisesti)
         const rootList = await listOnce(root, branch);
-        const dirMapLC = new Map(); // lowerCaseName -> actualName
+        const dirMapLC = new Map();
         rootList.filter(x=>x.type==='dir').forEach(d => dirMapLC.set(d.name.toLowerCase(), d.name));
 
-        // Kerää polut kategorioittain
-        const wanted = CATEGORIES.map(c => ({ key:c.key, label:c.label, dirName: (dirMapLC.get(c.key.toLowerCase()) || null) }));
-        // Diagnostiikka
-
+        const wanted = CATEGORIES.map(c => ({ key:c.key, dirName: dirMapLC.get(c.key.toLowerCase()) || null }));
         const files = [];
         for (const w of wanted) {
-          if (!w.dirName) continue; // tätä kategoriaa ei ole kansiona → ohita
-          await listDirRecursive(`${root}/${w.dirName}`, branch, files);
+          if (!w.dirName) continue;
+          await listDirRecursive(\`\${root}/\${w.dirName}\`, branch, files);
         }
+        if (files.length === 0) { showError('Kuvia ei löytynyt määritellyistä kategorioista.'); return; }
 
-        if (files.length === 0) {
-          showError('Kuvia ei löytynyt määritellyistä kategorioista. Varmista, että kuvat ovat poluissa ' + CATEGORIES.map(c=>`${root}/${dirMapLC.get(c.key.toLowerCase())||c.key}`).join(', ') + ' ja että niillä on tiedostopäätteet .jpg/.jpeg/.png/.webp/.gif.');
-          return;
-        }
-
-        // Muodosta meta: cat = kategorian avain oikeassa kirjainkoossa, name = tiedostonimi
         allFiles = files.map(p => {
           const seg = p.split('/');
-          // p: <root>/<ActualCat>/<...>/<file>
-          const actualCat = seg[1]; // 0 = root (images/Images), 1 = kategoria
-          // Mapataan actualCat -> CATEGORIES.key case-insensitiivisesti:
+          const actualCat = seg[1]; // root, cat, file...
           const wantedKey = CATEGORIES.find(c => c.key.toLowerCase() === actualCat.toLowerCase())?.key || actualCat;
           return { path: p, cat: wantedKey, name: seg.pop() };
-        });
+        }).sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
-        // Järjestä: kategoria, sitten nimi
-        allFiles.sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-
-        // Renderöi UI
         const counts = computeCounts(allFiles);
         renderCategories(counts);
         showGallery();
@@ -230,7 +196,7 @@
       }
     }
 
-    // Kategoriapainikkeet
+    // Kategoriat
     catsEl.addEventListener('click', e => {
       const b = e.target.closest('.cat-btn'); if (!b) return;
       currentCat = b.dataset.key;
@@ -238,7 +204,7 @@
       showGallery();
     });
 
-    // Valintatäplä
+    // Valinnat
     gallery.addEventListener('click', e => {
       if (e.target.classList.contains('tick')) {
         const fig  = e.target.closest('figure');
@@ -261,7 +227,7 @@
     document.getElementById('closeLb').onclick = () => document.getElementById('lightbox').classList.remove('open');
     document.getElementById('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('open'); });
 
-    // Napit
+    // Nappulat
     document.getElementById('toggleAll').onclick = () => {
       const figs = [...gallery.querySelectorAll('figure')];
       const allSel = figs.length && figs.every(f => f.classList.contains('selected'));
@@ -271,14 +237,14 @@
     };
     document.getElementById('clear').onclick = () => { selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
 
+    // Lataukset
     const download = (fn, text) => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})); a.download=fn; a.click(); };
-    document.getElementById('downloadTxt').onclick = () => download('valitut-kuvat.txt', [...selected].sort().join('\n'));
+    document.getElementById('downloadTxt').onclick = () => download('valitut-kuvat.txt', [...selected].sort().join('\\n'));
     document.getElementById('downloadCsv').onclick = () => {
-      const rows = [...selected].sort().map(n => `"${n.replace(/"/g,'""')}","${toTitle(n.replace(/\.[^.]+$/,'')).replace(/"/g,'""')}"`);
-      download('valitut-kuvat.csv', 'file,title\n' + rows.join('\n'));
+      const rows = [...selected].sort().map(n => `"${n.replace(/"/g,'""')}","${toTitle(n.replace(/\\.[^.]+$/,'')).replace(/"/g,'""')}"`);
+      download('valitut-kuvat.csv', 'file,title\\n' + rows.join('\\n'));
     };
 
-    // Käynnistys
     loadAll();
   </script>
 </body>
