@@ -62,7 +62,7 @@
 </div>
 
 <script>
-  // Kategoriat (kansionimi voi olla iso/pieni repoissa)
+  // Kategoriat
   const CATS = [
     { key:"Magneetit",   label:"Magneetit" },
     { key:"Sormukset",   label:"Sormukset" },
@@ -82,7 +82,7 @@
   const showErr=m=>{errEl.style.display='block'; errEl.textContent=m;};
   const updateList=()=>{const a=[...selected].sort(); listEl.value=a.join('\n'); countEl.textContent=a.length;};
 
-  // UI helperit
+  // UI
   function addFigure(path){
     const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
     const fig=document.createElement('figure'); fig.dataset.file=path;
@@ -97,28 +97,49 @@
     const make=(k,l,c)=>{const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b;};
     catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total)); CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
   }
-  function showGallery(){ galEl.innerHTML=''; const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat); list.forEach(f=>addFigure(f.path)); }
+  function showGallery(){
+    galEl.innerHTML='';
+    const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat);
+    // Varmuuden vuoksi poista mahdolliset duplikaatit vielä näyttövaiheessa
+    const seen=new Set();
+    for(const f of list){
+      if(seen.has(f.path)) continue;
+      seen.add(f.path);
+      addFigure(f.path);
+    }
+  }
 
-  // Lataa manifesti (ei käytä GitHub API:a)
+  // Lataa manifesti ja poista duplikaatit
   async function loadFromManifest(){
     try{
       const res=await fetch('images/manifest.json', {cache:'no-store'});
       if(!res.ok){ renderCats(countsFrom([])); showErr('Manifestia ei löytynyt. Varmista, että Actions-workflow on lisätty ja ajettu.'); return; }
       const manifest=await res.json();
-      const files=(manifest.files||[]).filter(isImg);
+
+      // 1) Poimi vain kuvat
+      let files=(manifest.files||[]).filter(isImg);
+
+      // 2) Poista duplikaatit *täysin samoista poluista* (Set)
+      files = Array.from(new Set(files));
+
       if(!files.length){ renderCats(countsFrom([])); showErr('Manifesti löytyi, mutta kuvapolkuja ei ole.'); return; }
 
-      // Päättele images-juuri (images/ tai Images/) ja mapppaa kategorioihin (case-insensitive)
+      // Päättele images-juuri ja kategoriamäppäys (case-insensitive)
       const rootGuess = files[0].split('/')[0];
       const regs = CATS.map(c=>({key:c.key, re:new RegExp(`^${rootGuess}/${c.key}/`, 'i')}));
-      const byCat = [];
+
+      const byCat=[];
       for(const p of files){
-        const hit = regs.find(r=>r.re.test(p));
+        const hit=regs.find(r=>r.re.test(p));
         if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); }
       }
-      if(!byCat.length){ renderCats(countsFrom([])); showErr('Kuvia ei löytynyt tuetuista kategorioista.'); return; }
 
-      allFiles = byCat.sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+      // 3) Vielä varmistus: ei duplikaatteja kategorisoidussa listassa
+      const uniq = new Map(); // path -> item
+      for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path, it); }
+      allFiles = Array.from(uniq.values())
+        .sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+
       renderCats(countsFrom(allFiles));
       showGallery();
     }catch(e){ console.error(e); renderCats(countsFrom([])); showErr('Manifestin luku epäonnistui.'); }
@@ -133,46 +154,53 @@
   });
 
   galEl.addEventListener('click', e=>{
+    // Valintatäplä
     if(e.target.classList.contains('tick')){
       const fig=e.target.closest('figure'), n=fig.dataset.file.split('/').pop();
       fig.classList.toggle('selected');
       fig.classList.contains('selected') ? selected.add(n) : selected.delete(n);
       updateList();
+      return;
     }
-  });
-
-  // Lightbox
-  galEl.addEventListener('click', e=>{
+    // Lightbox
     const img=e.target.closest('img'); if(!img) return;
     const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
     li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
   });
   document.getElementById('closeLb').onclick=()=>{ const lb=document.getElementById('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
 
-  // TXT-lataus (yksi nimi per rivi)
+  // TXT
   document.getElementById('downloadTxt').onclick=()=>{
     const rows=[...selected].sort().join('\n');
     const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/plain;charset=utf-8'})); a.download='valitut-kuvat.txt'; a.click();
   };
 
-  // CSV-lataus: A1=Tuote, B1-D1 tyhjät, E1=Koko, F1=Kpl; Rivi 2 tyhjä; nimilistaus alkaa riviltä 3 sarakkeessa A
+  // CSV (puolipiste, BOM, rakenteistettuna A..F)
   document.getElementById('downloadCsv').onclick=()=>{
-    // Header: "Tuote" + 3 tyhjää (B,C,D) + "Koko","Kpl"  ->  Tuote,,,,Koko,Kpl
-    const header = 'Tuote,,,,Koko,Kpl\n';
-    // Tyhjä rivi 2
-    const blankRow = '\n';
-    // Riviltä 3 alkaen: nimi sarakkeeseen A, B–F tyhjät (eli yhteensä 6 kenttää, 1 arvo + 5 tyhjää = 5 pilkkua)
-    const body = [...selected].sort().map(name => {
-      const tuote = name.replace(/"/g,'""');
-      return `"${tuote}",,,,,`;
+    const SEP=';';                // suomalainen erotin
+    const COLS=6;                 // A..F
+    const header=['Tuote','','','','Koko','Kpl'].join(SEP)+'\n';
+    const blankRow=SEP.repeat(COLS-1)+'\n'; // tyhjä rivi 2
+    const body=[...selected].sort().map(name=>{
+      const safe=`"${name.replace(/"/g,'""')}"`;
+      return [safe,'','','','',''].join(SEP); // nimi A-sarakkeeseen, muut tyhjiä
     }).join('\n');
-
-    const csv = header + blankRow + body;
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
-    a.download = 'valitut-kuvat.csv';
+    const csv='\uFEFF'+header+blankRow+body; // BOM
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    a.download='valitut-kuvat.csv';
     a.click();
   };
+
+  // Valitse kaikki / tyhjennä
+  document.getElementById('toggleAll').onclick=()=>{
+    const figs=[...galEl.querySelectorAll('figure')];
+    const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
+    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
+    else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
+    updateList();
+  };
+  document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
 
   // Käyntiin
   loadFromManifest();
