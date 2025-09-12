@@ -307,24 +307,37 @@ $('#copyOrder').onclick=()=>{
 $('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
 
 /* ---- Lähetys GAS:lle ---- */
-$('#cartEmail').onclick=async ()=>{
-  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
-  const items=[...cart.values()].map(it=>({name:it.name, size:it.size||"", qty:Math.max(1,parseInt(it.qty)||1)}));
-  const sender=sessionStorage.getItem('b2b_name')||"Tuntematon";
-  const note=$('#note').value||"";
-  try{
-    const res = await fetch(GAS_ENDPOINT,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({secret:GAS_SECRET, items, sender, note})
+$('#cartEmail').onclick = async () => {
+  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
+
+  const items  = [...cart.values()].map(it => ({
+    name: it.name,
+    size: it.size || "",
+    qty : Math.max(1, parseInt(it.qty) || 1)
+  }));
+  const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
+  const note   = $('#note').value || "";
+
+  try {
+    const res  = await fetch("https://script.google.com/macros/s/AKfycbyv1MIjjeTpJdvu_v0Cu9E-9v9n39p8kdvCHw7SeasPDboQbGZN4gW65PGg4m-8wjI2/exec", {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({
+        secret: "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h",
+        items, sender, note
+      })
     });
+
     const text = await res.text().catch(()=> 'OK');
     if (text.trim() !== 'OK' && res.type !== 'opaque') {
       alert('Lähetys epäonnistui: ' + text);
       return;
     }
     alert('Lähetetty!');
-  }catch(err){ console.error(err); alert('Lähetys epäonnistui.'); }
+  } catch (err) {
+    console.error(err);
+    alert('Lähetys epäonnistui.');
+  }
 };
 
 /* ---- Manifest-lataus ----
