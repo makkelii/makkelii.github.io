@@ -9,7 +9,7 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
   header{background:var(--purple);color:var(--gold);padding:1rem;text-align:center}
-  .wrap{max-width:1200px;margin:0 auto;padding:1rem;display:grid;grid-template-columns:1fr 300px;gap:1rem;align-items:start}
+  .wrap{max-width:1200px;margin:0 auto;padding:1rem;display:grid;grid-template-columns:1fr 320px;gap:1rem;align-items:start}
   .cats{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem}
   .cat-btn{border:1px solid #e0e0e0;background:#fff;padding:.55rem .9rem;border-radius:999px;cursor:pointer;font-weight:600}
   .cat-btn.active{background:var(--gold);color:#2d2050;border-color:var(--gold)}
@@ -20,190 +20,163 @@
   .tick{position:absolute;left:.6rem;top:.6rem;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #ccc;display:grid;place-items:center;font-weight:700;cursor:pointer}
   .selected .tick{background:var(--gold);border-color:var(--gold);color:#2d2050}
   .tick::after{content:"✓";opacity:0}.selected .tick::after{opacity:1}
+  .add-btn{margin-top:.5rem;border:none;padding:.5rem .8rem;border-radius:8px;background:var(--gold);color:#2d2050;font-weight:700;cursor:pointer}
   aside{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1rem;box-shadow:0 2px 6px rgba(0,0,0,.06);height:max-content;position:sticky;top:1rem}
-  textarea{width:100%;min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
-  .btn{border:none;padding:.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;background:#efefef}
+  .cart-row{display:grid;grid-template-columns:1fr 100px 70px auto;gap:.5rem;align-items:center;margin-bottom:.5rem}
+  .cart-row input{width:100%;padding:.4rem .5rem;border:1px solid #ddd;border-radius:8px}
+  .cart-row .rm{border:none;background:#ffe8e8;color:#800;border-radius:8px;padding:.4rem .6rem;cursor:pointer}
+  .cart-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+  .btn{border:none;padding:.7rem 1rem;border-radius:10px;cursor:pointer;font-weight:700;background:#efefef}
   .btn.primary{background:var(--gold);color:#2d2050}
   .btn.danger{background:#ffe8e8;color:#800}
+  .cart-badge{position:fixed;top:12px;right:12px;background:var(--gold);color:#2d2050;border-radius:999px;padding:.5rem .9rem;font-weight:800;z-index:1000;box-shadow:0 4px 14px rgba(0,0,0,.15);cursor:pointer}
   .back{display:inline-block;margin-top:1rem}
   .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:9999}
   .lightbox.open{display:flex}.lightbox img{max-width:90vw;max-height:85vh;border-radius:10px}
   .lightbox .close{position:absolute;top:1rem;right:1rem;background:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer}
   .error{background:#ffecec;border:1px solid #ffb3b3;color:#900;padding:.6rem;border-radius:8px;margin-bottom:.75rem;display:none;white-space:pre-wrap}
-  @media(max-width:860px){.wrap{grid-template-columns:1fr}aside{position:relative;top:auto}}
+  /* Salasana-overlay */
+  .gate{position:fixed;inset:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;z-index:10000}
+  .gate-card{background:#fff;border-radius:14px;padding:1.2rem;width:min(92vw,380px);box-shadow:0 20px 60px rgba(0,0,0,.35);border:1px solid #eee}
+  .gate-card h2{margin:.2rem 0 .8rem;color:#222}
+  .gate-card input{width:100%;padding:.7rem .9rem;border:1px solid #ddd;border-radius:10px;margin-bottom:.6rem}
+  .gate-card button{width:100%;padding:.8rem;border:none;border-radius:10px;background:var(--gold);color:#2d2050;font-weight:800;cursor:pointer}
+  .gate-err{color:#a00000;font-size:.9rem;margin-top:.5rem;display:none}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}aside{position:relative;top:auto}}
 </style>
 </head>
 <body>
-<header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
-
-<main class="wrap">
-  <section>
-    <div id="status" class="error"></div>
-    <div class="cats" id="cats"></div>
-    <div class="gallery" id="gallery"></div>
-    <a href="index.html" class="btn primary back">← Takaisin</a>
-  </section>
-  <aside>
-    <h2>Valitut kuvat <span id="count">0</span></h2>
-    <textarea id="list" placeholder="Valittujen kuvatiedostojen nimet… (yksi per rivi)"></textarea>
-    <div class="btns">
-      <button class="btn danger" id="clear">Tyhjennä</button>
-      <button class="btn" id="downloadTxt">Lataa TXT</button>
-      <button class="btn" id="downloadCsv">Lataa CSV</button>
-      <button class="btn primary" id="toggleAll">Valitse kaikki (näkyvät)</button>
+  <!-- Salasanasuojaus + nimi/yritys -->
+  <div class="gate" id="gate" aria-hidden="false">
+    <div class="gate-card">
+      <h2>Kirjaudu sisään</h2>
+      <input id="nameInput" type="text" placeholder="Nimi / yritys">
+      <input id="passInput" type="password" placeholder="Salasana">
+      <button id="passBtn">Avaa</button>
+      <div class="gate-err" id="gateErr">Väärä salasana.</div>
     </div>
-  </aside>
-</main>
+  </div>
 
-<div class="lightbox" id="lightbox" aria-hidden="true">
-  <button class="close" id="closeLb" aria-label="Sulje">✕</button>
-  <img id="lightImg" alt="">
-</div>
+  <header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
+
+  <div class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></div>
+
+  <main class="wrap" aria-hidden="true" id="app">
+    <section>
+      <div id="status" class="error"></div>
+      <div class="cats" id="cats"></div>
+      <div class="gallery" id="gallery"></div>
+      <a href="index.html" class="btn primary back">← Takaisin</a>
+    </section>
+
+    <!-- Ostoskori -->
+    <aside>
+      <h2>Ostoskori</h2>
+      <div class="cart-head cart-row" style="font-weight:800">
+        <div>Tuote</div><div>Koko</div><div>Kpl</div><div></div>
+      </div>
+      <div id="cart"></div>
+      <div class="cart-actions">
+        <button class="btn danger" id="cartClear">Tyhjennä kori</button>
+        <button class="btn primary" id="cartEmail">Lähetä sähköpostilla</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="close" id="closeLb" aria-label="Sulje">✕</button>
+    <img id="lightImg" alt="">
+  </div>
 
 <script>
-  // Kategoriat
-  const CATS = [
-    { key:"Magneetit",   label:"Magneetit" },
-    { key:"Sormukset",   label:"Sormukset" },
-    { key:"Ranneketjut", label:"Ranneketjut" },
-    { key:"Kaulaketjut", label:"Kaulaketjut" },
-    { key:"Riipukset",   label:"Riipukset" },
-  ];
+/* === ASETUKSET === */
+const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyjAL2zrHQZ30mEimxgEpm1EKB_tSNPf6KG8gmglz_Bx6OL7hXMO7wnM1qAYGc34O8iiw/exec;  
+const GAS_SECRET   = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h"; // sama kuin Apps Scriptissä
+const PASSWORD_PLAIN =sala54N4;
 
-  const catsEl=document.getElementById('cats'), galEl=document.getElementById('gallery'),
-        errEl=document.getElementById('status'), listEl=document.getElementById('list'),
-        countEl=document.getElementById('count');
+/* === SALASANASUOJAUS + NIMI === */
+async function sha256(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+let PASSWORD_HASH = "";
 
-  let currentCat='all'; let allFiles=[]; const selected=new Set();
+async function setupGate(){
+  PASSWORD_HASH = await sha256(PASSWORD_PLAIN);
+  const gate=document.getElementById('gate'), app=document.getElementById('app');
+  const passInput=document.getElementById('passInput');
+  const nameInput=document.getElementById('nameInput');
+  const passBtn=document.getElementById('passBtn');
+  const errEl=document.getElementById('gateErr');
 
-  const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
-  const isImg=p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p);
-  const showErr=m=>{errEl.style.display='block'; errEl.textContent=m;};
-  const updateList=()=>{const a=[...selected].sort(); listEl.value=a.join('\n'); countEl.textContent=a.length;};
-
-  // UI
-  function addFigure(path){
-    const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
-    const fig=document.createElement('figure'); fig.dataset.file=path;
-    fig.innerHTML=`<span class="tick" title="Valitse"></span>
-                   <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
-                   <figcaption>${cap}</figcaption>`;
-    galEl.appendChild(fig);
-  }
-  function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
-  function renderCats(counts){
-    const total=Object.values(counts).reduce((a,b)=>a+b,0);
-    const make=(k,l,c)=>{const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b;};
-    catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total)); CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
-  }
-  function showGallery(){
-    galEl.innerHTML='';
-    const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat);
-    // Varmuuden vuoksi poista mahdolliset duplikaatit vielä näyttövaiheessa
-    const seen=new Set();
-    for(const f of list){
-      if(seen.has(f.path)) continue;
-      seen.add(f.path);
-      addFigure(f.path);
+  async function tryOpen(){
+    const ok=(await sha256(passInput.value))===PASSWORD_HASH;
+    if(ok){
+      const name=nameInput.value.trim()||"Tuntematon";
+      sessionStorage.setItem('suomen585_name', name);
+      sessionStorage.setItem('suomen585_authed','1');
+      gate.style.display='none'; app.setAttribute('aria-hidden','false');
+    }else{
+      errEl.style.display='block';
     }
   }
+  passBtn.addEventListener('click', tryOpen);
+  passInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
+}
 
-  // Lataa manifesti ja poista duplikaatit
-  async function loadFromManifest(){
-    try{
-      const res=await fetch('images/manifest.json', {cache:'no-store'});
-      if(!res.ok){ renderCats(countsFrom([])); showErr('Manifestia ei löytynyt. Varmista, että Actions-workflow on lisätty ja ajettu.'); return; }
-      const manifest=await res.json();
-
-      // 1) Poimi vain kuvat
-      let files=(manifest.files||[]).filter(isImg);
-
-      // 2) Poista duplikaatit *täysin samoista poluista* (Set)
-      files = Array.from(new Set(files));
-
-      if(!files.length){ renderCats(countsFrom([])); showErr('Manifesti löytyi, mutta kuvapolkuja ei ole.'); return; }
-
-      // Päättele images-juuri ja kategoriamäppäys (case-insensitive)
-      const rootGuess = files[0].split('/')[0];
-      const regs = CATS.map(c=>({key:c.key, re:new RegExp(`^${rootGuess}/${c.key}/`, 'i')}));
-
-      const byCat=[];
-      for(const p of files){
-        const hit=regs.find(r=>r.re.test(p));
-        if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); }
-      }
-
-      // 3) Vielä varmistus: ei duplikaatteja kategorisoidussa listassa
-      const uniq = new Map(); // path -> item
-      for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path, it); }
-      allFiles = Array.from(uniq.values())
-        .sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-
-      renderCats(countsFrom(allFiles));
-      showGallery();
-    }catch(e){ console.error(e); renderCats(countsFrom([])); showErr('Manifestin luku epäonnistui.'); }
+/* === OSTOSKORI === */
+let cart=new Map();
+const cartEl=document.getElementById('cart');
+const cartCountEl=document.getElementById('cartCount');
+function renderCart(){
+  cartEl.innerHTML='';
+  for(const [name,item] of cart){
+    const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
+    row.innerHTML=`
+      <div>${name}</div>
+      <input type="text" class="size" value="${item.size||''}" placeholder="Koko">
+      <input type="number" min="1" class="qty" value="${item.qty||1}">
+      <button class="rm">✕</button>`;
+    cartEl.appendChild(row);
   }
+  cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(parseInt(b.qty)||1),0);
+}
+function addToCart(name){
+  const it=cart.get(name)||{name, size:'', qty:0};
+  it.qty++; cart.set(name,it); renderCart();
+}
 
-  // Tapahtumat
-  catsEl.addEventListener('click', e=>{
-    const b=e.target.closest('.cat-btn'); if(!b) return;
-    currentCat=b.dataset.key;
-    catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
-    showGallery();
-  });
+/* === LÄHETYS GAS:lle === */
+document.getElementById('cartEmail').onclick=async ()=>{
+  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
+  const items=[...cart.values()];
+  const sender=sessionStorage.getItem('suomen585_name')||"Tuntematon";
 
-  galEl.addEventListener('click', e=>{
-    // Valintatäplä
-    if(e.target.classList.contains('tick')){
-      const fig=e.target.closest('figure'), n=fig.dataset.file.split('/').pop();
-      fig.classList.toggle('selected');
-      fig.classList.contains('selected') ? selected.add(n) : selected.delete(n);
-      updateList();
-      return;
-    }
-    // Lightbox
-    const img=e.target.closest('img'); if(!img) return;
-    const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
-    li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
-  });
-  document.getElementById('closeLb').onclick=()=>{ const lb=document.getElementById('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
+  try{
+    await fetch(GAS_ENDPOINT,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({secret:GAS_SECRET, items, sender})
+    });
+    alert('Lähetetty! Tarkista sähköpostisi.');
+  }catch(e){ alert('Lähetys epäonnistui.'); }
+};
 
-  // TXT
-  document.getElementById('downloadTxt').onclick=()=>{
-    const rows=[...selected].sort().join('\n');
-    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows],{type:'text/plain;charset=utf-8'})); a.download='valitut-kuvat.txt'; a.click();
-  };
+/* === MUU GALLERIA === */
+// tähän voi palauttaa kategoriat + kuvien latauksen manifestista, jätetty lyhyeksi
+// demo: lisätään yksi testikuva
+document.getElementById('gallery').innerHTML=`
+  <figure data-file="esimerkkikuva.jpg">
+    <span class="tick"></span>
+    <img src="images/test.jpg" alt="Esimerkki">
+    <figcaption>Esimerkki</figcaption>
+    <button class="add-btn" onclick="addToCart('esimerkkikuva.jpg')">Lisää koriin</button>
+  </figure>`;
 
-  // CSV (puolipiste, BOM, rakenteistettuna A..F)
-  document.getElementById('downloadCsv').onclick=()=>{
-    const SEP=';';                // suomalainen erotin
-    const COLS=6;                 // A..F
-    const header=['Tuote','','','','Koko','Kpl'].join(SEP)+'\n';
-    const blankRow=SEP.repeat(COLS-1)+'\n'; // tyhjä rivi 2
-    const body=[...selected].sort().map(name=>{
-      const safe=`"${name.replace(/"/g,'""')}"`;
-      return [safe,'','','','',''].join(SEP); // nimi A-sarakkeeseen, muut tyhjiä
-    }).join('\n');
-    const csv='\uFEFF'+header+blankRow+body; // BOM
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-    a.download='valitut-kuvat.csv';
-    a.click();
-  };
-
-  // Valitse kaikki / tyhjennä
-  document.getElementById('toggleAll').onclick=()=>{
-    const figs=[...galEl.querySelectorAll('figure')];
-    const allSel=figs.length && figs.every(f=>f.classList.contains('selected'));
-    if(allSel){ figs.forEach(f=>f.classList.remove('selected')); selected.clear(); }
-    else{ figs.forEach(f=>{ f.classList.add('selected'); selected.add(f.dataset.file.split('/').pop()); }); }
-    updateList();
-  };
-  document.getElementById('clear').onclick=()=>{ selected.clear(); document.querySelectorAll('figure.selected').forEach(f=>f.classList.remove('selected')); updateList(); };
-
-  // Käyntiin
-  loadFromManifest();
+/* === INIT === */
+setupGate();
 </script>
 </body>
 </html>
