@@ -90,19 +90,19 @@
   </div>
 
 <script>
-/* === ASETUKSET === */
-const GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbyjAL2zrHQZ30mEimxgEpm1EKB_tSNPf6KG8gmglz_Bx6OL7hXMO7wnM1qAYGc34O8iiw/exec;  
-const GAS_SECRET   = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h"; // sama kuin Apps Scriptissä
-const PASSWORD_PLAIN =sala54N4;
+/* ========= ASETUKSET (VAIHDA NÄMÄ) ========= */
+const GAS_ENDPOINT   = https://script.google.com/macros/s/AKfycbxsz4nCbN7Y00SWvh1MaekZnVegnFIpRw4-8mdddjJgRM7tMGVuSnOvizA0QXRpdJwknw/exec; // esim. https://script.google.com/macros/s/AKfycbx.../exec
+const GAS_SECRET     = p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h;
+const PASSWORD_PLAIN = sala54N4;
+/* =========================================== */
 
-/* === SALASANASUOJAUS + NIMI === */
+/* === Salasanasuojaus + nimi/yritys === */
 async function sha256(str){
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest('SHA-256', enc);
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 let PASSWORD_HASH = "";
-
 async function setupGate(){
   PASSWORD_HASH = await sha256(PASSWORD_PLAIN);
   const gate=document.getElementById('gate'), app=document.getElementById('app');
@@ -110,6 +110,11 @@ async function setupGate(){
   const nameInput=document.getElementById('nameInput');
   const passBtn=document.getElementById('passBtn');
   const errEl=document.getElementById('gateErr');
+
+  // jos jo avattu tässä selaimessa
+  if(sessionStorage.getItem('suomen585_authed')==='1'){
+    gate.style.display='none'; app.setAttribute('aria-hidden','false'); return;
+  }
 
   async function tryOpen(){
     const ok=(await sha256(passInput.value))===PASSWORD_HASH;
@@ -126,7 +131,59 @@ async function setupGate(){
   passInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
 }
 
-/* === OSTOSKORI === */
+/* === Kategoriat === */
+const CATS = [
+  { key:"Magneetit",   label:"Magneetit" },
+  { key:"Sormukset",   label:"Sormukset" },
+  { key:"Ranneketjut", label:"Ranneketjut" },
+  { key:"Kaulaketjut", label:"Kaulaketjut" },
+  { key:"Riipukset",   label:"Riipukset" },
+];
+const catsEl=document.getElementById('cats'), galEl=document.getElementById('gallery'),
+      errEl=document.getElementById('status');
+
+let currentCat='all'; let allFiles=[];
+
+const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
+const isImg=p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p);
+const showErr=m=>{errEl.style.display='block'; errEl.textContent=m;};
+
+function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
+function renderCats(counts){
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  const make=(k,l,c)=>{const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b;};
+  catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total));
+  CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
+}
+
+function addFigure(path){
+  const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
+  const fig=document.createElement('figure'); fig.dataset.file=path;
+  fig.innerHTML=`
+    <span class="tick" title="Valitse"></span>
+    <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
+    <figcaption>${cap}</figcaption>
+    <button class="add-btn" type="button">Lisää koriin</button>
+  `;
+  galEl.appendChild(fig);
+}
+function showGallery(){
+  galEl.innerHTML='';
+  const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat);
+  const seen=new Set();
+  for(const f of list){
+    if(seen.has(f.path)) continue; seen.add(f.path);
+    addFigure(f.path);
+  }
+}
+catsEl.addEventListener('click', e=>{
+  const b=e.target.closest('.cat-btn'); if(!b) return;
+  currentCat=b.dataset.key;
+  catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+  showGallery();
+});
+
+/* === Ostoskori === */
 let cart=new Map();
 const cartEl=document.getElementById('cart');
 const cartCountEl=document.getElementById('cartCount');
@@ -135,24 +192,45 @@ function renderCart(){
   for(const [name,item] of cart){
     const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
     row.innerHTML=`
-      <div>${name}</div>
+      <div title="${name}">${name}</div>
       <input type="text" class="size" value="${item.size||''}" placeholder="Koko">
       <input type="number" min="1" class="qty" value="${item.qty||1}">
       <button class="rm">✕</button>`;
     cartEl.appendChild(row);
   }
   cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(parseInt(b.qty)||1),0);
+  localStorage.setItem('suomen585_cart', JSON.stringify([...cart.entries()]));
 }
-function addToCart(name){
-  const it=cart.get(name)||{name, size:'', qty:0};
-  it.qty++; cart.set(name,it); renderCart();
+function addToCart(filename){
+  const it=cart.get(filename)||{name:filename,size:'',qty:0};
+  it.qty++; cart.set(filename,it); renderCart();
+}
+function loadCart(){
+  try{ const raw=localStorage.getItem('suomen585_cart'); if(!raw) return;
+    const arr=JSON.parse(raw); cart=new Map(arr); renderCart(); }catch{}
 }
 
-/* === LÄHETYS GAS:lle === */
+cartEl.addEventListener('input', e=>{
+  const row=e.target.closest('.cart-row'); if(!row) return;
+  const key=row.dataset.key; const it=cart.get(key); if(!it) return;
+  if(e.target.classList.contains('size')) it.size=e.target.value;
+  if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value)||1);
+  cart.set(key,it); renderCart();
+});
+cartEl.addEventListener('click', e=>{
+  const row=e.target.closest('.cart-row'); if(!row) return;
+  if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
+});
+document.getElementById('cartClear').onclick=()=>{ cart.clear(); renderCart(); };
+document.getElementById('cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
+
+/* === Lähetys Google Apps Scriptille === */
 document.getElementById('cartEmail').onclick=async ()=>{
   if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
-  const items=[...cart.values()];
+  const items=[...cart.values()].map(it=>({name:it.name, size:it.size||"", qty:Math.max(1,parseInt(it.qty)||1)}));
   const sender=sessionStorage.getItem('suomen585_name')||"Tuntematon";
+
+  if(!GAS_ENDPOINT || !GAS_SECRET){ alert('Lähetysosoite ei ole asetettu.'); return; }
 
   try{
     await fetch(GAS_ENDPOINT,{
@@ -161,22 +239,61 @@ document.getElementById('cartEmail').onclick=async ()=>{
       body:JSON.stringify({secret:GAS_SECRET, items, sender})
     });
     alert('Lähetetty! Tarkista sähköpostisi.');
-  }catch(e){ alert('Lähetys epäonnistui.'); }
+  }catch(err){
+    console.error(err);
+    alert('Lähetys epäonnistui. Yritä myöhemmin uudelleen.');
+  }
 };
 
-/* === MUU GALLERIA === */
-// tähän voi palauttaa kategoriat + kuvien latauksen manifestista, jätetty lyhyeksi
-// demo: lisätään yksi testikuva
-document.getElementById('gallery').innerHTML=`
-  <figure data-file="esimerkkikuva.jpg">
-    <span class="tick"></span>
-    <img src="images/test.jpg" alt="Esimerkki">
-    <figcaption>Esimerkki</figcaption>
-    <button class="add-btn" onclick="addToCart('esimerkkikuva.jpg')">Lisää koriin</button>
-  </figure>`;
+/* === Lightbox ja gallerian klikkaukset === */
+galEl.addEventListener('click', e=>{
+  const fig=e.target.closest('figure'); if(!fig) return;
+  if(e.target.classList.contains('tick')){
+    fig.classList.toggle('selected');
+    return;
+  }
+  if(e.target.classList.contains('add-btn')){
+    const fn=fig.dataset.file.split('/').pop(); addToCart(fn); return;
+  }
+  const img=e.target.closest('img'); if(img){
+    const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
+    li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
+  }
+});
+document.getElementById('closeLb').onclick=()=>{ const lb=document.getElementById('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
 
-/* === INIT === */
-setupGate();
+/* === Lataa kuvat manifestista === */
+async function loadFromManifest(){
+  try{
+    const res=await fetch('images/manifest.json',{cache:'no-store'});
+    if(!res.ok){ renderCats(countsFrom([])); showErr('Manifestia ei löytynyt.'); return; }
+    const manifest=await res.json();
+    let files=(manifest.files||[]).filter(isImg);
+    files=Array.from(new Set(files)); // poista duplikaatit
+    if(!files.length){ renderCats(countsFrom([])); showErr('Manifesti on tyhjä.'); return; }
+
+    const root=files[0].split('/')[0];
+    const regs=CATS.map(c=>({key:c.key, re:new RegExp(`^${root}/${c.key}/`,'i')}));
+    const byCat=[];
+    for(const p of files){
+      const hit=regs.find(r=>r.re.test(p));
+      if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); }
+    }
+    const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
+    allFiles=Array.from(uniq.values())
+      .sort((a,b)=>a.cat===b.cat? a.name.localeCompare(b.name,'fi'): a.cat.localeCompare(b.cat,'fi'));
+
+    renderCats(countsFrom(allFiles));
+    showGallery();
+  }catch(e){ console.error(e); renderCats(countsFrom([])); showErr('Kuvien haku epäonnistui.'); }
+}
+
+/* === Käynnistys === */
+(async function(){
+  await setupGate();
+  loadCart();
+  loadFromManifest();
+})();
 </script>
 </body>
 </html>
