@@ -4,54 +4,83 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Suomen 585 Oy – Kuvagalleria</title>
+<meta name="color-scheme" content="light dark">
 <style>
-  :root { --purple:#3a006b; --gold:#d4af37; --ink:#333; --bg:#f8f8f8; }
+  :root { --purple:#3a006b; --gold:#d4af37; --ink:#222; --muted:#666; --bg:#f8f8f8; --card:#fff; --border:#e6e6e6; }
+  @media (prefers-color-scheme:dark){
+    :root { --ink:#e9e9e9; --muted:#bbb; --bg:#0f0f14; --card:#141421; --border:#2b2b3a; }
+  }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
   header{background:var(--purple);color:var(--gold);padding:1rem;text-align:center}
+  header h1{margin:0;font-size:clamp(1.25rem,3.2vw,1.8rem);letter-spacing:.3px}
+
   .wrap{max-width:1200px;margin:0 auto;padding:1rem;display:grid;grid-template-columns:1fr 320px;gap:1rem;align-items:start}
-  .cats{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem}
-  .cat-btn{border:1px solid #e0e0e0;background:#fff;padding:.55rem .9rem;border-radius:999px;cursor:pointer;font-weight:600}
-  .cat-btn.active{background:var(--gold);color:#2d2050;border-color:var(--gold)}
-  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
-  figure{position:relative;background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:.5rem;box-shadow:0 2px 6px rgba(0,0,0,.06);margin:0;text-align:center}
-  figure img{width:100%;height:auto;border-radius:8px;cursor:zoom-in;aspect-ratio:1/1;object-fit:cover;display:block}
-  figcaption{margin-top:.5rem;font-size:.9rem;color:#555;min-height:1.4em}
-  .tick{position:absolute;left:.6rem;top:.6rem;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #ccc;display:grid;place-items:center;font-weight:700;cursor:pointer}
-  .selected .tick{background:var(--gold);border-color:var(--gold);color:#2d2050}
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .cats{display:flex;flex-wrap:wrap;gap:.5rem;margin:.25rem 0 .85rem}
+  .cat-btn{border:1px solid var(--border);background:var(--card);color:var(--ink);padding:.55rem .9rem;border-radius:999px;cursor:pointer;font-weight:600;line-height:1}
+  .cat-btn.active{background:var(--gold);border-color:var(--gold);color:#2d2050}
+  .cat-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+  figure{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.55rem;margin:0;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  figure img{width:100%;height:auto;border-radius:10px;cursor:zoom-in;aspect-ratio:1/1;object-fit:cover;display:block}
+  figcaption{margin-top:.5rem;font-size:.9rem;color:var(--muted);min-height:1.4em}
+  .tick{position:absolute;left:.6rem;top:.6rem;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #ccc;display:grid;place-items:center;font-weight:700;color:#2d2050;cursor:pointer}
+  .selected .tick{background:var(--gold);border-color:var(--gold)}
   .tick::after{content:"✓";opacity:0}.selected .tick::after{opacity:1}
-  .add-btn{margin-top:.5rem;border:none;padding:.5rem .8rem;border-radius:8px;background:var(--gold);color:#2d2050;font-weight:700;cursor:pointer}
-  aside{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1rem;box-shadow:0 2px 6px rgba(0,0,0,.06);height:max-content;position:sticky;top:1rem}
-  .cart-row{display:grid;grid-template-columns:1fr 100px 70px auto;gap:.5rem;align-items:center;margin-bottom:.5rem}
-  .cart-row input{width:100%;padding:.4rem .5rem;border:1px solid #ddd;border-radius:8px}
-  .cart-row .rm{border:none;background:#ffe8e8;color:#800;border-radius:8px;padding:.4rem .6rem;cursor:pointer}
-  .cart-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
-  .btn{border:none;padding:.7rem 1rem;border-radius:10px;cursor:pointer;font-weight:700;background:#efefef}
-  .btn.primary{background:var(--gold);color:#2d2050}
-  .btn.danger{background:#ffe8e8;color:#800}
+
+  aside{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.06);height:max-content;position:sticky;top:1rem}
+  .cart-row{display:grid;grid-template-columns:1fr 100px 72px auto;gap:.5rem;align-items:center;margin-bottom:.5rem}
+  .cart-row input{width:100%;padding:.45rem .55rem;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--ink)}
+  .cart-row .rm{border:none;background:#ffe8e8;color:#800;border-radius:8px;padding:.45rem .6rem;cursor:pointer}
+  .cart-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
+  .btn{border:1px solid var(--border);padding:.7rem 1rem;border-radius:10px;cursor:pointer;font-weight:700;background:var(--card);color:var(--ink)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#2d2050}
+  .btn.danger{background:#ffe8e8;color:#800;border-color:#ffd0d0}
+  .btn.ghost{background:transparent}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   .cart-badge{position:fixed;top:12px;right:12px;background:var(--gold);color:#2d2050;border-radius:999px;padding:.5rem .9rem;font-weight:800;z-index:1000;box-shadow:0 4px 14px rgba(0,0,0,.15);cursor:pointer}
+
   .back{display:inline-block;margin-top:1rem}
+  .error{display:none;background:#ffecec;border:1px solid #ffb3b3;color:#900;padding:.7rem;border-radius:10px;margin-bottom:.75rem;white-space:pre-wrap}
+  .info{display:none;background:#fff6d7;border:1px solid #ffe297;color:#6b5300;padding:.6rem;border-radius:8px;margin-bottom:.6rem}
+
+  /* Lightbox */
   .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:9999}
-  .lightbox.open{display:flex}.lightbox img{max-width:90vw;max-height:85vh;border-radius:10px}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:90vw;max-height:85vh;border-radius:10px}
   .lightbox .close{position:absolute;top:1rem;right:1rem;background:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer}
-  .error{background:#ffecec;border:1px solid #ffb3b3;color:#900;padding:.6rem;border-radius:8px;margin-bottom:.75rem;display:none;white-space:pre-wrap}
-  /* Salasana-overlay */
+
+  /* Gate (salasana + nimi) */
   .gate{position:fixed;inset:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;z-index:10000}
-  .gate-card{background:#fff;border-radius:14px;padding:1.2rem;width:min(92vw,380px);box-shadow:0 20px 60px rgba(0,0,0,.35);border:1px solid #eee}
-  .gate-card h2{margin:.2rem 0 .8rem;color:#222}
-  .gate-card input{width:100%;padding:.7rem .9rem;border:1px solid #ddd;border-radius:10px;margin-bottom:.6rem}
-  .gate-card button{width:100%;padding:.8rem;border:none;border-radius:10px;background:var(--gold);color:#2d2050;font-weight:800;cursor:pointer}
-  .gate-err{color:#a00000;font-size:.9rem;margin-top:.5rem;display:none}
-  @media(max-width:900px){.wrap{grid-template-columns:1fr}aside{position:relative;top:auto}}
+  .gate-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;width:min(92vw,400px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .gate-card h2{margin:.2rem 0 .8rem;color:var(--ink);text-align:center}
+  .gate-card input{width:100%;padding:.7rem .9rem;border:1px solid var(--border);border-radius:10px;margin-bottom:.6rem;background:transparent;color:var(--ink)}
+  .gate-card button{width:100%;padding:.85rem;border:none;border-radius:10px;background:var(--gold);color:#2d2050;font-weight:800;cursor:pointer}
+  .gate-err{color:#a00000;font-size:.9rem;margin-top:.5rem;display:none;text-align:center}
+
+  /* Loader */
+  .spinner{display:none;place-items:center;margin:.5rem 0}
+  .spinner.on{display:grid}
+  .spinner:before{content:"";width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media (prefers-reduced-motion:reduce){
+    *{scroll-behavior:auto}
+    .spinner:before{animation:none}
+  }
 </style>
 </head>
 <body>
-  <!-- Salasanasuojaus + nimi/yritys -->
+  <!-- Gate -->
   <div class="gate" id="gate" aria-hidden="false">
     <div class="gate-card">
       <h2>Kirjaudu sisään</h2>
-      <input id="nameInput" type="text" placeholder="Nimi / yritys">
-      <input id="passInput" type="password" placeholder="Salasana">
+      <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name">
+      <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password">
       <button id="passBtn">Avaa</button>
       <div class="gate-err" id="gateErr">Väärä salasana.</div>
     </div>
@@ -59,24 +88,29 @@
 
   <header><h1>Suomen 585 Oy – Kuvagalleria</h1></header>
 
-  <div class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></div>
+  <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
 
   <main class="wrap" aria-hidden="true" id="app">
     <section>
+      <div class="info" id="hint"></div>
       <div id="status" class="error"></div>
       <div class="cats" id="cats"></div>
-      <div class="gallery" id="gallery"></div>
+      <div class="spinner" id="spin"></div>
+      <div class="gallery" id="gallery" aria-live="polite"></div>
       <a href="index.html" class="btn primary back">← Takaisin</a>
     </section>
 
-    <!-- Ostoskori -->
     <aside>
-      <h2>Ostoskori</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+        <h2 style="margin:.2rem 0">Ostoskori</h2>
+        <button class="btn ghost" id="logout" title="Kirjaudu ulos">Kirjaudu ulos</button>
+      </div>
       <div class="cart-head cart-row" style="font-weight:800">
         <div>Tuote</div><div>Koko</div><div>Kpl</div><div></div>
       </div>
       <div id="cart"></div>
       <div class="cart-actions">
+        <button class="btn" id="copyOrder">Kopioi tilaus</button>
         <button class="btn danger" id="cartClear">Tyhjennä kori</button>
         <button class="btn primary" id="cartEmail">Lähetä sähköpostilla</button>
       </div>
@@ -96,42 +130,57 @@ const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
 /* =========================================== */
 
-/* === Salasanasuojaus + nimi/yritys === */
-async function sha256(str){
-  const enc = new TextEncoder().encode(str);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+/* ===== Apurit ===== */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => [...document.querySelectorAll(sel)];
+const sanitizeName = s => (s||"").toString().replace(/\s+/g,' ').trim();
+
+/* ===== Salasanasuojaus + nimi ===== */
+async function sha256Safe(str){
+  try{
+    if (!window.crypto || !window.crypto.subtle) return null;
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch{ return null; }
 }
 let PASSWORD_HASH = "";
 async function setupGate(){
-  PASSWORD_HASH = await sha256(PASSWORD_PLAIN);
-  const gate=document.getElementById('gate'), app=document.getElementById('app');
-  const passInput=document.getElementById('passInput');
-  const nameInput=document.getElementById('nameInput');
-  const passBtn=document.getElementById('passBtn');
-  const errEl=document.getElementById('gateErr');
+  PASSWORD_HASH = await sha256Safe(PASSWORD_PLAIN);
+  const gate = $('#gate'), app = $('#app'), passInput = $('#passInput'), nameInput = $('#nameInput'), errEl = $('#gateErr');
 
-  // jos jo avattu tässä selaimessa
   if(sessionStorage.getItem('suomen585_authed')==='1'){
     gate.style.display='none'; app.setAttribute('aria-hidden','false'); return;
   }
-
   async function tryOpen(){
-    const ok=(await sha256(passInput.value))===PASSWORD_HASH;
+    const name = sanitizeName(nameInput.value) || 'Tuntematon';
+    const given = passInput.value || '';
+    let ok = false;
+    if (!PASSWORD_PLAIN){ ok = true; }
+    else if (PASSWORD_HASH){ const g = await sha256Safe(given); ok = (g && g===PASSWORD_HASH); }
+    else { ok = (given===PASSWORD_PLAIN); }
+
     if(ok){
-      const name=nameInput.value.trim()||"Tuntematon";
       sessionStorage.setItem('suomen585_name', name);
       sessionStorage.setItem('suomen585_authed','1');
-      gate.style.display='none'; app.setAttribute('aria-hidden','false');
+      errEl.style.display='none';
+      gate.style.display='none';
+      app.setAttribute('aria-hidden','false');
+      $('#hint').style.display='block';
+      $('#hint').textContent = `Kirjautunut: ${name}`;
     }else{
-      errEl.style.display='block';
+      errEl.textContent = 'Väärä salasana.'; errEl.style.display='block';
     }
   }
-  passBtn.addEventListener('click', tryOpen);
-  passInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
+  $('#passBtn').addEventListener('click', tryOpen);
+  ['keydown'].forEach(ev=>{
+    $('#passInput').addEventListener(ev, e=>{ if(e.key==='Enter') tryOpen(); });
+    $('#nameInput').addEventListener(ev, e=>{ if(e.key==='Enter') tryOpen(); });
+  });
+  $('#logout').onclick = () => { sessionStorage.clear(); location.reload(); };
 }
 
-/* === Kategoriat === */
+/* ===== Kategoriat ===== */
 const CATS = [
   { key:"Magneetit",   label:"Magneetit" },
   { key:"Sormukset",   label:"Sormukset" },
@@ -139,54 +188,46 @@ const CATS = [
   { key:"Kaulaketjut", label:"Kaulaketjut" },
   { key:"Riipukset",   label:"Riipukset" },
 ];
-const catsEl=document.getElementById('cats'), galEl=document.getElementById('gallery'),
-      errEl=document.getElementById('status');
-
 let currentCat='all'; let allFiles=[];
-
-const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 const isImg=p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p);
-const showErr=m=>{errEl.style.display='block'; errEl.textContent=m;};
-
+const toTitle=s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
 function renderCats(counts){
+  const catsEl = $('#cats');
   const total=Object.values(counts).reduce((a,b)=>a+b,0);
   const make=(k,l,c)=>{const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b;};
   catsEl.innerHTML=''; catsEl.appendChild(make('all','Kaikki',total));
   CATS.forEach(c=>catsEl.appendChild(make(c.key,c.label,counts[c.key]||0)));
 }
+$('#cats').addEventListener('click', e=>{
+  const b=e.target.closest('.cat-btn'); if(!b) return;
+  currentCat=b.dataset.key;
+  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+  showGallery();
+});
 
+/* ===== Galleria ===== */
 function addFigure(path){
   const name=path.split('/').pop(), cap=toTitle(name.replace(/\.[^.]+$/,''));
   const fig=document.createElement('figure'); fig.dataset.file=path;
   fig.innerHTML=`
-    <span class="tick" title="Valitse"></span>
+    <button class="tick" type="button" aria-label="Valitse ${cap}"></button>
     <img src="${path}" alt="${cap}" loading="lazy" referrerpolicy="no-referrer">
     <figcaption>${cap}</figcaption>
-    <button class="add-btn" type="button">Lisää koriin</button>
+    <button class="add-btn" type="button" aria-label="Lisää koriin ${cap}">Lisää koriin</button>
   `;
-  galEl.appendChild(fig);
+  $('#gallery').appendChild(fig);
 }
 function showGallery(){
-  galEl.innerHTML='';
-  const list=currentCat==='all'?allFiles:allFiles.filter(f=>f.cat===currentCat);
-  const seen=new Set();
-  for(const f of list){
-    if(seen.has(f.path)) continue; seen.add(f.path);
-    addFigure(f.path);
-  }
+  const gal = $('#gallery'); gal.innerHTML='';
+  const list = currentCat==='all' ? allFiles : allFiles.filter(f=>f.cat===currentCat);
+  const seen = new Set();
+  for(const f of list){ if(seen.has(f.path)) continue; seen.add(f.path); addFigure(f.path); }
 }
-catsEl.addEventListener('click', e=>{
-  const b=e.target.closest('.cat-btn'); if(!b) return;
-  currentCat=b.dataset.key;
-  catsEl.querySelectorAll('.cat-btn').forEach(x=>x.classList.toggle('active',x===b));
-  showGallery();
-});
 
-/* === Ostoskori === */
+/* ===== Ostoskori ===== */
 let cart=new Map();
-const cartEl=document.getElementById('cart');
-const cartCountEl=document.getElementById('cartCount');
+const cartEl=$('#cart'), cartCountEl=$('#cartCount');
 function renderCart(){
   cartEl.innerHTML='';
   for(const [name,item] of cart){
@@ -194,21 +235,19 @@ function renderCart(){
     row.innerHTML=`
       <div title="${name}">${name}</div>
       <input type="text" class="size" value="${item.size||''}" placeholder="Koko">
-      <input type="number" min="1" class="qty" value="${item.qty||1}">
-      <button class="rm">✕</button>`;
+      <input type="number" min="1" class="qty" value="${Math.max(1,parseInt(item.qty)||1)}">
+      <button class="rm" title="Poista">✕</button>`;
     cartEl.appendChild(row);
   }
-  cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(parseInt(b.qty)||1),0);
+  cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
   localStorage.setItem('suomen585_cart', JSON.stringify([...cart.entries()]));
 }
 function addToCart(filename){
   const it=cart.get(filename)||{name:filename,size:'',qty:0};
-  it.qty++; cart.set(filename,it); renderCart();
+  it.qty = Math.max(0, parseInt(it.qty)||0) + 1;
+  cart.set(filename,it); renderCart();
 }
-function loadCart(){
-  try{ const raw=localStorage.getItem('suomen585_cart'); if(!raw) return;
-    const arr=JSON.parse(raw); cart=new Map(arr); renderCart(); }catch{}
-}
+function loadCart(){ try{ const raw=localStorage.getItem('suomen585_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch{} }
 
 cartEl.addEventListener('input', e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
@@ -221,16 +260,20 @@ cartEl.addEventListener('click', e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
   if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
 });
-document.getElementById('cartClear').onclick=()=>{ cart.clear(); renderCart(); };
-document.getElementById('cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
-
-/* === Lähetys Google Apps Scriptille === */
-document.getElementById('cartEmail').onclick=async ()=>{
+$('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
+$('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
+$('#copyOrder').onclick=()=>{
   if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
+  const lines=[...cart.values()].map(it=>`Tuote: ${it.name} | Koko: ${it.size||""} | Kpl: ${Math.max(1,parseInt(it.qty)||1)}`);
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Tilaus kopioitu leikepöydälle.'));
+};
+
+/* ===== Lähetys GAS:lle ===== */
+$('#cartEmail').onclick=async ()=>{
+  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
+  if(!GAS_ENDPOINT || !GAS_SECRET){ alert('Lähetysosoite ei ole asetettu.'); return; }
   const items=[...cart.values()].map(it=>({name:it.name, size:it.size||"", qty:Math.max(1,parseInt(it.qty)||1)}));
   const sender=sessionStorage.getItem('suomen585_name')||"Tuntematon";
-
-  if(!GAS_ENDPOINT || !GAS_SECRET){ alert('Lähetysosoite ei ole asetettu.'); return; }
 
   try{
     await fetch(GAS_ENDPOINT,{
@@ -241,54 +284,45 @@ document.getElementById('cartEmail').onclick=async ()=>{
     alert('Lähetetty! Tarkista sähköpostisi.');
   }catch(err){
     console.error(err);
-    alert('Lähetys epäonnistui. Yritä myöhemmin uudelleen.');
+    alert('Lähetys epäonnistui. Yritä uudelleen.');
   }
 };
 
-/* === Lightbox ja gallerian klikkaukset === */
-galEl.addEventListener('click', e=>{
+/* ===== Lightbox ja gallerian klikkaukset ===== */
+$('#gallery').addEventListener('click', e=>{
   const fig=e.target.closest('figure'); if(!fig) return;
-  if(e.target.classList.contains('tick')){
-    fig.classList.toggle('selected');
-    return;
-  }
-  if(e.target.classList.contains('add-btn')){
-    const fn=fig.dataset.file.split('/').pop(); addToCart(fn); return;
-  }
-  const img=e.target.closest('img'); if(img){
-    const lb=document.getElementById('lightbox'), li=document.getElementById('lightImg');
-    li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
-  }
+  if(e.target.classList.contains('tick')){ fig.classList.toggle('selected'); return; }
+  if(e.target.classList.contains('add-btn')){ addToCart(fig.dataset.file.split('/').pop()); return; }
+  const img=e.target.closest('img');
+  if(img){ const lb=$('#lightbox'), li=$('#lightImg'); li.src=img.src; li.alt=img.alt||''; lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); }
 });
-document.getElementById('closeLb').onclick=()=>{ const lb=document.getElementById('lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
+$('#closeLb').onclick=()=>{ const lb=$('#lightbox'); lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); };
 
-/* === Lataa kuvat manifestista === */
-async function loadFromManifest(){
+/* ===== Manifest-lataus (spinnereillä & uudelleenyrityksellä) ===== */
+async function loadFromManifest(retry=0){
+  const spin=$('#spin'); spin.classList.add('on'); $('#status').style.display='none';
   try{
     const res=await fetch('images/manifest.json',{cache:'no-store'});
-    if(!res.ok){ renderCats(countsFrom([])); showErr('Manifestia ei löytynyt.'); return; }
+    if(!res.ok) throw new Error('manifest not found');
     const manifest=await res.json();
     let files=(manifest.files||[]).filter(isImg);
     files=Array.from(new Set(files)); // poista duplikaatit
-    if(!files.length){ renderCats(countsFrom([])); showErr('Manifesti on tyhjä.'); return; }
+    if(!files.length) throw new Error('manifest empty');
 
     const root=files[0].split('/')[0];
     const regs=CATS.map(c=>({key:c.key, re:new RegExp(`^${root}/${c.key}/`,'i')}));
     const byCat=[];
-    for(const p of files){
-      const hit=regs.find(r=>r.re.test(p));
-      if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); }
-    }
+    for(const p of files){ const hit=regs.find(r=>r.re.test(p)); if(hit){ byCat.push({ path:p, cat:hit.key, name:p.split('/').pop() }); } }
     const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
-    allFiles=Array.from(uniq.values())
-      .sort((a,b)=>a.cat===b.cat? a.name.localeCompare(b.name,'fi'): a.cat.localeCompare(b.cat,'fi'));
-
-    renderCats(countsFrom(allFiles));
-    showGallery();
-  }catch(e){ console.error(e); renderCats(countsFrom([])); showErr('Kuvien haku epäonnistui.'); }
+    allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+    renderCats(countsFrom(allFiles)); showGallery();
+  }catch(err){
+    if(retry<2){ setTimeout(()=>loadFromManifest(retry+1), 800*(retry+1)); return; }
+    const s=$('#status'); s.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.'; s.style.display='block';
+  }finally{ spin.classList.remove('on'); }
 }
 
-/* === Käynnistys === */
+/* ===== Käynnistys ===== */
 (async function(){
   await setupGate();
   loadCart();
