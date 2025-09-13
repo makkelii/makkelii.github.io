@@ -6,9 +6,9 @@
 <title>B2B Tilausportaali</title>
 <meta name="color-scheme" content="light dark" />
 <style>
-  :root{ --purple:#3a006b; --gold:#d4af37; --ink:#222; --muted:#666; --bg:#0f0f14; --card:#141421; --border:#2b2b3a; }
+  :root{ --purple:#3a006b; --gold:#d4af37; --ink:#e9e9f0; --muted:#bfc0d2; --bg:#0f0f14; --card:#141421; --border:#2b2b3a; }
   *{ box-sizing:border-box }
-  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:#e9e9f0 }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink) }
   header{ background:var(--purple); color:var(--gold); padding:1rem; text-align:center }
   header h1{ margin:0; font-size:clamp(1.2rem,3vw,1.8rem) }
 
@@ -17,48 +17,52 @@
 
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem }
   .search{ flex:1; min-width:240px; display:flex; gap:.4rem }
-  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:#e9e9f0 }
-  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:#e9e9f0 }
+  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
+  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:var(--ink) }
 
   .cats{ display:flex; flex-wrap:nowrap; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
   .cats::-webkit-scrollbar{ display:none }
-  .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:#e9e9f0; white-space:nowrap }
+  .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
 
-  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:1rem }
+  /* hieman leveämpi minimi, jotta napille jää tilaa */
+  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(160px,1fr)) } }
+
   figure{
     display:flex; flex-direction:column; gap:.55rem;
     background:var(--card); border:1px solid var(--border); border-radius:14px;
     padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
   }
   figure img{ width:100%; height:auto; border-radius:10px; aspect-ratio:1/1; object-fit:cover; display:block; cursor:zoom-in }
-  figcaption{ margin:.1rem 0 0; font-size:.95rem; color:#bfc0d2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
-  .sku{ font-size:.8rem; color:#bfc0d2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
+  .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-  /* Lisäysrivi korteissa – “Koko” näkyy aina kokonaan */
+  /* Lisäysrivi korteissa – Koko näkyy, Kpl kapea, nappi mahtuu */
   .addrow{
     margin-top:auto;
     display:grid;
-    gap:.5rem;
+    gap:.45rem;                  /* pienempi väli */
     align-items:center;
-    grid-template-columns: 110px 70px 1fr;  /* Koko (min 110px) | Kpl 70px | Nappi ottaa loput */
+    grid-template-columns: 110px 56px 1fr;  /* Koko | Kpl | Nappi ottaa loput */
   }
   .addrow input{
-    padding:.5rem;
+    padding:.48rem .55rem;
     border:1px solid var(--border);
     border-radius:9px;
     background:transparent;
-    color:#e9e9f0;
+    color:var(--ink);
     min-width:0;
   }
-  .addrow .size{ min-width:110px }     /* varmistaa että “Koko” ei typisty */
-  .addrow .size::placeholder{ color:#bfc0d2 }
-  .addrow .qty{ text-align:center }
+  .addrow .size{ min-width:110px }
+  .addrow .size::placeholder{ color:var(--muted) }
+  .addrow .qty{ text-align:center; width:56px }
   .addrow button{
     border:none; border-radius:9px; background:var(--gold); color:#2d2050;
-    font-weight:800; cursor:pointer; padding:.55rem .8rem; width:100%;
+    font-weight:800; cursor:pointer; padding:.5rem .6rem; width:100%;
+    font-size:.92rem; line-height:1.05; white-space:nowrap;
   }
+
   @media (max-width:540px){
     .addrow{
       grid-template-columns: 1fr 1fr;
@@ -74,17 +78,17 @@
     padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem
   }
   .cart-head, .cart-row{ display:grid; grid-template-columns:1fr 100px 70px 34px; gap:.6rem; align-items:center }
-  .cart-head{ font-weight:800; color:#bfc0d2; padding:.35rem .25rem; border-bottom:1px solid var(--border); margin-bottom:.35rem }
+  .cart-head{ font-weight:800; color:var(--muted); padding:.35rem .25rem; border-bottom:1px solid var(--border); margin-bottom:.35rem }
   .cart-items{ max-height:58vh; overflow:auto }
   .cart-row{ padding:.35rem .25rem; border-bottom:1px dashed var(--border) }
   .cart-row:last-child{ border-bottom:none }
-  .cart-input{ width:100%; padding:.4rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:#e9e9f0; text-align:center }
+  .cart-input{ width:100%; padding:.4rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center }
   .rm{ border:none; background:#ffe8e8; color:#800; border-radius:8px; padding:.45rem 0; cursor:pointer }
   .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-  .btn{ border:1px solid var(--border); padding:.7rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:#e9e9f0 }
+  .btn{ border:1px solid var(--border); padding:.7rem 1rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
-  .note{ width:100%; min-height:80px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:#e9e9f0 }
+  .note{ width:100%; min-height:80px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
 
   .cart-badge{ position:fixed; top:12px; right:12px; background:var(--gold); color:#2d2050; border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:1000; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
 
@@ -98,7 +102,7 @@
   .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
   .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
-  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:#e9e9f0 }
+  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
   .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 
@@ -170,11 +174,11 @@
   </div>
 
 <script>
-/* ---------- ASETUKSET (valmiina) ---------- */
+/* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbxMANPR3ctKfovpzt5xDLo6Esfm_aRkuUZfKMwzJranZkHPAHPFtBTGkWVqijZ41yo/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
-/* ----------------------------------------- */
+/* -------------------------------- */
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
