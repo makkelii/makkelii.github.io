@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>B2B – Tukkutilaus</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<title>Suomen 585 Oy – Tukkutilaus</title>
+<link rel="icon" href="favicon.ico" />
 <meta name="color-scheme" content="light dark" />
 <style>
   :root{
@@ -20,7 +20,7 @@
   body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink) }
 
   header{ background:var(--purple); color:var(--gold); padding:1rem; text-align:center }
-  header h1{ margin:0; font-size:clamp(1.2rem,3vw,1.8rem) }
+  header h1{ margin:0; font-size:clamp(1.1rem,3.5vw,1.8rem) }
 
   .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
@@ -30,7 +30,7 @@
   .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
   .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:var(--ink) }
 
-  .cats{ display:flex; flex-wrap:nowrap; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
+  .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
   .cats::-webkit-scrollbar{ display:none }
   .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
@@ -47,13 +47,13 @@
   figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-  /* Add row: Koko | Kpl | Nappi – kavennettu Koko (45px) ja Kpl (45px) */
+  /* Add row: Koko | Kpl | Nappi – Koko & Kpl kapeat */
   .addrow{
     margin-top:auto;
     display:grid;
     gap:.42rem;
     align-items:center;
-    grid-template-columns: 45px 45px 1fr;  /* Koko 45px | Kpl 45px | Nappi joustaa */
+    grid-template-columns: 45px 45px 1fr;  /* Koko 45px | Kpl 45px | Nappi */
   }
   .addrow input{
     padding:.42rem .45rem;
@@ -148,7 +148,7 @@
     </div>
   </div>
 
-  <header><h1>B2B – Tukkutilaus</h1></header>
+  <header><h1>Suomen 585 Oy – Tukkutilaus</h1></header>
 
   <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
 
@@ -202,7 +202,7 @@
 /* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
-const PASSWORD_PLAIN = "sala54N4";
+const PASSWORD_PLAIN = "sala54N4"; /* vaihda halutessasi */
 /* -------------------------------- */
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -332,7 +332,31 @@ $('#copyOrder').onclick=()=>{
 };
 $('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
 
-/* ==== Send via GAS – normaali fetch + no-cors fallback ==== */
+/* ==== Lähetys GAS:lle – fetch + varma lomake-fallback ==== */
+function postViaHiddenForm(url, payloadObj) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = url;
+  form.target = 'gas_iframe';
+  form.style.display = 'none';
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'data'; // GAS: e.parameter.data (JSON-string)
+  input.value = JSON.stringify(payloadObj);
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+  setTimeout(()=> form.remove(), 1500);
+}
+(function ensureIframe(){
+  if(!document.getElementById('gas_iframe')){
+    const ifr=document.createElement('iframe');
+    ifr.name='gas_iframe';
+    ifr.id='gas_iframe';
+    ifr.hidden=true;
+    document.body.appendChild(ifr);
+  }
+})();
 $('#cartEmail').onclick = async () => {
   if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
 
@@ -341,30 +365,28 @@ $('#cartEmail').onclick = async () => {
   }));
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
-  const payload = JSON.stringify({ secret: GAS_SECRET, items, sender, note });
+  const payload = { secret: GAS_SECRET, items, sender, note };
 
   try {
-    // 1) Normaali POST (toivotaan "OK")
+    // 1) Yritä normaali JSON-POST
     let res = await fetch(GAS_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
     });
     let txt = await res.text().catch(()=> '');
-    if (txt && txt.trim() === 'OK') { alert('Lähetetty!'); return; }
+    if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
+  } catch (_) { /* jatketaan fallbackiin */ }
 
-    // 2) Fallback: no-cors (opaque vastaus, mutta GAS saa datan)
-    await fetch(GAS_ENDPOINT, { method:'POST', mode:'no-cors', body: payload });
-    alert('Lähetetty!');
-  } catch (err) {
-    console.error(err);
-    alert('Lähetys epäonnistui.');
-  }
+  // 2) Fallback: lomakepostitus (ei esikyselyä → varma doPost)
+  postViaHiddenForm(GAS_ENDPOINT, payload);
+  alert('Lähetetty!');
 };
 
 /* ==== Manifestin lataus ==== */
+/* Odotetaan: images/manifest.json  → { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
 async function loadFromManifest(){
-  const spin=$('#spin'); if(spin) spin.classList.add('on');
+  const spin=$('#spin'); spin?.classList.add('on');
   const status=$('#status'); status.style.display='none'; status.textContent='';
   try{
     const res=await fetch('images/manifest.json',{cache:'no-store'});
@@ -374,7 +396,6 @@ async function loadFromManifest(){
     files=[...new Set(files)];
     if(!files.length) throw new Error('empty');
 
-    // Kategoriat: images/<Kategoria>/file.jpg (Kansionimet täsmälleen: Magneetit, Sormukset, Ranneketjut, Kaulaketjut, Riipukset)
     const root=files[0].split('/')[0];
     const regs=CATS.map(c=>({key:c.key,re:new RegExp(`^${root}/${c.key}/`,'i')}));
     const byCat=[];
@@ -393,7 +414,7 @@ async function loadFromManifest(){
     status.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.';
     status.style.display='block';
   }finally{
-    const spin=$('#spin'); if(spin) spin.classList.remove('on');
+    spin?.classList.remove('on');
   }
 }
 
