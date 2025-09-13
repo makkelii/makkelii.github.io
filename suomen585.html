@@ -332,30 +332,49 @@ $('#copyOrder').onclick=()=>{
 };
 $('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
 
-/* ==== Send via GAS ==== */
-$('#cartEmail').onclick=async ()=>{
-  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
-  const items=[...cart.values()].map(it=>({name:it.name, size:it.size||"", qty:Math.max(1,parseInt(it.qty)||1)}));
-  const sender=sessionStorage.getItem('b2b_name')||"Tuntematon";
-  const note=$('#note').value||"";
-  try{
-    const res=await fetch(GAS_ENDPOINT,{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({secret:GAS_SECRET, items, sender, note}) });
-    const text=await res.text().catch(()=> 'OK');
-    if(text.trim()!=='OK' && res.type!=='opaque'){ alert('Lähetys epäonnistui: '+text); return; }
+/* ==== Send via GAS – normaali fetch + no-cors fallback ==== */
+$('#cartEmail').onclick = async () => {
+  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
+
+  const items  = [...cart.values()].map(it => ({
+    name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1)
+  }));
+  const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
+  const note   = $('#note').value || "";
+  const payload = JSON.stringify({ secret: GAS_SECRET, items, sender, note });
+
+  try {
+    // 1) Normaali POST (toivotaan "OK")
+    let res = await fetch(GAS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
+    let txt = await res.text().catch(()=> '');
+    if (txt && txt.trim() === 'OK') { alert('Lähetetty!'); return; }
+
+    // 2) Fallback: no-cors (opaque vastaus, mutta GAS saa datan)
+    await fetch(GAS_ENDPOINT, { method:'POST', mode:'no-cors', body: payload });
     alert('Lähetetty!');
-  }catch(err){ console.error(err); alert('Lähetys epäonnistui.'); }
+  } catch (err) {
+    console.error(err);
+    alert('Lähetys epäonnistui.');
+  }
 };
 
-/* ==== Load manifest ==== */
+/* ==== Manifestin lataus ==== */
 async function loadFromManifest(){
-  const spin=$('#spin'); if(spin) spin.classList.add('on'); $('#status').style.display='none';
+  const spin=$('#spin'); if(spin) spin.classList.add('on');
+  const status=$('#status'); status.style.display='none'; status.textContent='';
   try{
-    const res=await fetch('images/manifest.json',{cache:'no-store'}); if(!res.ok) throw new Error('not found');
+    const res=await fetch('images/manifest.json',{cache:'no-store'});
+    if(!res.ok) throw new Error('not found');
     const manifest=await res.json();
-    let files=(manifest.files||[]).filter(p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p)); files=[...new Set(files)];
+    let files=(manifest.files||[]).filter(p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p));
+    files=[...new Set(files)];
     if(!files.length) throw new Error('empty');
-    /* Kategoriat päätellään kansion nimen mukaan (images/<Kategoria>/file.jpg) */
+
+    // Kategoriat: images/<Kategoria>/file.jpg (Kansionimet täsmälleen: Magneetit, Sormukset, Ranneketjut, Kaulaketjut, Riipukset)
     const root=files[0].split('/')[0];
     const regs=CATS.map(c=>({key:c.key,re:new RegExp(`^${root}/${c.key}/`,'i')}));
     const byCat=[];
@@ -363,12 +382,19 @@ async function loadFromManifest(){
       const hit=regs.find(r=>r.re.test(p));
       if(hit) byCat.push({path:p,cat:hit.key,name:p.split('/').pop()});
     }
-    const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
+
+    const uniq=new Map();
+    for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
     allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-    renderCats(countsFrom(allFiles)); showGallery();
+
+    renderCats(countsFrom(allFiles));
+    showGallery();
   }catch(e){
-    const s=$('#status'); s.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.'; s.style.display='block';
-  }finally{ const spin=$('#spin'); if(spin) spin.classList.remove('on'); }
+    status.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.';
+    status.style.display='block';
+  }finally{
+    const spin=$('#spin'); if(spin) spin.classList.remove('on');
+  }
 }
 
 /* ==== init ==== */
