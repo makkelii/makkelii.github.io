@@ -26,7 +26,7 @@
   .cat-btn.active{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
 
   /* hieman leveämpi minimi, jotta napille jää tilaa */
-  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:1rem }
+  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(160px,1fr)) } }
 
   figure{
@@ -42,9 +42,9 @@
   .addrow{
     margin-top:auto;
     display:grid;
-    gap:.45rem;                  /* pienempi väli */
+    gap:.42rem;
     align-items:center;
-    grid-template-columns: 110px 56px 1fr;  /* Koko | Kpl | Nappi ottaa loput */
+    grid-template-columns: 120px 52px 1fr;  /* Koko | Kpl | Nappi */
   }
   .addrow input{
     padding:.48rem .55rem;
@@ -54,16 +54,16 @@
     color:var(--ink);
     min-width:0;
   }
-  .addrow .size{ min-width:110px }
+  .addrow .size{ min-width:120px }
   .addrow .size::placeholder{ color:var(--muted) }
-  .addrow .qty{ text-align:center; width:56px }
+  .addrow .qty{ text-align:center; width:52px }
   .addrow button{
     border:none; border-radius:9px; background:var(--gold); color:#2d2050;
-    font-weight:800; cursor:pointer; padding:.5rem .6rem; width:100%;
-    font-size:.92rem; line-height:1.05; white-space:nowrap;
+    font-weight:800; cursor:pointer; padding:.48rem .55rem; width:100%;
+    font-size:.9rem; line-height:1.05; white-space:nowrap;
   }
 
-  @media (max-width:540px){
+  @media (max-width:560px){
     .addrow{
       grid-template-columns: 1fr 1fr;
       grid-template-areas:"size size" "qty add";
