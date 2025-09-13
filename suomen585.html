@@ -64,9 +64,9 @@
     min-width:0;
     font-size:.9rem;
   }
-  .addrow .size{ min-width:45px; text-align:center }
+  .addrow .size{ min-width:45px; text-align:center; font-size:.92rem }
   .addrow .size::placeholder{ color:var(--muted) }
-  .addrow .qty{ text-align:center; width:45px }
+  .addrow .qty{ text-align:center; width:45px; font-size:.92rem }
   .addrow button{
     border:none; border-radius:9px; background:var(--gold); color:#2d2050;
     font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%;
@@ -91,23 +91,38 @@
   .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
+  .btn.outline{ background:transparent; color:var(--gold); border-color:var(--gold) }
+  .btn.outline:hover{ background:rgba(212,175,55,.12) }
 
+  /* Ostoskorin header + rivit */
   .cart-head{
     position:sticky; top:0; z-index:1;
     background:linear-gradient(0deg, rgba(20,20,33,.95), rgba(20,20,33,.95));
     backdrop-filter:blur(3px);
     padding:.45rem .4rem; margin:-.2rem -.4rem .4rem;
-    display:grid; grid-template-columns:1fr 100px 70px 34px; gap:.6rem;
+    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem;
     font-weight:800; color:var(--muted); border-bottom:1px solid var(--border);
   }
   .cart-items{ max-height:58vh; overflow:auto; padding:.2rem .4rem }
   .cart-row{
-    display:grid; grid-template-columns:1fr 100px 70px 34px; gap:.6rem; align-items:center;
+    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center;
     padding:.35rem 0; border-bottom:1px dashed var(--border)
   }
   .cart-row:last-child{ border-bottom:none }
-  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center }
-  .rm{ border:none; background:#ffe8e8; color:#800; border-radius:8px; padding:.45rem 0; cursor:pointer }
+  .cart-input{
+    width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px;
+    background:transparent; color:var(--ink); text-align:center; font-size:.92rem
+  }
+  .cart-input[type="number"]::-webkit-outer-spin-button,
+  .cart-input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+  .cart-input[type="number"]{ -moz-appearance:textfield }
+
+  .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
+  .rm:hover{ background:#ffd7d7 }
+
+  @media (max-width:560px){
+    .cart-head, .cart-row{ grid-template-columns:1fr 70px 56px 30px; gap:.45rem }
+  }
 
   .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
   .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
@@ -173,7 +188,7 @@
     <aside>
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
-        <button class="btn" id="logout" type="button">Kirjaudu ulos</button>
+        <button class="btn outline" id="logout" type="button" title="Kirjaa ulos ja palaa kirjautumiseen">Kirjaudu ulos</button>
       </div>
 
       <div class="cart-head">
@@ -202,7 +217,7 @@
 /* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
-const PASSWORD_PLAIN = "sala54N4"; /* vaihda halutessasi */
+const PASSWORD_PLAIN = "sala54N4";
 /* -------------------------------- */
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -229,7 +244,16 @@ async function initGate(){
   }
   if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; }
   btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
-  $('#logout').onclick=()=>{ sessionStorage.clear(); localStorage.removeItem('b2b_cart'); location.reload(); };
+  // Uloskirjautuminen (ilman reloadia)
+  $('#logout').onclick=()=>{
+    if(!confirm('Kirjaudutaanko ulos?')) return;
+    sessionStorage.clear();
+    localStorage.removeItem('b2b_cart');
+    cart.clear(); renderCart();
+    $('#gate').style.display='flex';
+    $('#app').setAttribute('aria-hidden','true');
+    $('#passInput').value=''; $('#nameInput').focus();
+  };
 }
 
 /* ==== Categories & search ==== */
