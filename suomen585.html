@@ -38,9 +38,10 @@
   figure img{ width:100%; height:auto; border-radius:10px; aspect-ratio:1/1; object-fit:cover; display:block; cursor:zoom-in }
   figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+
+  /* Lisäysrivi korteissa – leveä "Koko" että teksti mahtuu */
   .addrow{
     margin-top:auto; display:grid; gap:.5rem; align-items:center;
-    /* leveämpi ensimmäinen sarake, jotta "Koko" näkyy kokonaan */
     grid-template-columns: 120px 80px 120px;
   }
   .addrow input{
@@ -53,8 +54,7 @@
     font-weight:800; cursor:pointer; padding:.55rem .8rem;
   }
   @media (max-width:540px){
-    .addrow{ grid-template-columns: 1fr 1fr; grid-template-areas:
-             "size size" "qty add"; }
+    .addrow{ grid-template-columns: 1fr 1fr; grid-template-areas: "size size" "qty add"; }
     .addrow .size{ grid-area:size }
     .addrow .qty{ grid-area:qty }
     .addrow button{ grid-area:add }
@@ -85,12 +85,13 @@
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 
+  /* Kirjautumisgaten ulkoasu */
   .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
   .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
   .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
-  .gate-err{ color:#a00000; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
+  .gate-err{ color:#ff5a5a; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 
   /* Lightbox */
   .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9999; }
@@ -106,8 +107,8 @@
       <h2>B2B-portaali</h2>
       <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
       <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
-      <button id="passBtn">Avaa</button>
-      <div class="gate-err" id="gateErr">Väärä salasana.</div>
+      <button id="passBtn" type="button">Avaa</button>
+      <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
     </div>
   </div>
 
@@ -122,7 +123,7 @@
       <div class="toolbar">
         <div class="search">
           <input id="q" type="search" placeholder="Hae nimellä tai SKU:lla…" />
-          <button id="clear">Tyhjennä</button>
+          <button id="clear" type="button">Tyhjennä</button>
         </div>
         <div class="cats" id="cats"></div>
       </div>
@@ -136,7 +137,7 @@
     <aside>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
         <h2 style="margin:.2rem 0">Ostoskori</h2>
-        <button class="btn" id="logout">Kirjaudu ulos</button>
+        <button class="btn" id="logout" type="button">Kirjaudu ulos</button>
       </div>
 
       <div class="cart-head"><div>Tuote / SKU</div><div>Koko</div><div>Kpl</div><div></div></div>
@@ -146,22 +147,22 @@
       <textarea id="note" class="note" placeholder="Vapaa viesti tukulle…"></textarea>
 
       <div class="cart-actions">
-        <button class="btn" id="copyOrder">Kopioi tilaus</button>
-        <button class="btn danger" id="cartClear">Tyhjennä kori</button>
-        <button class="btn primary" id="cartEmail">Lähetä sähköpostilla</button>
+        <button class="btn" id="copyOrder" type="button">Kopioi tilaus</button>
+        <button class="btn danger" id="cartClear" type="button">Tyhjennä kori</button>
+        <button class="btn primary" id="cartEmail" type="button">Lähetä sähköpostilla</button>
       </div>
     </aside>
   </main>
 
   <!-- Lightbox -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="close" id="lbClose">Sulje</button>
+    <button class="close" id="lbClose" type="button">Sulje</button>
     <img id="lbImg" alt="" />
   </div>
 
 <script>
 /* ---------- ASETUKSET (valmiina) ---------- */
-const GAS_ENDPOINT   = https:"//script.google.com/macros/s/AKfycbxMANPR3ctKfovpzt5xDLo6Esfm_aRkuUZfKMwzJranZkHPAHPFtBTGkWVqijZ41yo/exec";
+const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbxMANPR3ctKfovpzt5xDLo6Esfm_aRkuUZfKMwzJranZkHPAHPFtBTGkWVqijZ41yo/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
 /* ----------------------------------------- */
@@ -169,39 +170,57 @@ const PASSWORD_PLAIN = "sala54N4";
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 
-/* ---- Kirjautuminen ---- */
+/* ---- Kirjautuminen (robust) ---- */
 async function sha256Safe(str){
   try{
-    if(!crypto?.subtle) return null;
+    if(!crypto || !crypto.subtle) return null;
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
   }catch{ return null; }
 }
-let PASSWORD_HASH = "";
-async function setupGate(){
-  PASSWORD_HASH = await sha256Safe(PASSWORD_PLAIN);
-  const gate = $('#gate'), app = $('#app'), errEl = $('#gateErr');
-  if(sessionStorage.getItem('b2b_authed')==='1'){ gate.style.display='none'; app.setAttribute('aria-hidden','false'); return; }
+function openApp(){
+  $('#gate').style.display='none';
+  $('#app').setAttribute('aria-hidden','false');
+  $('#gateErr').style.display='none';
+}
+async function initGate(){
+  const btn   = $('#passBtn');
+  const nameI = $('#nameInput');
+  const passI = $('#passInput');
+  const err   = $('#gateErr');
+
   async function tryOpen(){
-    const name = sanitize($('#nameInput').value)||'Tuntematon';
-    const given = $('#passInput').value||'';
-    let ok=false;
-    if(!PASSWORD_PLAIN){ ok = true; }
-    else if(PASSWORD_HASH){ const g = await sha256Safe(given); ok = (g && g===PASSWORD_HASH); }
-    else { ok = (given === PASSWORD_PLAIN); }
-    if(ok){
+    const name  = sanitize(nameI.value) || 'Tuntematon';
+    const given = passI.value || '';
+
+    if (!PASSWORD_PLAIN) { sessionStorage.setItem('b2b_name', name); sessionStorage.setItem('b2b_authed','1'); openApp(); return; }
+
+    let ok = false;
+    const hash = await sha256Safe(PASSWORD_PLAIN);
+    if (hash){ // selain tukee SHA-256
+      const g = await sha256Safe(given);
+      ok = (g && g === hash);
+    }else{     // fallback selkokieliseen
+      ok = (given === PASSWORD_PLAIN);
+    }
+
+    if (ok){
       sessionStorage.setItem('b2b_name', name);
-      sessionStorage.setItem('b2b_authed', '1');
-      gate.style.display='none';
-      app.setAttribute('aria-hidden','false');
-      errEl.style.display='none';
+      sessionStorage.setItem('b2b_authed','1');
+      openApp();
     }else{
-      errEl.style.display='block';
+      err.style.display='block';
+      passI.focus();
+      passI.select?.();
     }
   }
-  $('#passBtn').onclick = tryOpen;
-  $('#passInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
-  $('#nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
+
+  // jos aiemmin kirjauduttu
+  if (sessionStorage.getItem('b2b_authed') === '1'){ openApp(); return; }
+
+  btn.addEventListener('click', tryOpen);
+  passI.addEventListener('keydown', e => { if(e.key === 'Enter') tryOpen(); });
+  nameI.addEventListener('keydown', e => { if(e.key === 'Enter') tryOpen(); });
   $('#logout').onclick = ()=>{ sessionStorage.clear(); localStorage.removeItem('b2b_cart'); location.reload(); };
 }
 
@@ -246,7 +265,7 @@ function addFigure(path){
     <div class="addrow">
       <input type="text" class="size" placeholder="Koko" />
       <input type="number" class="qty" min="1" value="1" />
-      <button class="add">Lisää koriin</button>
+      <button class="add" type="button">Lisää koriin</button>
     </div>`;
   $('#gallery').appendChild(fig);
 }
@@ -264,11 +283,14 @@ function showGallery(){
 }
 $('#gallery').addEventListener('click', e=>{
   const fig=e.target.closest('figure'); if(!fig) return;
+
   if(e.target.classList.contains('add')){
     const size=fig.querySelector('.size').value.trim();
     const qty = Math.max(1, parseInt(fig.querySelector('.qty').value)||1);
     addToCart(fig.dataset.file, size, qty);
+    return;
   }
+
   const img = e.target.closest('img');
   if(img){
     $('#lbImg').src = img.src;
@@ -292,7 +314,7 @@ function renderCart(){
       <div title="${name}">${name}</div>
       <input class="cart-input size" type="text" value="${item.size||''}" placeholder="Koko" />
       <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
-      <button class="rm" title="Poista">✕</button>`;
+      <button class="rm" title="Poista" type="button">✕</button>`;
     cartEl.appendChild(row);
   }
   cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
@@ -352,10 +374,7 @@ $('#cartEmail').onclick=async ()=>{
   }catch(err){ console.error(err); alert('Lähetys epäonnistui.'); }
 };
 
-/* ---- Manifest-lataus ----
-   Odottaa tiedostoa images/manifest.json, esim:
-   { "files": ["images/Magneetit/kuva1.jpg", "images/Sormukset/kuva2.jpg", ...] }
-*/
+/* ---- Manifest-lataus ---- */
 async function loadFromManifest(){
   const spin=$('#spin'); if(spin) spin.classList.add('on'); $('#status').style.display='none';
   try{
@@ -377,12 +396,12 @@ async function loadFromManifest(){
   }finally{ const spin=$('#spin'); if(spin) spin.classList.remove('on'); }
 }
 
-/* ---- init ---- */
-(async function(){
-  await setupGate();
+/* ---- init kun DOM valmis ---- */
+window.addEventListener('DOMContentLoaded', async () => {
+  await initGate();
   loadCart();
   loadFromManifest();
-})();
+});
 </script>
 </body>
 </html>
