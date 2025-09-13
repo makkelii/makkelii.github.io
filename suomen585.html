@@ -40,25 +40,46 @@
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
   /* Lisäysrivi korteissa – leveä "Koko" että teksti mahtuu */
+  /* Lisäysrivi korteissa – joustava, mahtuu korttiin */
+.addrow{
+  margin-top:auto;
+  display:grid;
+  gap:.5rem;
+  align-items:center;
+  /* joustava: koko = 1fr, kpl = 70px, nappi venyy loput */
+  grid-template-columns: 1fr 70px auto;
+}
+.addrow input{
+  padding:.5rem;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:transparent;
+  color:var(--ink);
+  min-width:0;            /* estää ylivuodon */
+}
+.addrow .qty{ text-align:center }
+.addrow button{
+  border:none;
+  border-radius:9px;
+  background:var(--gold);
+  color:#2d2050;
+  font-weight:800;
+  cursor:pointer;
+  padding:.55rem .8rem;
+  width:100%;             /* nappi täyttää oman kolumninsa */
+}
+
+/* Pienillä näytöillä pinotaan kahteen riviin */
+@media (max-width:540px){
   .addrow{
-    margin-top:auto; display:grid; gap:.5rem; align-items:center;
-    grid-template-columns: 120px 80px 120px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "size size" "qty add";
   }
-  .addrow input{
-    padding:.5rem; border:1px solid var(--border); border-radius:9px; background:transparent; color:var(--ink); min-width:0;
-  }
-  .addrow .size::placeholder{ color:var(--muted) }
-  .addrow .qty{ text-align:center }
-  .addrow button{
-    border:none; border-radius:9px; background:var(--gold); color:#2d2050;
-    font-weight:800; cursor:pointer; padding:.55rem .8rem;
-  }
-  @media (max-width:540px){
-    .addrow{ grid-template-columns: 1fr 1fr; grid-template-areas: "size size" "qty add"; }
-    .addrow .size{ grid-area:size }
-    .addrow .qty{ grid-area:qty }
-    .addrow button{ grid-area:add }
-  }
+  .addrow .size{ grid-area:size }
+  .addrow .qty{ grid-area:qty }
+  .addrow button{ grid-area:add }
+}
+
 
   aside{
     background:var(--card); border:1px solid var(--border); border-radius:14px;
