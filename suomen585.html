@@ -47,12 +47,13 @@
   figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
+  /* Add row: Koko | Kpl | Nappi (kapeammat kentät) */
   .addrow{
     margin-top:auto;
     display:grid;
     gap:.42rem;
     align-items:center;
-    grid-template-columns: 120px 52px 1fr;  /* Koko | Kpl | Nappi */
+    grid-template-columns: 90px 45px 1fr;  /* Koko 90px | Kpl 45px | Nappi joustaa */
   }
   .addrow input{
     padding:.48rem .55rem;
@@ -62,9 +63,9 @@
     color:var(--ink);
     min-width:0;
   }
-  .addrow .size{ min-width:120px }
+  .addrow .size{ min-width:90px }
   .addrow .size::placeholder{ color:var(--muted) }
-  .addrow .qty{ text-align:center; width:52px }
+  .addrow .qty{ text-align:center; width:45px }
   .addrow button{
     border:none; border-radius:9px; background:var(--gold); color:#2d2050;
     font-weight:800; cursor:pointer; padding:.48rem .55rem; width:100%;
@@ -119,6 +120,7 @@
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 
+  /* Kirjautumisportti */
   .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
   .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
@@ -126,6 +128,7 @@
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
   .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 
+  /* Lightbox */
   .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9999; }
   .lightbox.show{ display:flex }
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
@@ -133,7 +136,7 @@
 </style>
 </head>
 <body>
-  <!-- Gate -->
+  <!-- Kirjautumisportti -->
   <div class="gate" id="gate" aria-hidden="false">
     <div class="gate-card">
       <h2>B2B-portaali</h2>
