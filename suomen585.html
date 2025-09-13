@@ -35,16 +35,18 @@
     background:var(--card); border:1px solid var(--border); border-radius:14px;
     padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.06); min-height:100%;
   }
-  figure img{ width:100%; height:auto; border-radius:10px; aspect-ratio:1/1; object-fit:cover; display:block }
+  figure img{ width:100%; height:auto; border-radius:10px; aspect-ratio:1/1; object-fit:cover; display:block; cursor:zoom-in }
   figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
   .addrow{
     margin-top:auto; display:grid; gap:.5rem; align-items:center;
-    grid-template-columns: 1fr 80px 110px;
+    /* leveämpi ensimmäinen sarake, jotta "Koko" näkyy kokonaan */
+    grid-template-columns: 120px 80px 120px;
   }
   .addrow input{
     padding:.5rem; border:1px solid var(--border); border-radius:9px; background:transparent; color:var(--ink); min-width:0;
   }
+  .addrow .size::placeholder{ color:var(--muted) }
   .addrow .qty{ text-align:center }
   .addrow button{
     border:none; border-radius:9px; background:var(--gold); color:#2d2050;
@@ -89,6 +91,12 @@
   .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
   .gate-err{ color:#a00000; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
+
+  /* Lightbox */
+  .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9999; }
+  .lightbox.show{ display:flex }
+  .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
+  .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 </style>
 </head>
 <body>
@@ -145,9 +153,15 @@
     </aside>
   </main>
 
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="close" id="lbClose">Sulje</button>
+    <img id="lbImg" alt="" />
+  </div>
+
 <script>
 /* ---------- ASETUKSET (valmiina) ---------- */
-const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbwjvVTY62ciIk9hnYsI-P9nA3LUwqosvFmvayd3ny4dqT1FOfWHC91owlaC3wMOWq6E/exec";
+const GAS_ENDPOINT   = https:"//script.google.com/macros/s/AKfycbxMANPR3ctKfovpzt5xDLo6Esfm_aRkuUZfKMwzJranZkHPAHPFtBTGkWVqijZ41yo/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
 /* ----------------------------------------- */
@@ -217,7 +231,7 @@ $('#cats').addEventListener('click', e=>{
 $('#q').addEventListener('input', ()=>showGallery());
 $('#clear').onclick = ()=>{ $('#q').value=''; showGallery(); };
 
-/* ---- Galleria ---- */
+/* ---- Galleria + Lightbox ---- */
 function fileToSKU(name){ return name.replace(/\.[^.]+$/,''); }
 function addFigure(path){
   const file = path.split('/').pop();
@@ -255,7 +269,18 @@ $('#gallery').addEventListener('click', e=>{
     const qty = Math.max(1, parseInt(fig.querySelector('.qty').value)||1);
     addToCart(fig.dataset.file, size, qty);
   }
+  const img = e.target.closest('img');
+  if(img){
+    $('#lbImg').src = img.src;
+    $('#lightbox').classList.add('show');
+    $('#lightbox').setAttribute('aria-hidden','false');
+  }
 });
+
+/* Lightbox sulkeminen */
+$('#lbClose').onclick = ()=>{ $('#lightbox').classList.remove('show'); $('#lightbox').setAttribute('aria-hidden','true'); $('#lbImg').src=''; };
+$('#lightbox').addEventListener('click', (e)=>{ if(e.target.id==='lightbox') $('#lbClose').click(); });
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#lbClose').click(); });
 
 /* ---- Ostoskori ---- */
 let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
@@ -307,41 +332,28 @@ $('#copyOrder').onclick=()=>{
 $('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
 
 /* ---- Lähetys GAS:lle ---- */
-$('#cartEmail').onclick = async () => {
-  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
-
-  const items  = [...cart.values()].map(it => ({
-    name: it.name,
-    size: it.size || "",
-    qty : Math.max(1, parseInt(it.qty) || 1)
-  }));
-  const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
-  const note   = $('#note').value || "";
-
-  try {
-    const res  = await fetch("https://script.google.com/macros/s/AKfycbyv1MIjjeTpJdvu_v0Cu9E-9v9n39p8kdvCHw7SeasPDboQbGZN4gW65PGg4m-8wjI2/exec", {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({
-        secret: "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h",
-        items, sender, note
-      })
+$('#cartEmail').onclick=async ()=>{
+  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
+  const items=[...cart.values()].map(it=>({name:it.name, size:it.size||"", qty:Math.max(1,parseInt(it.qty)||1)}));
+  const sender=sessionStorage.getItem('b2b_name')||"Tuntematon";
+  const note=$('#note').value||"";
+  try{
+    const res = await fetch(GAS_ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({secret:GAS_SECRET, items, sender, note})
     });
-
     const text = await res.text().catch(()=> 'OK');
     if (text.trim() !== 'OK' && res.type !== 'opaque') {
       alert('Lähetys epäonnistui: ' + text);
       return;
     }
     alert('Lähetetty!');
-  } catch (err) {
-    console.error(err);
-    alert('Lähetys epäonnistui.');
-  }
+  }catch(err){ console.error(err); alert('Lähetys epäonnistui.'); }
 };
 
 /* ---- Manifest-lataus ----
-   Odottaa tiedostoa images/manifest.json, jossa esim:
+   Odottaa tiedostoa images/manifest.json, esim:
    { "files": ["images/Magneetit/kuva1.jpg", "images/Sormukset/kuva2.jpg", ...] }
 */
 async function loadFromManifest(){
