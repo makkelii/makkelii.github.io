@@ -1,160 +1,130 @@
 <!doctype html>
 <html lang="fi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Suomen 585 Oy</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Suomen 585 Oy</title>
 
-  <!-- Faviconit -->
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="theme-color" content="#3a006b">
-  <meta name="color-scheme" content="light dark" />
+<!-- Faviconit -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#3a006b">
 
-  <style>
-    :root{
-      --purple:#3a006b;      /* Royal Purple */
-      --gold:#d4af37;        /* Gold */
-      --bg:#0f0f14;
-      --ink:#e9e9f0;
-      --muted:#bfc0d2;
-      --card:#141421;
-      --border:#2b2b3a;
-    }
+<style>
+  :root{
+    --purple:#3a006b;
+    --gold:#d4af37;
+    --bg:#0f0f14;
+    --ink:#e9e9f0;
+    --muted:#bfc0d2;
+    --card:#141421;
+    --border:#2b2b3a;
+  }
+  *{ box-sizing:border-box }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink) }
 
-    *{ box-sizing:border-box }
-    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink) }
+  header{ background:var(--purple); color:var(--gold); padding:1rem; text-align:center }
+  header h1{ margin:0; font-size:clamp(1.1rem,3.5vw,1.8rem) }
 
-    header{ background:var(--purple); color:var(--gold); padding:1rem; text-align:center }
-    header h1{ margin:0; font-size:clamp(1.1rem,3.5vw,1.8rem) }
+  .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
+  @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
 
-    .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
-    @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
+  .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem }
+  .search{ flex:1; min-width:260px; display:flex; gap:.4rem }
+  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
+  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:var(--ink) }
 
-    .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem }
-    .search{ flex:1; min-width:260px; display:flex; gap:.4rem }
-    .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
-    .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:var(--ink) }
+  .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
+  .cats::-webkit-scrollbar{ display:none }
+  .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
+  .cat-btn.active{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
 
-    .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
-    .cats::-webkit-scrollbar{ display:none }
-    .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
-    .cat-btn.active{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
+  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
+  @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(160px,1fr)) } }
 
-    .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
-    @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(160px,1fr)) } }
+  figure{
+    display:flex; flex-direction:column; gap:.55rem;
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
+  }
+  /* Näytetään koko kuva mittasuhteilla */
+  figure img{
+    width:100%; height:auto;
+    border-radius:10px;
+    object-fit:contain;
+    background:#0b0b10;
+    display:block;
+    cursor:zoom-in;
+  }
+  figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
+  .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-    figure{
-      display:flex; flex-direction:column; gap:.55rem;
-      background:var(--card); border:1px solid var(--border); border-radius:14px;
-      padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
-    }
-    figure img{ width:100%; height:auto; border-radius:10px; aspect-ratio:1/1; object-fit:cover; display:block; cursor:zoom-in }
-    figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
-    .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .addrow{
+    margin-top:auto;
+    display:grid;
+    gap:.42rem;
+    align-items:center;
+    grid-template-columns: 45px 45px 1fr;
+  }
+  .addrow input{
+    padding:.42rem .45rem;
+    border:1px solid var(--border);
+    border-radius:9px;
+    background:transparent;
+    color:var(--ink);
+    min-width:0;
+    font-size:.9rem;
+  }
+  .addrow .size{ min-width:45px; text-align:center; font-size:.92rem }
+  .addrow .size::placeholder{ color:var(--muted) }
+  .addrow .qty{ text-align:center; width:45px; font-size:.92rem }
+  .addrow button{
+    border:none; border-radius:9px; background:var(--gold); color:#2d2050;
+    font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%;
+    font-size:.9rem; line-height:1.05; white-space:nowrap;
+  }
 
-    /* Koko | Kpl | Nappi – kapeat syötteet */
-    .addrow{
-      margin-top:auto;
-      display:grid;
-      gap:.42rem;
-      align-items:center;
-      grid-template-columns: 45px 45px 1fr;
-    }
-    .addrow input{
-      padding:.42rem .45rem;
-      border:1px solid var(--border);
-      border-radius:9px;
-      background:transparent;
-      color:var(--ink);
-      min-width:0;
-      font-size:.9rem;
-    }
-    .addrow .size{ min-width:45px; text-align:center; font-size:.92rem }
-    .addrow .size::placeholder{ color:var(--muted) }
-    .addrow .qty{ text-align:center; width:45px; font-size:.92rem }
-    .addrow button{
-      border:none; border-radius:9px; background:var(--gold); color:#2d2050;
-      font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%;
-      font-size:.9rem; line-height:1.05; white-space:nowrap;
-    }
-    @media (max-width:560px){
-      .addrow{ grid-template-columns: 1fr 1fr; grid-template-areas:"size size" "qty add"; }
-      .addrow .size{ grid-area:size }
-      .addrow .qty{ grid-area:qty }
-      .addrow button{ grid-area:add }
-    }
+  aside{
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem
+  }
+  .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
+  .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
+  .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
+  .btn.primary{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
+  .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
+  .btn.outline{ background:transparent; color:var(--gold); border-color:var(--gold) }
+  .btn.outline:hover{ background:rgba(212,175,55,.12) }
 
-    aside{
-      background:var(--card); border:1px solid var(--border); border-radius:14px;
-      padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem
-    }
-    .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
-    .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
-    .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
-    .btn.primary{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
-    .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
-    .btn.outline{ background:transparent; color:var(--gold); border-color:var(--gold) }
-    .btn.outline:hover{ background:rgba(212,175,55,.12) }
+  .cart-head{ display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; font-weight:800; color:var(--muted); border-bottom:1px solid var(--border); margin-bottom:.5rem }
+  .cart-row{ display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center; padding:.35rem 0; border-bottom:1px dashed var(--border) }
+  .cart-row:last-child{ border-bottom:none }
+  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center; font-size:.92rem }
 
-    .cart-head{
-      position:sticky; top:0; z-index:1;
-      background:linear-gradient(0deg, rgba(20,20,33,.95), rgba(20,20,33,.95));
-      backdrop-filter:blur(3px);
-      padding:.45rem .4rem; margin:-.2rem -.4rem .4rem;
-      display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem;
-      font-weight:800; color:var(--muted); border-bottom:1px solid var(--border);
-    }
-    .cart-items{ max-height:58vh; overflow:auto; padding:.2rem .4rem }
-    .cart-row{
-      display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center;
-      padding:.35rem 0; border-bottom:1px dashed var(--border)
-    }
-    .cart-row:last-child{ border-bottom:none }
-    .cart-input{
-      width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px;
-      background:transparent; color:var(--ink); text-align:center; font-size:.92rem
-    }
-    .cart-input[type="number"]::-webkit-outer-spin-button,
-    .cart-input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
-    .cart-input[type="number"]{ -moz-appearance:textfield }
+  .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
+  .rm:hover{ background:#ffd7d7 }
 
-    .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
-    .rm:hover{ background:#ffd7d7 }
+  .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
+  .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
 
-    @media (max-width:560px){
-      .cart-head, .cart-row{ grid-template-columns:1fr 70px 56px 30px; gap:.45rem }
-    }
+  .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
+  .cart-badge{ position:fixed; top:12px; right:12px; background:var(--gold); color:#2d2050; border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:1000; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
 
-    .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
-    .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
+  .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
+  .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px) }
+  .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
+  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
+  .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
+  .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 
-    .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-    .cart-badge{ position:fixed; top:12px; right:12px; background:var(--gold); color:#2d2050; border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:1000; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
-
-    .error{ display:none; background:#4a1010; border:1px solid #a33; color:#ffdede; padding:.7rem; border-radius:10px; margin-bottom:.75rem; white-space:pre-wrap }
-    .spinner{ display:none; place-items:center; margin:.6rem 0 }
-    .spinner.on{ display:grid }
-    .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite }
-    @keyframes spin{ to{ transform:rotate(360deg) } }
-
-    /* Kirjautumisportti */
-    .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
-    .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
-    .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
-    .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
-    .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
-    .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
-
-    /* Lightbox */
-    .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9999; }
-    .lightbox.show{ display:flex }
-    .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
-    .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
-  </style>
+  .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9999; }
+  .lightbox.show{ display:flex }
+  .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
+  .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
+</style>
 </head>
 <body>
   <!-- Kirjautumisportti -->
@@ -193,7 +163,7 @@
     <aside>
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
-        <button class="btn outline" id="logout" type="button" title="Kirjaudu ulos ja palaa kirjautumiseen">Kirjaudu ulos</button>
+        <button class="btn outline" id="logout" type="button">Kirjaudu ulos</button>
       </div>
 
       <div class="cart-head">
@@ -212,51 +182,19 @@
     </aside>
   </main>
 
-  <!-- Lightbox -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <button class="close" id="closeLb" type="button">Sulje</button>
     <img id="lightImg" alt="">
   </div>
 
 <script>
-/* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
-/* -------------------------------- */
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 
-/* ===== Logout – pysyvä delegointi ===== */
-function bindLogout(){
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('#logout');
-    if (!btn) return;
-
-    try {
-      sessionStorage.removeItem('b2b_authed');
-      sessionStorage.removeItem('b2b_name');
-      localStorage.removeItem('b2b_cart');
-    } catch {}
-
-    // Näytä portti ja piilota app
-    const gate = document.getElementById('gate');
-    const app  = document.getElementById('app');
-    if (gate) gate.style.display = 'flex';
-    if (app)  app.setAttribute('aria-hidden','true');
-
-    const passI = document.getElementById('passInput');
-    const nameI = document.getElementById('nameInput');
-    if (passI) passI.value = '';
-    setTimeout(() => nameI?.focus(), 30);
-
-    // Varmatoiminen vaihtoehto:
-    // location.reload();
-  });
-}
-
-/* ===== Gate ===== */
 async function sha256Safe(str){
   try{
     if(!crypto || !crypto.subtle) return null;
@@ -269,7 +207,6 @@ async function initGate(){
   const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
   async function tryOpen(){
     const name=sanitize(nameI.value)||'Tuntematon'; const given=passI.value||'';
-    if(!PASSWORD_PLAIN){ sessionStorage.setItem('b2b_name',name); sessionStorage.setItem('b2b_authed','1'); openApp(); return; }
     let ok=false; const h=await sha256Safe(PASSWORD_PLAIN);
     if(h){ const g=await sha256Safe(given); ok=(g&&g===h); } else { ok=(given===PASSWORD_PLAIN); }
     if(ok){ sessionStorage.setItem('b2b_name',name); sessionStorage.setItem('b2b_authed','1'); openApp(); }
@@ -277,17 +214,24 @@ async function initGate(){
   }
   if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; }
   btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#logout');
+    if (!btn) return;
+    sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
+    $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
+    $('#passInput').value=''; $('#nameInput').focus();
+  });
 }
 
-/* ===== Kategoriat & haku ===== */
 const CATS = [
-  { key: "Magneetit",       label: "Magneetit" },
-  { key: "Lappimagneetit",  label: "Lappimagneetit" },
-  { key: "Sormukset",       label: "Sormukset" },
-  { key: "Ranneketjut",     label: "Ranneketjut" },
-  { key: "Kaulaketjut",     label: "Kaulaketjut" },
-  { key: "Riipukset",       label: "Riipukset" },
-  { key: "Hiuskorut",       label: "Hiuskorut" }
+  { key: "Magneetit", label: "Magneetit" },
+  { key: "Lappimagneetit", label: "Lappimagneetit" },
+  { key: "Sormukset", label: "Sormukset" },
+  { key: "Ranneketjut", label: "Ranneketjut" },
+  { key: "Kaulaketjut", label: "Kaulaketjut" },
+  { key: "Riipukset", label: "Riipukset" },
+  { key: "Hiuskorut", label: "Hiuskorut" }
 ];
 
 let currentCat='all', allFiles=[];
@@ -303,181 +247,5 @@ $('#cats').addEventListener('click',e=>{ const b=e.target.closest('.cat-btn'); i
 $('#q').addEventListener('input',()=>showGallery());
 $('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
-/* ===== Galleria + lightbox ===== */
 function addFigure(path){
-  const file=path.split('/').pop(); const title=toTitle(file.replace(/\.[^.]+$/,'')); const sku=file.replace(/\.[^.]+$/,'');
-  const fig=document.createElement('figure');
-  fig.dataset.file=file; fig.dataset.path=path; fig.dataset.sku=sku; fig.dataset.title=title;
-  fig.innerHTML=`
-    <img src="${path}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" />
-    <figcaption>${title}</figcaption>
-    <div class="sku">${sku}</div>
-    <div class="addrow">
-      <input type="text" class="size" placeholder="Koko" />
-      <input type="number" class="qty" min="1" value="1" />
-      <button class="add" type="button">Lisää koriin</button>
-    </div>`;
-  $('#gallery').appendChild(fig);
-}
-function showGallery(){
-  const q=$('#q').value.trim().toLowerCase(); const gal=$('#gallery'); gal.innerHTML='';
-  const list=allFiles.filter(f=>{
-    if(currentCat!=='all' && f.cat!==currentCat) return false;
-    if(!q) return true;
-    const name=f.name.toLowerCase(), sku=f.name.replace(/\.[^.]+$/,'').toLowerCase();
-    return name.includes(q)||sku.includes(q);
-  });
-  const seen=new Set(); for(const f of list){ if(seen.has(f.path)) continue; seen.add(f.path); addFigure(f.path); }
-}
-$('#gallery').addEventListener('click',e=>{
-  const fig=e.target.closest('figure'); if(!fig) return;
-  if(e.target.classList.contains('add')){
-    const size=fig.querySelector('.size').value.trim();
-    const qty=Math.max(1,parseInt(fig.querySelector('.qty').value)||1);
-    addToCart(fig.dataset.file,size,qty); return;
-  }
-  const img=e.target.closest('img'); if(img){ $('#lightImg').src=img.src; $('#lightbox').classList.add('show'); $('#lightbox').setAttribute('aria-hidden','false'); }
-});
-$('#closeLb').onclick=()=>{ $('#lightbox').classList.remove('show'); $('#lightbox').setAttribute('aria-hidden','true'); $('#lightImg').src=''; };
-$('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#closeLb').click(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
-
-/* ===== Ostoskori ===== */
-let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
-function renderCart(){
-  cartEl.innerHTML='';
-  for(const [name,item] of cart){
-    const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
-    row.innerHTML=`
-      <div title="${name}">${name}</div>
-      <input class="cart-input size" type="text" value="${item.size||''}" placeholder="Koko" />
-      <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
-      <button class="rm" title="Poista" type="button">✕</button>`;
-    cartEl.appendChild(row);
-  }
-  cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
-  localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()]));
-}
-function addToCart(filename,size,qty){
-  const it=cart.get(filename)||{name:filename,size:'',qty:0};
-  it.size=size||it.size; it.qty=Math.max(0,parseInt(it.qty)||0)+Math.max(1,qty||1);
-  cart.set(filename,it); renderCart();
-}
-function loadCart(){ try{ const raw=localStorage.getItem('b2b_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch{} }
-cartEl.addEventListener('input',e=>{
-  const row=e.target.closest('.cart-row'); if(!row) return;
-  const key=row.dataset.key; const it=cart.get(key); if(!it) return;
-  if(e.target.classList.contains('size')) it.size=e.target.value;
-  if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value)||1);
-  cart.set(key,it); renderCart();
-});
-cartEl.addEventListener('click',e=>{
-  const row=e.target.closest('.cart-row'); if(!row) return;
-  if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
-});
-$('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
-$('#copyOrder').onclick=()=>{
-  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
-  const note=$('#note').value.trim();
-  const name=sessionStorage.getItem('b2b_name')||'Tuntematon';
-  const lines=[ `Lähettäjä: ${name}`, '',
-    ...[...cart.values()].map(it=>`Tuote: ${it.name} | Koko: ${it.size||""} | Kpl: ${Math.max(1,parseInt(it.qty)||1)}`),
-    ...(note?['',`Lisätiedot: ${note}`]:[]) ];
-  navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Tilaus kopioitu leikepöydälle.'));
-};
-$('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
-
-/* ===== Lähetys GAS:lle (fetch + varma lomakefallback) ===== */
-function postViaHiddenForm(url, payloadObj) {
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = url;
-  form.target = 'gas_iframe';
-  form.style.display = 'none';
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'data';               // GAS: e.parameter.data (JSON-string)
-  input.value = JSON.stringify(payloadObj);
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(()=> form.remove(), 1500);
-}
-(function ensureIframe(){
-  if(!document.getElementById('gas_iframe')){
-    const ifr=document.createElement('iframe');
-    ifr.name='gas_iframe';
-    ifr.id='gas_iframe';
-    ifr.hidden=true;
-    document.body.appendChild(ifr);
-  }
-})();
-$('#cartEmail').onclick = async () => {
-  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
-
-  const items  = [...cart.values()].map(it => ({
-    name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1)
-  }));
-  const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
-  const note   = $('#note').value || "";
-  const payload = { secret: GAS_SECRET, items, sender, note };
-
-  try {
-    let res = await fetch(GAS_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-    let txt = await res.text().catch(()=> '');
-    if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
-  } catch (_) { /* jatketaan fallbackiin */ }
-
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-  alert('Lähetetty!');
-};
-
-/* ===== Manifestin lataus ===== */
-/* Odotetaan: images/manifest.json → { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
-async function loadFromManifest(){
-  const spin=$('#spin'); spin?.classList.add('on');
-  const status=$('#status'); status.style.display='none'; status.textContent='';
-  try{
-    const res=await fetch('images/manifest.json',{cache:'no-store'});
-    if(!res.ok) throw new Error('not found');
-    const manifest=await res.json();
-    let files=(manifest.files||[]).filter(p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p));
-    files=[...new Set(files)];
-    if(!files.length) throw new Error('empty');
-
-    const root=files[0].split('/')[0];
-    const regs=CATS.map(c=>({key:c.key,re:new RegExp(`^${root}/${c.key}/`,'i')}));
-    const byCat=[];
-    for(const p of files){
-      const hit=regs.find(r=>r.re.test(p));
-      if(hit) byCat.push({path:p,cat:hit.key,name:p.split('/').pop()});
-    }
-
-    const uniq=new Map();
-    for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
-    allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-
-    renderCats(countsFrom(allFiles));
-    showGallery();
-  }catch(e){
-    status.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.';
-    status.style.display='block';
-  }finally{
-    spin?.classList.remove('on');
-  }
-}
-
-/* ===== init ===== */
-window.addEventListener('DOMContentLoaded', async ()=>{
-  bindLogout();          // <- pysyvä logout
-  await initGate();
-  loadCart();
-  loadFromManifest();
-});
-</script>
-</body>
-</html>
+  const file=path.split('/').pop(); const title=toTitle(file.replace(/\.[^.]+$/,'')); const sku=file.replace
