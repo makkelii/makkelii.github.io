@@ -257,8 +257,16 @@ async function initGate(){
 }
 
 /* ==== Categories & search ==== */
-const CATS=[ {key:"Magneetit",label:"Magneetit"}, {key:"Sormukset",label:"Sormukset"},
-             {key:"Ranneketjut",label:"Ranneketjut"}, {key:"Kaulaketjut",label:"Kaulaketjut"}, {key:"Riipukset",label:"Riipukset"} ];
+const CATS = [
+  { key: "Magneetit",       label: "Magneetit" },
+  { key: "Lappimagneetit",  label: "Lappimagneetit" }, // UUSI
+  { key: "Sormukset",       label: "Sormukset" },
+  { key: "Ranneketjut",     label: "Ranneketjut" },
+  { key: "Kaulaketjut",     label: "Kaulaketjut" },
+  { key: "Riipukset",       label: "Riipukset" },
+  { key: "Hiuskorut",       label: "Hiuskorut" }       // UUSI
+];
+
 let currentCat='all', allFiles=[];
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
