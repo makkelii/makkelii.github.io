@@ -16,12 +16,13 @@
   <!-- Sivun kuvaus -->
   <meta name="description" content="Brunbar – yhteystiedot" />
 
-  <!-- Tästä alkaa CSS. Vain yksi <style>-lohko! -->
+  <!-- Kaikki sivun CSS yhdessä lohkossa -->
   <style>
     :root{
-      --purple: #3a006b;
-      --gold:   #d4af37;
-      --gold-wash: rgba(212, 175, 55, 0.06);
+      --purple: #3a006b;               /* Royal Purple */
+      --gold:   #d4af37;               /* Gold */
+      --gold-weak: rgba(212,175,55,.25);
+      --gold-wash: rgba(212,175,55,.06);
     }
 
     html, body { height: 100%; }
@@ -36,9 +37,7 @@
       position: relative;
     }
 
-    /* ... (loput omat tyylisi tähän, mutta älä lisää uutta <style>-tagia) ... */
-  </style>
-</head>
+    .wrap{ width: min(92ch, 92vw); }
 
     .top-btn {
       position: absolute;
@@ -48,26 +47,49 @@
       color: var(--purple);
       padding: 0.7rem 1.2rem;
       border-radius: 8px;
-      font-weight: bold;
+      font-weight: 700;
       text-decoration: none;
       box-shadow: 0 2px 6px rgba(0,0,0,.25);
     }
+    .top-btn:hover{ filter: brightness(1.05); }
+
     .card {
-      text-align: center; padding: clamp(2rem, 4vw, 4rem);
-      border: 2px solid var(--gold-weak); border-radius: 1.25rem;
+      text-align: center;
+      padding: clamp(2rem, 4vw, 4rem);
+      border: 2px solid var(--gold-weak);
+      border-radius: 1.25rem;
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
       position: relative;
+      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.20));
     }
+
     h1 {
       font-size: clamp(2.25rem, 6vw, 4rem);
-      letter-spacing: 0.06em; margin: 0 0 1rem 0; font-weight: 700;
+      letter-spacing: 0.06em;
+      margin: 0 0 1rem 0;
+      font-weight: 700;
     }
-    h2 { font-size: 1.4rem; margin-top: 1rem; margin-bottom: 0.5rem; }
-    .sep { width: 90%; height: 1px; margin: 1rem auto 1.25rem; background: var(--gold-weak); }
-    .contact { font-size: clamp(1rem, 2.6vw, 1.25rem); line-height: 1.7; margin-bottom: 1.5rem; }
+    h2 { font-size: 1.15rem; margin: 1.25rem 0 .4rem; }
+
+    .sep {
+      width: 90%;
+      height: 1px;
+      margin: 1rem auto 1.25rem;
+      background: var(--gold-weak);
+    }
+
+    .contact { font-size: clamp(1rem, 2.6vw, 1.15rem); line-height: 1.7; }
+
     a { color: var(--gold); text-decoration-color: var(--gold-weak); }
     a:hover, a:focus { text-decoration: underline; text-underline-offset: 3px; }
-    footer { position: fixed; inset: auto 0 1rem 0; text-align: center; font-size: .85rem; color: var(--gold-weak); }
+
+    footer {
+      position: fixed;
+      left: 0; right: 0; bottom: 1rem;
+      text-align: center;
+      font-size: .9rem;
+      color: var(--gold-weak);
+    }
   </style>
 </head>
 <body>
@@ -78,12 +100,14 @@
     <section class="card" aria-label="Brunbar yhteystiedot">
       <h1>BRUNBAR</h1>
       <div class="sep" role="presentation"></div>
+
       <div class="contact">
         <h2>Automaatiojärjestelmät ja teollisuuden ratkaisut:</h2>
         Max Barman<br>
         <a href="tel:+358449721998">+358 44 972 1998</a><br>
         <a href="mailto:Max.Barman@brunbar.fi">Max.Barman@brunbar.fi</a>
       </div>
+
       <div class="contact">
         <h2>Taloushallinto-, kirjanpito ja konsultointipalvelut:</h2>
         Anna Sinkkonen<br>
@@ -92,7 +116,8 @@
       </div>
     </section>
   </main>
+
   <footer>© <span id="y"></span> Brunbar</footer>
-  <script>document.getElementById('y').textContent = new Date().getFullYear()</script>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>
 </html>
