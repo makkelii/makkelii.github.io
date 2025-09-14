@@ -26,7 +26,24 @@
   }
 
   *{ box-sizing:border-box }
-  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink) }
+  /* Taustakuva: laita oma kuva polkuun images/bg.webp */
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(rgba(15,15,20,.60), rgba(15,15,20,.60)),
+      url('images/bg.webp') center / cover no-repeat fixed;
+  }
+  /* iOS Safari ei aina tue fixed-taustaa – pakotetaan hyvä fallback mobiililla */
+  @supports (-webkit-touch-callout: none) {
+    body{
+      background:
+        linear-gradient(rgba(15,15,20,.60), rgba(15,15,20,.60)),
+        url('images/bg.webp') center / cover no-repeat;
+      background-attachment: scroll;
+    }
+  }
 
   header{ background:var(--purple); color:var(--gold); padding:1rem; text-align:center }
   header h1{ margin:0; font-size:clamp(1.1rem,3.5vw,1.8rem) }
@@ -36,15 +53,16 @@
 
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.4rem }
-  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
-  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:var(--ink) }
+  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(20,20,33,.55); color:var(--ink) }
+  .search button{ border:1px solid var(--border); background:rgba(20,20,33,.55); border-radius:10px; padding:.6rem .8rem; cursor:pointer; color:var(--ink) }
 
   .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
   .cats::-webkit-scrollbar{ display:none }
-  .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
+  .cat-btn{ border:1px solid var(--border); background:rgba(20,20,33,.65); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap; backdrop-filter: blur(2px) }
   .cat-btn.active{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
 
   .error{ display:none; background:#4a1010; border:1px solid #a33; color:#ffdede; padding:.7rem; border-radius:10px; margin-bottom:.75rem; white-space:pre-wrap }
+
   .spinner{ display:none; place-items:center; margin:.6rem 0 }
   .spinner.on{ display:grid }
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite }
@@ -55,15 +73,16 @@
 
   figure{
     display:flex; flex-direction:column; gap:.55rem;
-    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    background:rgba(20,20,33,.85); border:1px solid var(--border); border-radius:14px;
     padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
+    backdrop-filter: blur(3px);
   }
-  /* Näytä kuvat kokonaan omilla mittasuhteillaan */
+  /* Näytä kuvat kokonaan mittasuhteillaan */
   figure img{
     width:100%; height:auto;
     border-radius:10px;
     object-fit:contain;
-    background:#0b0b10;     /* tummat “kirjekuoret” jos kuva ei täytä leveyttä */
+    background:#0b0b10;
     display:block;
     cursor:zoom-in;
   }
@@ -82,7 +101,7 @@
     padding:.42rem .45rem;
     border:1px solid var(--border);
     border-radius:9px;
-    background:transparent;
+    background:rgba(20,20,33,.55);
     color:var(--ink);
     min-width:0;
     font-size:.9rem;
@@ -103,12 +122,13 @@
   }
 
   aside{
-    background:var(--card); border:1px solid var(--border); border-radius:14px;
-    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem
+    background:rgba(20,20,33,.90); border:1px solid var(--border); border-radius:14px;
+    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem;
+    backdrop-filter: blur(3px);
   }
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
-  .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
+  .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:rgba(20,20,33,.55); color:var(--ink) }
   .btn.primary{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
   .btn.outline{ background:transparent; color:var(--gold); border-color:var(--gold) }
@@ -130,7 +150,7 @@
   .cart-row:last-child{ border-bottom:none }
   .cart-input{
     width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px;
-    background:transparent; color:var(--ink); text-align:center; font-size:.92rem
+    background:rgba(20,20,33,.55); color:var(--ink); text-align:center; font-size:.92rem
   }
   .cart-input[type="number"]::-webkit-outer-spin-button,
   .cart-input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
@@ -144,14 +164,14 @@
   }
 
   .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
-  .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
+  .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:rgba(20,20,33,.55); color:var(--ink) }
 
   .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
   .cart-badge{ position:fixed; top:12px; right:12px; background:var(--gold); color:#2d2050; border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:1000; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
 
   /* Kirjautumisportti */
   .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
-  .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
+  .gate-card{ background:rgba(20,20,33,.95); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
   .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer }
@@ -255,9 +275,6 @@ document.addEventListener('click', (e) => {
   $('#passInput').value='';
   $('#nameInput').value='';
   setTimeout(()=> $('#nameInput')?.focus(), 30);
-
-  // Vedenpitävä vaihtoehto:
-  // location.reload();
 });
 
 /* ===== Gate ===== */
@@ -279,7 +296,7 @@ async function initGate(){
 
   async function tryOpen(){
     const name=sanitize(nameI.value)||'Tuntematon';
-    const given=(passI.value||'').trim();  // poista mobiilin välilyönnit
+    const given=(passI.value||'').trim();
 
     let ok=false;
     const h=await sha256Safe(PASSWORD_PLAIN);
@@ -323,9 +340,11 @@ function renderCats(counts){
   wrap.appendChild(mk('all','Kaikki',total)); CATS.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
 }
 $('#cats').addEventListener('click',e=>{
-  const b=e.target.closest('.cat-btn'); if(!b) return;
-  currentCat=b.dataset.key;
-  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+  const b=e.target.closest('cat-btn, .cat-btn'); if(!b) return;
+  const btn = e.target.closest('.cat-btn');
+  if(!btn) return;
+  currentCat=btn.dataset.key;
+  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===btn));
   showGallery();
 });
 $('#q').addEventListener('input',()=>showGallery());
