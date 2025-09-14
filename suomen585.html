@@ -14,7 +14,6 @@
   <meta name="theme-color" content="#3a006b">
   <meta name="color-scheme" content="light dark" />
 
-  <!-- Kaikki tyylit yhdessä lohkossa -->
   <style>
     :root{
       --purple:#3a006b;      /* Royal Purple */
@@ -57,13 +56,13 @@
     figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
     .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-    /* Add row: Koko | Kpl | Nappi – Koko & Kpl kapeat */
+    /* Koko | Kpl | Nappi – kapeat syötteet */
     .addrow{
       margin-top:auto;
       display:grid;
       gap:.42rem;
       align-items:center;
-      grid-template-columns: 45px 45px 1fr;  /* Koko 45px | Kpl 45px | Nappi */
+      grid-template-columns: 45px 45px 1fr;
     }
     .addrow input{
       padding:.42rem .45rem;
@@ -83,10 +82,7 @@
       font-size:.9rem; line-height:1.05; white-space:nowrap;
     }
     @media (max-width:560px){
-      .addrow{
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas:"size size" "qty add";
-      }
+      .addrow{ grid-template-columns: 1fr 1fr; grid-template-areas:"size size" "qty add"; }
       .addrow .size{ grid-area:size }
       .addrow .qty{ grid-area:qty }
       .addrow button{ grid-area:add }
@@ -104,7 +100,6 @@
     .btn.outline{ background:transparent; color:var(--gold); border-color:var(--gold) }
     .btn.outline:hover{ background:rgba(212,175,55,.12) }
 
-    /* Ostoskorin header + rivit */
     .cart-head{
       position:sticky; top:0; z-index:1;
       background:linear-gradient(0deg, rgba(20,20,33,.95), rgba(20,20,33,.95));
@@ -198,7 +193,7 @@
     <aside>
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
-        <button class="btn outline" id="logout" type="button" title="Kirjaa ulos ja palaa kirjautumiseen">Kirjaudu ulos</button>
+        <button class="btn outline" id="logout" type="button" title="Kirjaudu ulos ja palaa kirjautumiseen">Kirjaudu ulos</button>
       </div>
 
       <div class="cart-head">
@@ -233,7 +228,35 @@ const PASSWORD_PLAIN = "sala54N4";
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 
-/* ==== Gate ==== */
+/* ===== Logout – pysyvä delegointi ===== */
+function bindLogout(){
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#logout');
+    if (!btn) return;
+
+    try {
+      sessionStorage.removeItem('b2b_authed');
+      sessionStorage.removeItem('b2b_name');
+      localStorage.removeItem('b2b_cart');
+    } catch {}
+
+    // Näytä portti ja piilota app
+    const gate = document.getElementById('gate');
+    const app  = document.getElementById('app');
+    if (gate) gate.style.display = 'flex';
+    if (app)  app.setAttribute('aria-hidden','true');
+
+    const passI = document.getElementById('passInput');
+    const nameI = document.getElementById('nameInput');
+    if (passI) passI.value = '';
+    setTimeout(() => nameI?.focus(), 30);
+
+    // Varmatoiminen vaihtoehto:
+    // location.reload();
+  });
+}
+
+/* ===== Gate ===== */
 async function sha256Safe(str){
   try{
     if(!crypto || !crypto.subtle) return null;
@@ -254,27 +277,17 @@ async function initGate(){
   }
   if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; }
   btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
-  // Uloskirjautuminen (ilman reloadia)
-  $('#logout').onclick=()=>{
-    if(!confirm('Kirjaudutaanko ulos?')) return;
-    sessionStorage.clear();
-    localStorage.removeItem('b2b_cart');
-    cart.clear(); renderCart();
-    $('#gate').style.display='flex';
-    $('#app').setAttribute('aria-hidden','true');
-    $('#passInput').value=''; $('#nameInput').focus();
-  };
 }
 
-/* ==== Categories & search ==== */
+/* ===== Kategoriat & haku ===== */
 const CATS = [
   { key: "Magneetit",       label: "Magneetit" },
-  { key: "Lappimagneetit",  label: "Lappimagneetit" }, // UUSI
+  { key: "Lappimagneetit",  label: "Lappimagneetit" },
   { key: "Sormukset",       label: "Sormukset" },
   { key: "Ranneketjut",     label: "Ranneketjut" },
   { key: "Kaulaketjut",     label: "Kaulaketjut" },
   { key: "Riipukset",       label: "Riipukset" },
-  { key: "Hiuskorut",       label: "Hiuskorut" }       // UUSI
+  { key: "Hiuskorut",       label: "Hiuskorut" }
 ];
 
 let currentCat='all', allFiles=[];
@@ -290,7 +303,7 @@ $('#cats').addEventListener('click',e=>{ const b=e.target.closest('.cat-btn'); i
 $('#q').addEventListener('input',()=>showGallery());
 $('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
-/* ==== Gallery + lightbox ==== */
+/* ===== Galleria + lightbox ===== */
 function addFigure(path){
   const file=path.split('/').pop(); const title=toTitle(file.replace(/\.[^.]+$/,'')); const sku=file.replace(/\.[^.]+$/,'');
   const fig=document.createElement('figure');
@@ -329,7 +342,7 @@ $('#closeLb').onclick=()=>{ $('#lightbox').classList.remove('show'); $('#lightbo
 $('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#closeLb').click(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
-/* ==== Cart ==== */
+/* ===== Ostoskori ===== */
 let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
 function renderCart(){
   cartEl.innerHTML='';
@@ -374,7 +387,7 @@ $('#copyOrder').onclick=()=>{
 };
 $('#cartBadge').onclick=()=>{ document.querySelector('aside').scrollIntoView({behavior:'smooth'}); };
 
-/* ==== Lähetys GAS:lle – fetch + varma lomake-fallback ==== */
+/* ===== Lähetys GAS:lle (fetch + varma lomakefallback) ===== */
 function postViaHiddenForm(url, payloadObj) {
   const form = document.createElement('form');
   form.method = 'POST';
@@ -383,7 +396,7 @@ function postViaHiddenForm(url, payloadObj) {
   form.style.display = 'none';
   const input = document.createElement('input');
   input.type = 'hidden';
-  input.name = 'data'; // GAS: e.parameter.data (JSON-string)
+  input.name = 'data';               // GAS: e.parameter.data (JSON-string)
   input.value = JSON.stringify(payloadObj);
   form.appendChild(input);
   document.body.appendChild(form);
@@ -410,7 +423,6 @@ $('#cartEmail').onclick = async () => {
   const payload = { secret: GAS_SECRET, items, sender, note };
 
   try {
-    // 1) Yritä normaali JSON-POST
     let res = await fetch(GAS_ENDPOINT, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
@@ -420,13 +432,12 @@ $('#cartEmail').onclick = async () => {
     if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
   } catch (_) { /* jatketaan fallbackiin */ }
 
-  // 2) Fallback: lomakepostitus (ei esikyselyä → varma doPost)
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Lähetetty!');
 };
 
-/* ==== Manifestin lataus ==== */
-/* Odotetaan: images/manifest.json  → { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
+/* ===== Manifestin lataus ===== */
+/* Odotetaan: images/manifest.json → { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
 async function loadFromManifest(){
   const spin=$('#spin'); spin?.classList.add('on');
   const status=$('#status'); status.style.display='none'; status.textContent='';
@@ -460,8 +471,9 @@ async function loadFromManifest(){
   }
 }
 
-/* ==== init ==== */
+/* ===== init ===== */
 window.addEventListener('DOMContentLoaded', async ()=>{
+  bindLogout();          // <- pysyvä logout
   await initGate();
   loadCart();
   loadFromManifest();
