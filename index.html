@@ -1,32 +1,45 @@
 <!doctype html>
 <html lang="fi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Brunbar</title>
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="theme-color" content="#3a006b">
-<style>
-  :root{
 
-  <meta name="description" content="Brunbar – yhteystiedot">
+  <!-- Faviconit -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#3a006b">
+
+  <!-- Sivun kuvaus -->
+  <meta name="description" content="Brunbar – yhteystiedot" />
+
+  <!-- Tästä alkaa CSS. Vain yksi <style>-lohko! -->
   <style>
-    :root {
-      --purple: #4b006e;
-      --gold:   #ffd700;
-      --gold-weak: rgba(212, 175, 55, 0.6);
+    :root{
+      --purple: #3a006b;
+      --gold:   #d4af37;
+      --gold-wash: rgba(212, 175, 55, 0.06);
     }
+
     html, body { height: 100%; }
-    body {
-      margin: 0; font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      background: var(--purple); color: var(--gold);
-      display: grid; place-items: center; text-rendering: optimizeLegibility;
+    body{
+      margin: 0;
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      background: var(--purple);
+      color: var(--gold);
+      display: grid;
+      place-items: center;
+      text-rendering: optimizeLegibility;
       position: relative;
     }
+
+    /* ... (loput omat tyylisi tähän, mutta älä lisää uutta <style>-tagia) ... */
+  </style>
+</head>
+
     .top-btn {
       position: absolute;
       top: 1rem;
