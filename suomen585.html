@@ -50,7 +50,6 @@
     background:var(--card); border:1px solid var(--border); border-radius:14px;
     padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
   }
-  /* Näytetään koko kuva mittasuhteilla */
   figure img{
     width:100%; height:auto;
     border-radius:10px;
@@ -62,56 +61,26 @@
   figcaption{ margin:.1rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-  .addrow{
-    margin-top:auto;
-    display:grid;
-    gap:.42rem;
-    align-items:center;
-    grid-template-columns: 45px 45px 1fr;
-  }
-  .addrow input{
-    padding:.42rem .45rem;
-    border:1px solid var(--border);
-    border-radius:9px;
-    background:transparent;
-    color:var(--ink);
-    min-width:0;
-    font-size:.9rem;
-  }
+  .addrow{ margin-top:auto; display:grid; gap:.42rem; align-items:center; grid-template-columns: 45px 45px 1fr }
+  .addrow input{ padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px; background:transparent; color:var(--ink); min-width:0; font-size:.9rem }
   .addrow .size{ min-width:45px; text-align:center; font-size:.92rem }
-  .addrow .size::placeholder{ color:var(--muted) }
   .addrow .qty{ text-align:center; width:45px; font-size:.92rem }
-  .addrow button{
-    border:none; border-radius:9px; background:var(--gold); color:#2d2050;
-    font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%;
-    font-size:.9rem; line-height:1.05; white-space:nowrap;
-  }
+  .addrow button{ border:none; border-radius:9px; background:var(--gold); color:#2d2050; font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%; font-size:.9rem }
 
-  aside{
-    background:var(--card); border:1px solid var(--border); border-radius:14px;
-    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem
-  }
+  aside{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem }
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
   .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--gold); border-color:var(--gold); color:#2d2050 }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
   .btn.outline{ background:transparent; color:var(--gold); border-color:var(--gold) }
-  .btn.outline:hover{ background:rgba(212,175,55,.12) }
 
   .cart-head{ display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; font-weight:800; color:var(--muted); border-bottom:1px solid var(--border); margin-bottom:.5rem }
   .cart-row{ display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center; padding:.35rem 0; border-bottom:1px dashed var(--border) }
-  .cart-row:last-child{ border-bottom:none }
-  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center; font-size:.92rem }
 
-  .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
-  .rm:hover{ background:#ffd7d7 }
-
-  .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
   .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
-
   .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-  .cart-badge{ position:fixed; top:12px; right:12px; background:var(--gold); color:#2d2050; border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:1000; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
+  .cart-badge{ position:fixed; top:12px; right:12px; background:var(--gold); color:#2d2050; border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:1000; cursor:pointer }
 
   .gate{ position:fixed; inset:0; background:#0a0a0f; display:flex; align-items:center; justify-content:center; z-index:10000 }
   .gate-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px) }
@@ -139,13 +108,10 @@
   </div>
 
   <header><h1>Suomen 585 Oy</h1></header>
-
-  <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
+  <button class="cart-badge" id="cartBadge">🛒 <span id="cartCount">0</span></button>
 
   <main class="wrap" aria-hidden="true" id="app">
     <section>
-      <div id="status" class="error"></div>
-
       <div class="toolbar">
         <div class="search">
           <input id="q" type="search" placeholder="Hae SKU:lla…" />
@@ -153,11 +119,7 @@
         </div>
         <div class="cats" id="cats"></div>
       </div>
-
-      <div class="spinner" id="spin"></div>
-      <div class="gallery" id="gallery" aria-live="polite"></div>
-
-      <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
+      <div class="gallery" id="gallery"></div>
     </section>
 
     <aside>
@@ -165,87 +127,52 @@
         <div class="cart-title">Ostoskori</div>
         <button class="btn outline" id="logout" type="button">Kirjaudu ulos</button>
       </div>
-
-      <div class="cart-head">
-        <div>Tuote / SKU</div><div>Koko</div><div>Kpl</div><div></div>
-      </div>
+      <div class="cart-head"><div>Tuote / SKU</div><div>Koko</div><div>Kpl</div><div></div></div>
       <div class="cart-items" id="cart"></div>
-
-      <label class="note-label">Lisätiedot (esim. viite, toimitus):</label>
-      <textarea id="note" class="note" placeholder="Vapaa viesti tukulle…"></textarea>
-
+      <textarea id="note" class="note" placeholder="Lisätiedot…"></textarea>
       <div class="cart-actions">
-        <button class="btn" id="copyOrder" type="button">Kopioi tilaus</button>
-        <button class="btn danger" id="cartClear" type="button">Tyhjennä kori</button>
-        <button class="btn primary" id="cartEmail" type="button">Lähetä sähköpostilla</button>
+        <button class="btn danger" id="cartClear" type="button">Tyhjennä</button>
+        <button class="btn primary" id="cartEmail" type="button">Lähetä</button>
       </div>
     </aside>
   </main>
 
-  <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="close" id="closeLb" type="button">Sulje</button>
-    <img id="lightImg" alt="">
-  </div>
+  <div class="lightbox" id="lightbox"><button class="close" id="closeLb">Sulje</button><img id="lightImg" alt=""></div>
 
 <script>
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
-const PASSWORD_PLAIN = "";
+const PASSWORD_PLAIN = "sala54N4";
 
-const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
 async function sha256Safe(str){
-  try{
-    if(!crypto || !crypto.subtle) return null;
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-  }catch{ return null; }
+  try{ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }catch{ return null; }
 }
-function openApp(){ $('#gate').style.display='none'; $('#app').setAttribute('aria-hidden','false'); $('#gateErr').style.display='none'; }
+function openApp(){ $('#gate').style.display='none'; $('#app').setAttribute('aria-hidden','false'); $('#gateErr').style.display='none'; setTimeout(()=>$('#q')?.focus(),50); }
 async function initGate(){
   const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
   async function tryOpen(){
-    const name=sanitize(nameI.value)||'Tuntematon'; const given=passI.value||'';
+    const name=(nameI.value||'').trim()||'Tuntematon'; const given=(passI.value||'').trim();
     let ok=false; const h=await sha256Safe(PASSWORD_PLAIN);
     if(h){ const g=await sha256Safe(given); ok=(g&&g===h); } else { ok=(given===PASSWORD_PLAIN); }
     if(ok){ sessionStorage.setItem('b2b_name',name); sessionStorage.setItem('b2b_authed','1'); openApp(); }
     else{ err.style.display='block'; passI.focus(); passI.select?.(); }
   }
   if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; }
-  btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
+  btn.onclick=tryOpen;
+  passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
+  nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
 
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('#logout');
-    if (!btn) return;
-    sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('#logout')) return;
+    sessionStorage.clear(); localStorage.removeItem('b2b_cart');
     $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
-    $('#passInput').value=''; $('#nameInput').focus();
+    passI.value=''; nameI.value=''; nameI.focus();
   });
 }
-
-const CATS = [
-  { key: "Magneetit", label: "Magneetit" },
-  { key: "Lappimagneetit", label: "Lappimagneetit" },
-  { key: "Sormukset", label: "Sormukset" },
-  { key: "Ranneketjut", label: "Ranneketjut" },
-  { key: "Kaulaketjut", label: "Kaulaketjut" },
-  { key: "Riipukset", label: "Riipukset" },
-  { key: "Hiuskorut", label: "Hiuskorut" }
-];
-
-let currentCat='all', allFiles=[];
-const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
-function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
-function renderCats(counts){
-  const wrap=$('#cats'); wrap.innerHTML='';
-  const total=Object.values(counts).reduce((a,b)=>a+b,0);
-  const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
-  wrap.appendChild(mk('all','Kaikki',total)); CATS.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
-}
-$('#cats').addEventListener('click',e=>{ const b=e.target.closest('.cat-btn'); if(!b) return; currentCat=b.dataset.key; $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b)); showGallery(); });
-$('#q').addEventListener('input',()=>showGallery());
-$('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
-
-function addFigure(path){
-  const file=path.split('/').pop(); const title=toTitle(file.replace(/\.[^.]+$/,'')); const sku=file.replace
+window.addEventListener('DOMContentLoaded',initGate);
+</script>
+</body>
+</html>
