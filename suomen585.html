@@ -2,17 +2,15 @@
 <html lang="fi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=0.9, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Suomen 585 Oy – Tukkutilaus</title>
 
-<!-- Favicons -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="theme-color" content="#1f2937">
-<meta name="color-scheme" content="light dark" />
 
 <style>
   :root{
@@ -26,47 +24,22 @@
   }
   *{ box-sizing:border-box }
   html,body{ height:100% }
-  body{
-    margin:0;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    color:var(--ink);
-    background:var(--bg);
-    overflow-x:hidden;
-    position:relative;
-  }
-  /* Taustakuva koko sivulle (myös mobiili) */
-  body::before{
-    content:"";
-    position:fixed; inset:0; z-index:-1;
-    background:
-      radial-gradient(transparent 60%, rgba(15,17,21,.55)),
-      url("images/bg.webp") center/cover no-repeat;
-    will-change:transform;
-    transform:translateZ(0);
-  }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg) url("images/bg.webp") center/cover fixed no-repeat; color:var(--ink) }
 
-  header{
-    background:rgba(31,41,55,.92);
-    color:#f3f4f6;
-    padding:.9rem 1rem;
-    text-align:center;
-    position:sticky; top:0; z-index:5;
-    backdrop-filter:saturate(120%) blur(6px);
-    -webkit-backdrop-filter:saturate(120%) blur(6px);
-  }
-  header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem); letter-spacing:.02em }
+  header{ background:#1f2937; color:#f3f4f6; padding:.9rem 1rem; text-align:center; position:sticky; top:0; z-index:5 }
+  header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem) }
 
   .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
 
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.7rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
-  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
+  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
   .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .9rem; cursor:pointer; color:var(--ink) }
 
-  .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
+  .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; scrollbar-width:none }
   .cats::-webkit-scrollbar{ display:none }
-  .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
+  .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
@@ -74,136 +47,65 @@
 
   figure{
     display:flex; flex-direction:column; gap:.55rem;
-    background:rgba(23,25,35,.82);
-    border:1px solid var(--border); border-radius:14px;
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
     padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
-    backdrop-filter: blur(2px);
   }
-  figure .img-wrap{
-    width:100%; background:#0b0d12; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    min-height: 180px;
-  }
-  figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; }
-  figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
-  .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  figure .img-wrap{ width:100%; background:#0b0d12; border-radius:10px; display:flex; align-items:center; justify-content:center; min-height:180px }
+  figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px }
+  figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .sku{ font-size:.8rem; color:var(--muted) }
 
-  .addrow{
-    margin-top:auto;
-    display:grid; gap:.42rem; align-items:center;
-    grid-template-columns: 60px 46px 1fr;
-  }
-  .addrow input{
-    padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px;
-    background:transparent; color:var(--ink); min-width:0; font-size:.9rem;
-  }
+  .addrow{ margin-top:auto; display:grid; gap:.42rem; align-items:center; grid-template-columns: 60px 46px 1fr }
+  .addrow input{ padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px; background:transparent; color:var(--ink); min-width:0; font-size:.9rem }
   .addrow .size{ width:60px; text-align:center; font-size:.92rem }
   .addrow .qty{ width:46px; text-align:center; font-size:.92rem }
-  .addrow button{
-    border:none; border-radius:9px; background:var(--accent); color:var(--accent-ink);
-    font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%;
-    font-size:.9rem; line-height:1.05; white-space:nowrap;
-  }
-  @media (max-width:560px){
-    .addrow{
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:"size size" "qty add";
-    }
-    .addrow .size{ grid-area:size; width:auto }
-    .addrow .qty{ grid-area:qty; width:auto }
-    .addrow button{ grid-area:add }
-  }
+  .addrow button{ border:none; border-radius:9px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%; font-size:.9rem; line-height:1.05 }
 
-  aside{
-    background:rgba(23,25,35,.88);
-    border:1px solid var(--border); border-radius:14px;
-    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem; z-index:2;
-    backdrop-filter: blur(2px);
-  }
+  aside{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem; z-index:2 }
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
-  .cart-actions-right{ display:flex; gap:.5rem; align-items:center; }
   .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
   .btn.outline{ background:transparent; color:var(--accent); border-color:var(--accent) }
   .btn.outline:hover{ background:rgba(224,184,90,.12) }
-  .btn.close{ display:none; padding:.5rem .7rem; }
 
-  .cart-head{
-    position:sticky; top:0; z-index:1;
-    background:linear-gradient(0deg, rgba(23,25,35,.95), rgba(23,25,35,.95));
-    backdrop-filter:blur(3px);
-    padding:.45rem .4rem; margin:-.2rem -.4rem .4rem;
-    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem;
-    font-weight:800; color:var(--muted); border-bottom:1px solid var(--border);
+  .cart-badge{
+    position:fixed; top:12px; right:12px;
+    background:var(--accent); color:var(--accent-ink);
+    border-radius:999px;
+    padding:.65rem 1.1rem;
+    font-size:1.05rem;
+    font-weight:800;
+    z-index:900;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+    cursor:pointer;
   }
-  .cart-items{ max-height:58vh; overflow:auto; padding:.2rem .4rem }
-  .cart-row{
-    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center;
-    padding:.35rem 0; border-bottom:1px dashed var(--border)
-  }
+
+  .cart-head{ display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; font-weight:800; color:var(--muted); border-bottom:1px solid var(--border); margin-bottom:.5rem }
+  .cart-items{ max-height:58vh; overflow:auto }
+  .cart-row{ display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center; padding:.35rem 0; border-bottom:1px dashed var(--border) }
   .cart-row:last-child{ border-bottom:none }
-  .cart-input{
-    width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px;
-    background:transparent; color:var(--ink); text-align:center; font-size:.92rem
-  }
-  .cart-input[type="number"]::-webkit-outer-spin-button,
-  .cart-input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
-  .cart-input[type="number"]{ -moz-appearance:textfield }
+
+  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center; font-size:.92rem }
 
   .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
-  .rm:hover{ background:#ffd7d7 }
-  @media (max-width:560px){
-    .cart-head, .cart-row{ grid-template-columns:1fr 70px 56px 30px; gap:.45rem }
-  }
 
-  .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
-  .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
-
-  .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-  .cart-badge{ position:fixed; top:12px; right:12px; background:var(--accent); color:var(--accent-ink); border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
-
-  .error{ display:none; background:#4a1010; border:1px solid #a33; color:#ffdede; padding:.7rem; border-radius:10px; margin-bottom:.75rem; white-space:pre-wrap }
-  .spinner{ display:none; place-items:center; margin:.6rem 0 }
-  .spinner.on{ display:grid }
-  .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite }
-  @keyframes spin{ to{ transform:rotate(360deg) } }
-
-  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; z-index:1000; }
-  .cart-backdrop.on{ display:block; }
+  .btn.close{ display:none }
 
   @media (max-width:640px){
-    body.noscroll{ overflow:hidden; }
-    #cartPanel{
-      position:fixed; top:0; right:0;
-      height:100dvh; width:min(92vw,420px);
-      background:rgba(23,25,35,.96);
-      border-left:1px solid var(--border);
-      padding:1rem; border-radius:0;
-      box-shadow:-6px 0 24px rgba(0,0,0,.35);
-      transform:translateX(100%); transition:transform .25s ease;
-      z-index:1001; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    .btn.close{
+      display:inline-flex;
+      align-items:center; justify-content:center;
+      width:2.4rem; height:2.4rem;
+      font-size:1.25rem;
+      padding:0;
+      border-radius:12px;
     }
-    #cartPanel.open{ transform:translateX(0); }
-    .btn.close{ display:inline-flex; }
-    .cart-items{ max-height:calc(100dvh - 240px); overflow:auto; }
   }
 
-  .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100; }
-  .lightbox.show{ display:flex }
-  .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
-  .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
-
-  /* Kirjautumisportti – sama tausta */
-  .gate{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200; }
-  .gate::before{
-    content:""; position:fixed; inset:0; z-index:-1;
-    background:
-      linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)),
-      url("images/bg.webp") center/cover no-repeat;
-  }
-  .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
+  .gate{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200; background:linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)), url("images/bg.webp") center/cover no-repeat }
+  .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
   .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
@@ -211,418 +113,68 @@
 </style>
 </head>
 <body>
-  <!-- Kirjautumisportti -->
-  <div class="gate" id="gate" aria-hidden="false">
-    <div class="gate-card">
-      <h2>Tilausportaali</h2>
-      <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
-      <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
-      <button id="passBtn" type="button">Avaa</button>
-      <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <h2>Tilausportaali</h2>
+    <input id="nameInput" type="text" placeholder="Nimi / yritys" />
+    <input id="passInput" type="password" placeholder="Salasana" />
+    <button id="passBtn">Avaa</button>
+    <div class="gate-err" id="gateErr">Väärä salasana.</div>
+  </div>
+</div>
+
+<header><h1>Suomen 585 Oy – Tukkutilaus</h1></header>
+
+<button class="cart-badge" id="cartBadge">🛒 <span id="cartCount">0</span></button>
+
+<main class="wrap" id="app" aria-hidden="true">
+  <section>
+    <div id="status" class="error"></div>
+    <div class="toolbar">
+      <div class="search">
+        <input id="q" type="search" placeholder="Hae nimellä tai SKU:lla…" />
+        <button id="clear" type="button">Tyhjennä</button>
+      </div>
+      <div class="cats" id="cats"></div>
     </div>
-  </div>
-
-  <header><h1>Suomen 585 Oy – Tukkutilaus</h1></header>
-
-  <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
-
-  <main class="wrap" aria-hidden="true" id="app">
-    <section>
-      <div id="status" class="error"></div>
-
-      <div class="toolbar">
-        <div class="search">
-          <input id="q" type="search" placeholder="Hae nimellä tai SKU:lla…" />
-          <button id="clear" type="button">Tyhjennä</button>
-        </div>
-        <div class="cats" id="cats"></div>
-      </div>
-
-      <div class="spinner" id="spin"></div>
-      <div class="gallery" id="gallery" aria-live="polite"></div>
-
-      <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
-    </section>
-
-    <aside id="cartPanel" aria-label="Ostoskori">
-      <div class="cart-top">
-        <div class="cart-title">Ostoskori</div>
-        <div class="cart-actions-right">
-          <button class="btn outline" id="logout" type="button" title="Kirjaudu ulos">Kirjaudu ulos</button>
-          <button class="btn close" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
-        </div>
-      </div>
-
-      <div class="cart-head">
-        <div>Tuote / SKU</div><div>Koko</div><div>Kpl</div><div></div>
-      </div>
-      <div class="cart-items" id="cart"></div>
-
-      <label class="note-label">Lisätiedot (esim. viite, toimitus):</label>
-      <textarea id="note" class="note" placeholder="Vapaa viesti tukulle…"></textarea>
-
-      <div class="cart-actions">
-        <button class="btn" id="copyOrder" type="button">Kopioi tilaus</button>
-        <button class="btn danger" id="cartClear" type="button">Tyhjennä kori</button>
-        <button class="btn primary" id="cartEmail" type="button">Lähetä sähköpostilla</button>
-      </div>
-    </aside>
-  </main>
-
-  <div class="cart-backdrop" id="cartBackdrop" aria-hidden="true"></div>
-
-  <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="close" id="closeLb" type="button">Sulje</button>
-    <img id="lightImg" alt="">
-  </div>
+    <div class="spinner" id="spin"></div>
+    <div class="gallery" id="gallery"></div>
+    <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
+  </section>
+  <aside id="cartPanel">
+    <div class="cart-top">
+      <div class="cart-title">Ostoskori</div>
+      <button class="btn close" id="cartClose">✕</button>
+    </div>
+    <div class="cart-head"><div>Tuote</div><div>Koko</div><div>Kpl</div><div></div></div>
+    <div class="cart-items" id="cart"></div>
+    <textarea id="note" class="note" placeholder="Lisätiedot…"></textarea>
+    <div class="cart-actions">
+      <button class="btn danger" id="cartClear">Tyhjennä</button>
+      <button class="btn primary" id="cartEmail">Lähetä</button>
+    </div>
+  </aside>
+</main>
 
 <script>
-/* ---------- ASETUKSET ---------- */
-const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
-const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
-const PASSWORD_PLAIN = "sala54N4";  // voit käyttää myös 64-merkkistä SHA-256 heksahashia
-/* -------------------------------- */
+const GAS_ENDPOINT="https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
+const GAS_SECRET="p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
+const PASSWORD_PLAIN="sala54N4";
 
-var $ = function(s){ return document.querySelector(s); };
-var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
-function sanitize(s){ return (s||"").toString().replace(/\s+/g,' ').trim(); }
+const $=s=>document.querySelector(s);let cart=new Map();
 
-/* ==== Gate ==== */
-async function sha256Safe(str){
-  try{
-    if(!(window.crypto && window.crypto.subtle)) return null;
-    var buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-  }catch(e){ return null; }
-}
-function openApp(){
-  var g=$('#gate'); if(g) g.style.display='none';
-  var a=$('#app'); if(a) a.setAttribute('aria-hidden','false');
-  var er=$('#gateErr'); if(er) er.style.display='none';
-}
-async function initGate(){
-  var btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
+function openApp(){ $('#gate').style.display='none'; $('#app').setAttribute('aria-hidden','false'); }
+$('#passBtn').onclick=()=>{ if($('#passInput').value===PASSWORD_PLAIN){ openApp(); } else { $('#gateErr').style.display='block'; } };
 
-  async function tryOpen(){
-    var name = sanitize(nameI && nameI.value) || 'Tuntematon';
-    var given = ((passI && passI.value) || '').trim();
-    var PASS  = PASSWORD_PLAIN;
+function renderCart(){ const cartEl=$('#cart'); cartEl.innerHTML=''; let total=0; for(const [n,it] of cart){ const row=document.createElement('div'); row.className='cart-row'; row.innerHTML=`<div>${n}</div><input class="cart-input size" value="${it.size||''}"><input class="cart-input qty" type="number" min="1" value="${it.qty}"><button class="rm">✕</button>`; cartEl.appendChild(row); total+=it.qty; } $('#cartCount').textContent=total; }
+function addToCart(name,size,qty){ cart.set(name,{size,qty:(cart.get(name)?.qty||0)+qty}); renderCart(); }
 
-    var ok = false;
-    var isHash = /^[a-f0-9]{64}$/i.test(PASS);
+$('#gallery').addEventListener('click',e=>{ const fig=e.target.closest('figure'); if(!fig) return; if(e.target.classList.contains('add')){ const size=fig.querySelector('.size').value; const qty=parseInt(fig.querySelector('.qty').value)||1; addToCart(fig.dataset.file,size,qty); }});
 
-    if (isHash){
-      var g = await sha256Safe(given);
-      ok = !!g && g.toLowerCase() === PASS.toLowerCase();
-    } else {
-      ok = (given === PASS);
-    }
+$('#cartClear').onclick=()=>{ cart.clear(); renderCart(); };
 
-    if(ok){
-      try{ sessionStorage.setItem('b2b_name', name); }catch(e){}
-      try{ sessionStorage.setItem('b2b_authed', '1'); }catch(e){}
-      openApp();
-    }else{
-      if(err) err.style.display='block';
-      if(passI){ passI.focus(); if(passI.select) passI.select(); }
-    }
-  }
+$('#cartEmail').onclick=async()=>{ if(cart.size===0){alert("Tyhjä");return;} const items=[...cart.values()]; const payload={secret:GAS_SECRET,items}; await fetch(GAS_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); alert("Lähetetty!"); };
 
-  try{ if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; } }catch(e){}
-
-  if(btn) btn.onclick=tryOpen;
-  if(passI) passI.onkeydown=function(e){ if(e.key==='Enter') tryOpen(); };
-  if(nameI) nameI.onkeydown=function(e){ if(e.key==='Enter') tryOpen(); };
-
-  var logoutBtn = $('#logout');
-  if(logoutBtn){
-    logoutBtn.onclick=function(){
-      if(!confirm('Kirjaudutaanko ulos?')) return;
-      try{ sessionStorage.clear(); }catch(e){}
-      try{ localStorage.removeItem('b2b_cart'); }catch(e){}
-      if(window.cart){ cart.clear(); renderCart(); }
-      var g=$('#gate'); if(g) g.style.display='flex';
-      var a=$('#app'); if(a) a.setAttribute('aria-hidden','true');
-      if(passI) passI.value='';
-      if(nameI) nameI.focus();
-      closeCart();
-    };
-  }
-}
-
-/* ==== Kategoriat & haku ==== */
-var CATS = [
-  { key: "Magneetit",       label: "Magneetit" },
-  { key: "Lappimagneetit",  label: "Lappimagneetit" },
-  { key: "Sormukset",       label: "Sormukset" },
-  { key: "Ranneketjut",     label: "Ranneketjut" },
-  { key: "Kaulaketjut",     label: "Kaulaketjut" },
-  { key: "Riipukset",       label: "Riipukset" },
-  { key: "Hiuskorut",       label: "Hiuskorut" }
-];
-
-var currentCat='all', allFiles=[];
-function toTitle(s){ return s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,function(m){return m.toUpperCase();}); }
-function countsFrom(list){
-  var o={}; CATS.forEach(function(c){ o[c.key]=0; });
-  list.forEach(function(f){ if(o[f.cat]!=null) o[f.cat]++; });
-  return o;
-}
-function renderCats(counts){
-  var wrap=$('#cats'); if(!wrap) return;
-  wrap.innerHTML='';
-  var total=0; for(var k in counts){ total+=counts[k]; }
-  function mk(k,l,c){
-    var b=document.createElement('button');
-    b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=l+' ('+(c||0)+')';
-    return b;
-  }
-  wrap.appendChild(mk('all','Kaikki',total));
-  CATS.forEach(function(c){ wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)); });
-}
-var catsEl = $('#cats');
-if(catsEl){
-  catsEl.addEventListener('click',function(e){
-    var b=e.target.closest('.cat-btn'); if(!b) return;
-    currentCat=b.dataset.key;
-    $$('#cats .cat-btn').forEach(function(x){ x.classList.toggle('active',x===b); });
-    showGallery();
-  });
-}
-var qEl=$('#q'); if(qEl) qEl.addEventListener('input',showGallery);
-var clearEl=$('#clear'); if(clearEl) clearEl.onclick=function(){ if(qEl){ qEl.value=''; } showGallery(); };
-
-/* ==== Galleria + lightbox ==== */
-function addFigure(path){
-  var file=path.split('/').pop(); var title=toTitle(file.replace(/\.[^.]+$/,'')); var sku=file.replace(/\.[^.]+$/,'');
-  var fig=document.createElement('figure');
-  fig.dataset.file=file; fig.dataset.path=path; fig.dataset.sku=sku; fig.dataset.title=title;
-  fig.innerHTML=
-    '<div class="img-wrap"><img src="'+path+'" alt="'+title+'" loading="lazy" referrerpolicy="no-referrer" /></div>'
-   +' <figcaption>'+title+'</figcaption>'
-   +' <div class="sku">'+sku+'</div>'
-   +' <div class="addrow">'
-   +'   <input type="text" class="size" placeholder="Koko" />'
-   +'   <input type="number" class="qty" min="1" value="1" />'
-   +'   <button class="add" type="button">Lisää koriin</button>'
-   +' </div>';
-  var gal=$('#gallery'); if(gal) gal.appendChild(fig);
-}
-function showGallery(){
-  var q = (qEl && qEl.value ? qEl.value : '').trim().toLowerCase();
-  var gal=$('#gallery'); if(!gal) return; gal.innerHTML='';
-  var list=allFiles.filter(function(f){
-    if(currentCat!=='all' && f.cat!==currentCat) return false;
-    if(!q) return true;
-    var name=f.name.toLowerCase(), sku=f.name.replace(/\.[^.]+$/,'').toLowerCase();
-    return name.indexOf(q)>-1 || sku.indexOf(q)>-1;
-  });
-  var seen={};
-  list.forEach(function(f){ if(seen[f.path]) return; seen[f.path]=1; addFigure(f.path); });
-}
-var galleryEl=$('#gallery');
-if(galleryEl){
-  galleryEl.addEventListener('click',function(e){
-    var fig=e.target.closest('figure'); if(!fig) return;
-    if(e.target.classList.contains('add')){
-      var size=(fig.querySelector('.size')||{}).value||'';
-      var qty=parseInt((fig.querySelector('.qty')||{}).value,10); if(!qty||qty<1) qty=1;
-      addToCart(fig.dataset.file,size,qty);
-      if (window.matchMedia && window.matchMedia('(max-width:640px)').matches) openCart();
-      return;
-    }
-    var img=e.target.closest('img'); if(img){
-      var li=$('#lightImg'); if(li) li.src=img.src;
-      var lb=$('#lightbox'); if(lb){ lb.classList.add('show'); lb.setAttribute('aria-hidden','false'); }
-    }
-  });
-}
-var closeLb=$('#closeLb');
-if(closeLb) closeLb.onclick=function(){
-  var lb=$('#lightbox'); if(lb){ lb.classList.remove('show'); lb.setAttribute('aria-hidden','true'); }
-  var li=$('#lightImg'); if(li) li.src='';
-};
-var lbEl=$('#lightbox');
-if(lbEl){
-  lbEl.addEventListener('click',function(e){ if(e.target.id==='lightbox'){ if(closeLb) closeLb.click(); } });
-}
-document.addEventListener('keydown',function(e){
-  var lb=$('#lightbox');
-  if(e.key==='Escape' && lb && lb.classList.contains('show')){ if(closeLb) closeLb.click(); }
-});
-
-/* ==== Ostoskori ==== */
-var cart=new Map(); var cartEl=$('#cart'), cartCountEl=$('#cartCount');
-function renderCart(){
-  if(!cartEl) return;
-  cartEl.innerHTML='';
-  cart.forEach(function(item,name){
-    var row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
-    row.innerHTML=
-      '<div title="'+name+'">'+name+'</div>'
-     +'<input class="cart-input size" type="text" value="'+(item.size||'')+'" placeholder="Koko" />'
-     +'<input class="cart-input qty" type="number" min="1" value="'+(Math.max(1,parseInt(item.qty,10)||1))+'" />'
-     +'<button class="rm" title="Poista" type="button">✕</button>';
-    cartEl.appendChild(row);
-  });
-  var count=0; cart.forEach(function(b){ count += Math.max(1,parseInt(b.qty,10)||1); });
-  if(cartCountEl) cartCountEl.textContent=count;
-  try{ localStorage.setItem('b2b_cart', JSON.stringify(Array.from(cart.entries()))); }catch(e){}
-}
-function addToCart(filename,size,qty){
-  var it=cart.get(filename)||{name:filename,size:'',qty:0};
-  it.size=size||it.size; it.qty=Math.max(0,parseInt(it.qty,10)||0)+Math.max(1,qty||1);
-  cart.set(filename,it); renderCart();
-}
-function loadCart(){
-  try{
-    var raw=localStorage.getItem('b2b_cart'); if(!raw) return;
-    cart=new Map(JSON.parse(raw)); renderCart();
-  }catch(e){}
-}
-if(cartEl){
-  cartEl.addEventListener('input',function(e){
-    var row=e.target.closest('.cart-row'); if(!row) return;
-    var key=row.dataset.key; var it=cart.get(key); if(!it) return;
-    if(e.target.classList.contains('size')) it.size=e.target.value;
-    if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value,10)||1);
-    cart.set(key,it); renderCart();
-  });
-  cartEl.addEventListener('click',function(e){
-    var row=e.target.closest('.cart-row'); if(!row) return;
-    if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
-  });
-}
-var clearBtn=$('#cartClear'); if(clearBtn) clearBtn.onclick=function(){ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
-var copyBtn=$('#copyOrder'); if(copyBtn) copyBtn.onclick=function(){
-  if(cart.size===0){ alert('Ostoskori on tyhjä.'); return; }
-  var note=($('#note')||{}).value||'';
-  var name='Tuntematon'; try{ name=sessionStorage.getItem('b2b_name')||'Tuntematon'; }catch(e){}
-  var lines=[ 'Lähettäjä: '+name, '' ];
-  cart.forEach(function(it){ lines.push('Tuote: '+it.name+' | Koko: '+(it.size||'')+' | Kpl: '+(Math.max(1,parseInt(it.qty,10)||1))); });
-  if(note){ lines.push('', 'Lisätiedot: '+note); }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(lines.join('\n')).then(function(){ alert('Tilaus kopioitu leikepöydälle.'); });
-  }else{
-    alert(lines.join('\n'));
-  }
-};
-
-/* ==== Mobiili-korin ohjaus ==== */
-var cartPanel    = document.getElementById('cartPanel');
-var cartBackdrop = document.getElementById('cartBackdrop');
-var cartCloseBtn = document.getElementById('cartClose');
-var cartBadgeBtn = document.getElementById('cartBadge');
-
-function openCart(){
-  if(cartPanel) cartPanel.classList.add('open');
-  if(cartBackdrop) cartBackdrop.classList.add('on');
-  document.body.classList.add('noscroll');
-}
-function closeCart(){
-  if(cartPanel) cartPanel.classList.remove('open');
-  if(cartBackdrop) cartBackdrop.classList.remove('on');
-  document.body.classList.remove('noscroll');
-}
-if (cartBadgeBtn) cartBadgeBtn.onclick = openCart;
-if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
-if (cartBackdrop) cartBackdrop.onclick = closeCart;
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape' && cartPanel && cartPanel.classList.contains('open')) closeCart();
-});
-
-/* ==== Lähetys GAS:lle ==== */
-function postViaHiddenForm(url, payloadObj) {
-  var form = document.createElement('form');
-  form.method = 'POST';
-  form.action = url;
-  form.target = 'gas_iframe';
-  form.style.display = 'none';
-  var input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'data';
-  input.value = JSON.stringify(payloadObj);
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(function(){ form.remove(); }, 1500);
-}
-(function ensureIframe(){
-  if(!document.getElementById('gas_iframe')){
-    var ifr=document.createElement('iframe');
-    ifr.name='gas_iframe';
-    ifr.id='gas_iframe';
-    ifr.hidden=true;
-    document.body.appendChild(ifr);
-  }
-})();
-var emailBtn=$('#cartEmail');
-if(emailBtn) emailBtn.onclick = async function () {
-  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
-
-  var items  = Array.from(cart.values()).map(function(it){
-    return { name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty,10)||1) };
-  });
-  var sender = "Tuntematon"; try{ sender = sessionStorage.getItem('b2b_name') || "Tuntematon"; }catch(e){}
-  var note   = ($('#note')||{}).value || "";
-  var payload = { secret: GAS_SECRET, items: items, sender: sender, note: note };
-
-  try {
-    var res = await fetch(GAS_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-    var txt = ''; try{ txt = await res.text(); }catch(e){}
-    if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
-  } catch (e) { /* fallback */ }
-
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-  alert('Lähetetty!');
-};
-
-/* ==== Manifestin lataus ==== */
-async function loadFromManifest(){
-  var spin=$('#spin'); if(spin) spin.classList.add('on');
-  var status=$('#status'); if(status){ status.style.display='none'; status.textContent=''; }
-  try{
-    var res=await fetch('images/manifest.json',{cache:'no-store'});
-    if(!res.ok) throw new Error('not found');
-    var manifest=await res.json();
-    var files=(manifest.files||[]).filter(function(p){ return /\.(jpg|jpeg|png|gif|webp)$/i.test(p); });
-    files=Array.from(new Set(files));
-    if(!files.length) throw new Error('empty');
-
-    var root=files[0].split('/')[0];
-    var regs=CATS.map(function(c){ return {key:c.key, re:new RegExp('^'+root+'/'+c.key+'/','i')}; });
-    var byCat=[];
-    files.forEach(function(p){
-      var hit=null;
-      for(var i=0;i<regs.length;i++){ if(regs[i].re.test(p)){ hit=regs[i]; break; } }
-      if(hit) byCat.push({path:p,cat:hit.key,name:p.split('/').pop()});
-    });
-
-    var uniq=new Map();
-    byCat.forEach(function(it){ if(!uniq.has(it.path)) uniq.set(it.path,it); });
-    allFiles=Array.from(uniq.values()).sort(function(a,b){
-      return a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi');
-    });
-
-    renderCats(countsFrom(allFiles));
-    showGallery();
-  }catch(e){
-    if(status){ status.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.'; status.style.display='block'; }
-  }finally{
-    if(spin) spin.classList.remove('on');
-  }
-}
-
-/* ==== init ==== */
-window.addEventListener('DOMContentLoaded', async function(){
-  await initGate();
-  loadCart();
-  loadFromManifest();
-});
 </script>
 </body>
 </html>
