@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Suomen 585 Oy – Tukkutilaus</title>
 
-<!-- Favicons (tarvittaessa) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -15,37 +14,40 @@
 
 <style>
   :root{
-    --bg:#0f1115;
-    --ink:#e8eaf0;
-    --muted:#bfc3d3;
-    --card:#171923;
-    --border:#2a2f3e;
-    --accent:#e0b85a;
-    --accent-ink:#26252a;
+    --bg:#0f1115; --ink:#e8eaf0; --muted:#bfc3d3;
+    --card:#171923; --border:#2a2f3e;
+    --accent:#e0b85a; --accent-ink:#26252a;
   }
   *{ box-sizing:border-box }
   html,body{ height:100% }
   body{
-    margin:0;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     color:var(--ink);
     background:var(--bg) url("images/bg.webp") center/cover fixed no-repeat;
-    overflow-x:hidden;
-    -webkit-text-size-adjust:100%;
+    overflow-x:hidden; -webkit-text-size-adjust:100%;
   }
 
   header{
-    background:rgba(31,41,55,.92);
-    color:#f3f4f6;
-    padding:.9rem 1rem;
+    background:rgba(31,41,55,.92); color:#f3f4f6; padding:.9rem 1rem;
     display:flex; align-items:center; justify-content:space-between; gap:.75rem;
-    position:sticky; top:0; z-index:5;
-    backdrop-filter:saturate(120%) blur(6px);
+    position:sticky; top:0; z-index:5; backdrop-filter:saturate(120%) blur(6px);
   }
   header h1{ margin:0; font-size:clamp(1.05rem,3.4vw,1.6rem) }
 
-  .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
+  .wrap{ max-width:1240px; margin:0 auto; padding:1rem;
+    display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
+
+  /* Työkalupalkki + kategoriat */
+  .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem }
+  .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
+  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
+  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .9rem; cursor:pointer; color:var(--ink) }
+
+  .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
+  .cats::-webkit-scrollbar{ display:none }
+  .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
+  .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
   /* Galleria */
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
@@ -61,8 +63,7 @@
   }
   figure .img-wrap{
     width:100%; background:#0b0d12; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    min-height: 180px;
+    display:flex; align-items:center; justify-content:center; min-height:180px;
   }
   figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in }
   figcaption{ margin:.2rem 0 0; font-size:1rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
@@ -75,10 +76,9 @@
   .noteField{ width:100%; margin:.45rem 0 .35rem; padding:.5rem .6rem; border:1px solid var(--border); border-radius:10px; background:rgba(0,0,0,.2); color:var(--ink) }
   .saveBtn{ border:none; border-radius:9px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer; padding:.5rem .75rem }
 
-  /* Koko | Kpl | Nappi (mobiilissa nappi omalle riville) */
+  /* Koko | Kpl | Nappi – mobiilissa nappi omalle riville */
   .addrow{
-    margin-top:auto;
-    display:grid; gap:.42rem; align-items:center;
+    margin-top:auto; display:grid; gap:.42rem; align-items:center;
     grid-template-columns: 60px 46px 1fr;
   }
   .addrow input{
@@ -93,29 +93,22 @@
     font-size:.9rem; line-height:1.05; white-space:nowrap;
   }
   @media (max-width:980px){
-    .addrow{
-      grid-template-columns:1fr 1fr; grid-template-areas:"size qty" "add add";
-    }
+    .addrow{ grid-template-columns:1fr 1fr; grid-template-areas:"size qty" "add add"; }
     .addrow .size{ grid-area:size; width:auto }
     .addrow .qty{ grid-area:qty; width:auto }
     .addrow button{ grid-area:add }
   }
 
-  /* Ostoskori: liukuva paneeli (kaikilla laitteilla) */
+  /* Ostoskori: liukuva paneeli */
   .cart-badge{
-    position:fixed; top:12px; right:12px;
     background:var(--accent); color:var(--accent-ink);
-    border-radius:999px;
-    padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
-    z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
+    border-radius:999px; padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
+    box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
   }
   #cartPanel{
-    position:fixed; top:0; right:0;
-    height:100dvh; width:min(92vw,420px);
-    background:rgba(23,25,35,.96);
-    border-left:1px solid var(--border);
-    padding:1rem; border-radius:0;
-    box-shadow:-6px 0 24px rgba(0,0,0,.35);
+    position:fixed; top:0; right:0; height:100dvh; width:min(92vw,420px);
+    background:rgba(23,25,35,.96); border-left:1px solid var(--border);
+    padding:1rem; border-radius:0; box-shadow:-6px 0 24px rgba(0,0,0,.35);
     transform:translateX(100%); transition:transform .25s ease;
     z-index:1001; backdrop-filter: blur(6px);
   }
@@ -130,11 +123,7 @@
 
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
-  .btn.close{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:2.4rem; height:2.4rem; font-size:1.25rem;
-    padding:0; border-radius:12px;
-  }
+  .btn.close{ display:inline-flex; align-items:center; justify-content:center; width:2.4rem; height:2.4rem; font-size:1.25rem; padding:0; border-radius:12px; }
 
   .cart-head{
     position:sticky; top:0; z-index:1;
@@ -150,10 +139,7 @@
     padding:.35rem 0; border-bottom:1px dashed var(--border)
   }
   .cart-row:last-child{ border-bottom:none }
-  .cart-input{
-    width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px;
-    background:transparent; color:var(--ink); text-align:center; font-size:.92rem
-  }
+  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center; font-size:.92rem }
   .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
   .rm:hover{ background:#ffd7d7 }
 
@@ -163,7 +149,6 @@
   .spinner{ display:none; place-items:center; margin:.6rem 0 }
   .spinner.on{ display:grid }
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite }
-  @keyframes spin{ to{ transform:rotate(360deg) } }
 
   /* Lightbox */
   .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100; }
@@ -202,9 +187,18 @@
 
   <main class="wrap" aria-hidden="true" id="app">
     <section>
+      <div class="toolbar">
+        <div class="search">
+          <input id="q" type="search" placeholder="Hae nimellä/SKU:lla…" />
+          <button id="clear" type="button">Tyhjennä</button>
+        </div>
+        <div class="cats" id="cats"></div>
+      </div>
+
       <div class="error" id="status"></div>
       <div class="spinner" id="spin"></div>
       <div class="gallery" id="gallery" aria-live="polite"></div>
+
       <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
     </section>
 
@@ -257,6 +251,8 @@ const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 let IS_ADMIN = false;
 let allFiles = [];          // { path, name, cat }
 let NOTES   = new Map();    // sku -> note
+let CATS    = [];           // löydetyt kategoriat
+let currentCat = 'all';
 
 /* ===== Kirjautuminen ===== */
 function openApp(){
@@ -318,10 +314,11 @@ function initGate(){
   };
 }
 
-/* ===== Tiedot manifestista & muistiinpanoista ===== */
+/* ===== Apuja ===== */
 function toNameFromPath(p){ return p.split('/').pop().replace(/\.[^.]+$/,''); } // SKU = tiedostonimi ilman päätettä
 function catFromPath(p){ const parts=p.split('/'); return (parts.length>=3? parts[1] : 'Muut'); }
 
+/* ===== Muistiinpanot (kaikille lataus, admin voi tallentaa) ===== */
 async function fetchNotes(){
   try{
     const r = await fetch(GAS_ENDPOINT+'?action=getnotes',{cache:'no-store'});
@@ -330,35 +327,84 @@ async function fetchNotes(){
     Object.entries(j).forEach(([sku,note])=> NOTES.set(String(sku), String(note||'')));
   }catch(e){ /* ei estä sivua */ }
 }
+async function saveAdminNote(sku, value){
+  const payload = { action:'savenote', sku:String(sku), note:String(value), secret:GAS_SECRET };
+  try{
+    const r = await fetch(GAS_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const txt = (await r.text()).trim();
+    if (txt === 'OK') return true;
+  }catch(e){}
+  // Fallback-lomake (ei jää jumiin jos fetch epäonnistuu)
+  postViaHiddenForm(GAS_ENDPOINT, payload);
+  return true;
+}
 
+/* ===== Manifesti + kategoriat ===== */
+function buildCategories(files){
+  // poimi toiset polkuosat (images/<TÄMÄ>/...)
+  const set = new Set();
+  files.forEach(p => set.add(catFromPath(p)));
+  const arr = [...set].sort((a,b)=> a.localeCompare(b,'fi'));
+  CATS = arr;
+}
+function renderCats(){
+  const wrap = $('#cats'); if(!wrap) return;
+  wrap.innerHTML = '';
+  const btn = (key,label,active=false) => {
+    const b=document.createElement('button');
+    b.className = 'cat-btn' + (active?' active':'');
+    b.dataset.key = key;
+    b.textContent = label;
+    return b;
+  };
+  wrap.appendChild(btn('all','Kaikki', currentCat==='all'));
+  CATS.forEach(c => wrap.appendChild(btn(c, c, currentCat===c)));
+}
+$('#cats').addEventListener('click', e=>{
+  const b=e.target.closest('.cat-btn'); if(!b) return;
+  currentCat = b.dataset.key;
+  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active', x===b));
+  showGallery();
+});
+
+/* ===== Haku ===== */
+$('#q').addEventListener('input', showGallery);
+$('#clear').onclick = ()=>{ $('#q').value=''; showGallery(); };
+
+/* ===== Manifestin luku ===== */
 async function loadFromManifest(){
   const res=await fetch('images/manifest.json',{cache:'no-store'});
   if(!res.ok) throw new Error('manifest not found');
   const manifest=await res.json();
   let files=(manifest.files||[]).filter(p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p));
   files=[...new Set(files)];
+  // rakenna kategoriat
+  buildCategories(files);
+  // muodosta tiedot
   allFiles = files.map(p=>({ path:p, name: toNameFromPath(p), cat: catFromPath(p) }));
 }
 
+/* ===== Data & render ===== */
 async function initDataAndRender(){
   const spin=$('#spin'), status=$('#status');
   spin && (spin.classList.add('on'));
   status && (status.style.display='none', status.textContent='');
 
   try{
-    await loadFromManifest();   // kuvalista
+    await loadFromManifest();   // kuvalista + kategoriat
     await fetchNotes();         // kaikkien nähtäväksi
+    renderCats();
     showGallery();
   }catch(e){
-    if(status){ status.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.'; status.style.display='block'; }
+    if(status){ status.textContent='Kuvien haku epäonnistui. Tarkista, että images/manifest.json on olemassa ja julkinen.'; status.style.display='block'; }
   }finally{
     spin && (spin.classList.remove('on'));
   }
 }
 
 /* ===== Galleria ===== */
-function addFigure(path){
-  const name = toNameFromPath(path);   // = SKU
+function addFigure(file){
+  const {path, name} = file; // name = SKU
   const note = NOTES.get(name) || '';
 
   const fig=document.createElement('figure');
@@ -388,14 +434,25 @@ function addFigure(path){
 
 function showGallery(){
   const gal=$('#gallery'); gal.innerHTML='';
+  const q = ($('#q').value||'').trim().toLowerCase();
+
+  const list = allFiles.filter(f=>{
+    const okCat = (currentCat==='all' || f.cat===currentCat);
+    if(!okCat) return false;
+    if(!q) return true;
+    const base = f.name.toLowerCase();
+    return base.includes(q);
+  });
+
   const seen=new Set();
-  for(const f of allFiles){
-    if(seen.has(f.path)) continue; seen.add(f.path);
-    addFigure(f.path);
+  for(const f of list){
+    if(seen.has(f.path)) continue;
+    seen.add(f.path);
+    addFigure(f);
   }
 }
 
-/* Kuva suurennus */
+/* Kuva suurennus & admin tallennus */
 $('#gallery').addEventListener('click',async (e)=>{
   const fig=e.target.closest('figure'); if(!fig) return;
 
@@ -416,7 +473,6 @@ $('#gallery').addEventListener('click',async (e)=>{
 
     const ok = await saveAdminNote(sku, text);
     if (ok){
-      // päivitys heti kaikille näkyvään kenttään
       view.textContent = text;
       view.classList.toggle('hidden', !text);
       NOTES.set(sku, text);
@@ -486,7 +542,7 @@ if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
 if (cartBackdrop)  cartBackdrop.onclick  = closeCart;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cartPanel.classList.contains('open')) closeCart(); });
 
-/* ===== Lähetys GAS:lle (tilaus) ===== */
+/* ===== Tilaus GAS:lle ===== */
 function postViaHiddenForm(url, payloadObj) {
   const form = document.createElement('form');
   form.method = 'POST';
@@ -527,19 +583,6 @@ $('#cartEmail').onclick = async () => {
   alert('Lähetetty!');
   closeCart();
 };
-
-/* ===== Admin-muistiinpanojen tallennus ===== */
-async function saveAdminNote(sku, value){
-  const payload = { action:'savenote', sku:String(sku), note:String(value), secret:GAS_SECRET };
-  try{
-    const r = await fetch(GAS_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const txt = (await r.text()).trim();
-    if (txt === 'OK') return true;
-  }catch(e){}
-  // yritä vielä lomakefallback
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-  return true; // fallback ei palauta OK:ta synkronisesti, mutta lähetys tehty
-}
 
 /* ===== init ===== */
 window.addEventListener('DOMContentLoaded', ()=>{
