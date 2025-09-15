@@ -11,48 +11,35 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="theme-color" content="#3a006b">
+  <meta name="theme-color" content="#1c1c1c">
 
   <style>
     :root{
-      --purple:#3a006b;
-      --gold:#d4af37;
-      --gold-wash:rgba(212,175,55,0.08);
+      --bg:#1c1c1c;         /* tumma tausta */
+      --text:#e5e5e5;       /* vaalea teksti */
+      --accent:#c8b07e;     /* hillitty beige/pronssi */
+      --accent-wash:rgba(200,176,126,0.1);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%;margin:0}
 
     body{
-      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      color:var(--gold);
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      color:var(--text);
       display:grid;
       place-items:center;
       text-align:center;
 
-      /* Taustakuva + tumma kalvo luettavuuden vuoksi */
+      /* Taustakuva (muokkaa tiedostonimeä tarvittaessa) */
       background:
-        linear-gradient(rgba(20,10,40,.65),rgba(20,10,40,.65)),
+        linear-gradient(rgba(28,28,28,.7),rgba(28,28,28,.7)),
         url("images/bg.webp") center/cover no-repeat fixed;
     }
 
-    .top-btn{
-      position:absolute;
-      top:1rem; right:1rem;
-      background:var(--gold);
-      color:var(--purple);
-      padding:.7rem 1.2rem;
-      border-radius:8px;
-      font-weight:700;
-      text-decoration:none;
-      box-shadow:0 2px 6px rgba(0,0,0,.35);
-      transition:background .2s;
-    }
-    .top-btn:hover{background:#e1c45c}
-
     .card{
-      background:rgba(58,0,107,.8);
-      border:2px solid var(--gold-wash);
+      background:rgba(40,40,40,.85);
+      border:2px solid var(--accent-wash);
       border-radius:1.25rem;
       padding:2.5rem 2rem;
       max-width:480px;
@@ -60,48 +47,65 @@
     }
     h1{
       margin:0 0 1rem;
-      font-size:clamp(2rem,6vw,3.5rem);
-      letter-spacing:.05em;
+      font-size:clamp(2rem,6vw,3.2rem);
+      letter-spacing:.03em;
+      color:var(--accent);
     }
     h2{
       font-size:1.25rem;
       margin-top:1.5rem;
       margin-bottom:.5rem;
+      color:var(--accent);
     }
     .contact{
       line-height:1.6;
       font-size:1.05rem;
     }
     .contact a{
-      color:var(--gold);
+      color:var(--text);
       text-decoration:none;
     }
     .contact a:hover{ text-decoration:underline }
+
+    .portal-btn{
+      display:inline-block;
+      margin-top:1.8rem;
+      padding:0.9rem 1.5rem;
+      background:var(--accent);
+      color:#1c1c1c;
+      font-weight:700;
+      text-decoration:none;
+      border-radius:10px;
+      box-shadow:0 3px 8px rgba(0,0,0,.35);
+      transition:background .2s;
+    }
+    .portal-btn:hover{ background:#d6c597 }
+
     footer{
       position:fixed;
       bottom:.6rem; left:0; right:0;
       text-align:center;
       font-size:.9rem;
-      color:var(--gold-wash);
+      color:var(--accent-wash);
     }
   </style>
 </head>
 <body>
-  <!-- Painike Suomen 585 Oy -sivulle -->
-  <a href="suomen585.html" class="top-btn">Tilausportaali</a>
-
   <main>
     <section class="card">
       <h1>Suomen 585 Oy</h1>
 
-      <h2></h2>
       <div class="contact">
         Olavi Barman<br>
-        <a href="tel:+358449721998">+358 40 0777 508</a><br>
+        <a href="tel:+358449721998">+358 400 777508</a><br>
         <a href="mailto:Barmanol@gmail.com">Barmanol@gmail.com</a>
       </div>
 
-     
+
+      <!-- Tilausportaali-nappi -->
+      <div>
+        <a href="suomen585.html" class="portal-btn">→ Avaa tilausportaali</a>
+      </div>
     </section>
   </main>
 
