@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Suomen 585 Oy – Tukkutilaus</title>
 
-<!-- Favicons (voit poistaa jos sinulla jo on nämä juurihakemistossa) -->
+<!-- Favicons (jos sinulla on jo nämä, voit pitää ennallaan) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -27,7 +27,17 @@
   }
   *{ box-sizing:border-box }
   html,body{ height:100% }
-  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink) }
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    /* Taustakuva + varaväri (KORJATTU) */
+    background: var(--bg) url("images/bg.webp") center / cover no-repeat;
+    color:var(--ink);
+  }
+  /* Estä iOS:in zoomailu fixed-taustalla */
+  @media (max-width: 768px){
+    body{ background-attachment: scroll; }
+  }
 
   header{ background:#1f2937; color:#f3f4f6; padding:.9rem 1rem; text-align:center; position:sticky; top:0; z-index:5 }
   header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem); letter-spacing:.02em }
@@ -46,7 +56,7 @@
   .cat-btn{ border:1px solid var(--border); background:var(--card); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
-  /* Galleria – KUVA NÄYTETÄÄN KOKONAAN (ei pakotettua neliötä) */
+  /* Galleria – kuva näytetään kokonaan */
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
 
@@ -56,21 +66,21 @@
     padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
   }
   figure .img-wrap{
-    width:100%; background:#0b0d12; border-radius:10px; /* kehys */
+    width:100%; background:#0b0d12; border-radius:10px;
     display:flex; align-items:center; justify-content:center;
-    min-height: 180px;
+    min-height:180px;
   }
   figure img{
-    max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px;
+    max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in;
   }
   figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-  /* Add-row: Koko | Kpl | Nappi – kapeat kentät */
+  /* Add-row: Koko | Kpl | Nappi */
   .addrow{
     margin-top:auto;
     display:grid; gap:.42rem; align-items:center;
-    grid-template-columns: 60px 46px 1fr;  /* Koko 60px | Kpl 46px | Nappi */
+    grid-template-columns: 60px 46px 1fr; /* Koko 60px | Kpl 46px | Nappi */
   }
   .addrow input{
     padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px;
@@ -181,12 +191,12 @@
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 
-  /* Kirjautumisportti taustakuvalla — VAIN TÄMÄ MUUTETTU: käytä samaa bg-kuvaa kuin muualla */
+  /* Kirjautumisportti taustakuvalla (KORJATTU: sama bg.webp kuin sivulla) */
   .gate{
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
     background:
       linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)),
-      url("images/bg.webp") center/cover no-repeat;
+      url("images/bg.webp") center / cover no-repeat;
   }
   .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
@@ -308,15 +318,19 @@ async function initGate(){
   passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
   nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
 
-  // Kirjaudu ulos (ilman sivulatausta)
+  // Kirjaudu ulos – varmatoiminen: tyhjennä tila, sulje kori, näytä portti (KORJATTU)
   $('#logout').onclick=()=>{
     if(!confirm('Kirjaudutaanko ulos?')) return;
-    sessionStorage.clear();
-    localStorage.removeItem('b2b_cart');
-    cart.clear(); renderCart();
+    try{ sessionStorage.clear(); }catch(e){}
+    try{ localStorage.removeItem('b2b_cart'); }catch(e){}
+    try{ cart.clear(); renderCart(); }catch(e){}
+    // sulje mahdollinen mobiilikori
+    try{ if (typeof closeCart === 'function') closeCart(); }catch(e){}
+    // näytä kirjautumisportti
     $('#gate').style.display='flex';
     $('#app').setAttribute('aria-hidden','true');
-    $('#passInput').value=''; $('#nameInput').focus();
+    $('#passInput').value='';
+    $('#nameInput').focus();
   };
 }
 
@@ -376,7 +390,6 @@ $('#gallery').addEventListener('click',e=>{
     const size=fig.querySelector('.size').value.trim();
     const qty=Math.max(1,parseInt(fig.querySelector('.qty').value)||1);
     addToCart(fig.dataset.file,size,qty);
-    // Mobiilissa avaa kori automaattisesti kun lisätään
     if (window.matchMedia('(max-width:640px)').matches) openCart();
     return;
   }
@@ -400,7 +413,7 @@ function renderCart(){
     cartEl.appendChild(row);
   }
   cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
-  localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()]));
+  try{ localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()])); }catch(e){}
 }
 function addToCart(filename,size,qty){
   const it=cart.get(filename)||{name:filename,size:'',qty:0};
@@ -499,13 +512,12 @@ $('#cartEmail').onclick = async () => {
     if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
   } catch (_) { /* fallbackiin */ }
 
-  // 2) Fallback: lomakepostitus (ei esikyselyä → varma doPost)
+  // 2) Fallback: lomakepostitus (varma doPost)
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Lähetetty!');
 };
 
 /* ==== Manifestin lataus ==== */
-/* Odotetaan: images/manifest.json → { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
 async function loadFromManifest(){
   const spin=$('#spin'); spin?.classList.add('on');
   const status=$('#status'); status.style.display='none'; status.textContent='';
