@@ -20,8 +20,8 @@
     --muted:#bfc3d3;
     --card:#171923;
     --border:#2a2f3e;
-    --accent:#e0b85a;
-    --accent-ink:#26252a;
+    --accent:#e0b85a;      /* lämmin korostus */
+    --accent-ink:#26252a;  /* kontrastiväri painikkeisiin */
   }
   *{ box-sizing:border-box }
   html,body{ height:100% }
@@ -43,10 +43,8 @@
   }
   header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem) }
 
-  .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
-  @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
-
-  /* Työkalupalkki */
+  .wrap{ max-width:1240px; margin:0 auto; padding:1rem }
+  /* Toolbar */
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.7rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
   .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
@@ -104,20 +102,36 @@
     .addrow button{ grid-area:add }
   }
 
-  /* Ostoskori */
+  /* 🧺 Ostoskori – aina off-canvas-paneeli (desktop + mobiili) */
   aside{
-    background:rgba(23,25,35,.88);
-    border:1px solid var(--border); border-radius:14px;
-    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem; z-index:2;
-    backdrop-filter: blur(2px);
+    background:rgba(23,25,35,.96);
+    border-left:1px solid var(--border);
+    padding:1rem;
+    height:100dvh;
+    width:min(520px, 92vw);
+    box-shadow:-6px 0 24px rgba(0,0,0,.35);
   }
+  #cartPanel{
+    position:fixed; top:0; right:0;
+    transform:translateX(100%);
+    transition:transform .25s ease;
+    z-index:1001;
+    backdrop-filter: blur(6px);
+  }
+  #cartPanel.open{ transform:translateX(0); }
+
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
+
   .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
   .btn.outline{ background:transparent; color:var(--accent); border-color:var(--accent) }
   .btn.outline:hover{ background:rgba(224,184,90,.12) }
+  .btn.close{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:2.4rem; height:2.4rem; font-size:1.25rem; padding:0; border-radius:12px;
+  }
 
   .cart-head{
     position:sticky; top:0; z-index:1;
@@ -127,16 +141,13 @@
     display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem;
     font-weight:800; color:var(--muted); border-bottom:1px solid var(--border);
   }
-  .cart-items{ max-height:58vh; overflow:auto; padding:.2rem .4rem }
+  .cart-items{ max-height:calc(100dvh - 260px); overflow:auto; padding:.2rem .4rem }
   .cart-row{
     display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center;
     padding:.35rem 0; border-bottom:1px dashed var(--border)
   }
   .cart-row:last-child{ border-bottom:none }
-  .cart-input{
-    width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px;
-    background:transparent; color:var(--ink); text-align:center; font-size:.92rem
-  }
+  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center; font-size:.92rem }
   .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
   .rm:hover{ background:#ffd7d7 }
   @media (max-width:560px){
@@ -146,43 +157,26 @@
   .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink); margin-top:.6rem }
 
   .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
+  .cart-actions-right{ display:flex; gap:.5rem; align-items:center }
+
+  /* Taustahimmennin */
+  .cart-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.4);
+    display:none; z-index:1000;
+  }
+  .cart-backdrop.on{ display:block; }
+
+  /* 🛒 Badge (yläoikealla) */
   .cart-badge{
     position:fixed; top:12px; right:12px;
     background:var(--accent); color:var(--accent-ink);
     border-radius:999px;
-    padding:.65rem 1.1rem;     /* isompi */
-    font-size:1.05rem;         /* isompi */
+    padding:.65rem 1.1rem;
+    font-size:1.05rem;
     font-weight:800;
     z-index:900;
     box-shadow:0 4px 14px rgba(0,0,0,.25);
     cursor:pointer;
-  }
-
-  /* Mobiilin liukuva kori */
-  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; z-index:1000; }
-  .cart-backdrop.on{ display:block; }
-
-  @media (max-width:640px){
-    body.noscroll{ overflow:hidden; }
-
-    #cartPanel{
-      position:fixed; top:0; right:0;
-      height:100dvh; width:min(92vw,420px);
-      background:rgba(23,25,35,.96);
-      border-left:1px solid var(--border);
-      padding:1rem; border-radius:0;
-      box-shadow:-6px 0 24px rgba(0,0,0,.35);
-      transform:translateX(100%); transition:transform .25s ease;
-      z-index:1001; backdrop-filter: blur(6px);
-    }
-    #cartPanel.open{ transform:translateX(0); }
-    .btn.close{
-      display:inline-flex; align-items:center; justify-content:center;
-      width:2.4rem; height:2.4rem;   /* isompi ruksinappi */
-      font-size:1.25rem;
-      padding:0; border-radius:12px;
-    }
-    .cart-items{ max-height:calc(100dvh - 240px); overflow:auto; }
   }
 
   /* Lightbox */
@@ -238,11 +232,14 @@
       <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
     </section>
 
-    <!-- Aside (mobiilissa liuku paneeliksi) -->
+    <!-- Aside = off-canvas paneeli -->
     <aside id="cartPanel" aria-label="Ostoskori">
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
-        <button class="btn close" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
+        <div class="cart-actions-right">
+          <button class="btn outline" id="logout" type="button" title="Kirjaudu ulos">Kirjaudu ulos</button>
+          <button class="btn close" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
+        </div>
       </div>
 
       <div class="cart-head">
@@ -275,40 +272,56 @@ const PASSWORD_PLAIN = "sala54N4";
 /* -------------------------------- */
 
 /* Pienet apurit */
-function $(s){ return document.querySelector(s); }
-function $all(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
-function sanitize(s){ return (s||"").toString().replace(/\s+/g,' ').trim(); }
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 
-/* ==== Kirjautuminen (selkosalasana, varma) ==== */
+/* ==== Kirjautuminen ==== */
 function openApp(){
-  var g=$('#gate'); if(g) g.style.display='none';
-  var a=$('#app'); if(a) a.setAttribute('aria-hidden','false');
-  var er=$('#gateErr'); if(er) er.style.display='none';
-  try{ sessionStorage.setItem('b2b_authed', '1'); }catch(e){}
+  $('#gate').style.display='none';
+  $('#app').setAttribute('aria-hidden','false');
+  $('#gateErr').style.display='none';
+  try{ sessionStorage.setItem('b2b_authed','1'); }catch(e){}
 }
 function initGate(){
-  var btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
+  const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
   function tryOpen(){
-    var given=((passI && passI.value)||'').trim();
-    var name = sanitize(nameI && nameI.value) || 'Tuntematon';
-    if(given === PASSWORD_PLAIN){
-      try{ sessionStorage.setItem('b2b_name', name); }catch(e){}
+    const given=(passI.value||'').trim();
+    const name=sanitize(nameI.value)||'Tuntematon';
+    if(given===PASSWORD_PLAIN){
+      try{ sessionStorage.setItem('b2b_name',name); }catch(e){}
       openApp();
     }else{
-      if(err) err.style.display='block';
-      if(passI){ passI.focus(); if(passI.select) passI.select(); }
+      err.style.display='block';
+      passI.focus(); passI.select?.();
     }
   }
   try{
     if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; }
   }catch(e){}
-  if(btn) btn.onclick=tryOpen;
-  if(passI) passI.onkeydown=function(e){ if(e.key==='Enter') tryOpen(); };
-  if(nameI) nameI.onkeydown=function(e){ if(e.key==='Enter') tryOpen(); };
+  btn.onclick=tryOpen;
+  passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
+  nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
+
+  // Kirjaudu ulos (toimii aina, ilman sivunlatausta)
+  const logoutBtn = $('#logout');
+  if (logoutBtn){
+    logoutBtn.onclick = ()=>{
+      if(!confirm('Kirjaudutaanko ulos?')) return;
+      try{ sessionStorage.clear(); }catch(e){}
+      try{ localStorage.removeItem('b2b_cart'); }catch(e){}
+      cart.clear(); renderCart();
+      $('#gate').style.display='flex';
+      $('#app').setAttribute('aria-hidden','true');
+      $('#passInput').value='';
+      $('#nameInput').focus();
+      closeCart();
+    };
+  }
 }
 
 /* ==== Kategoriat ==== */
-var CATS = [
+const CATS = [
   { key: "Magneetit",       label: "Magneetit" },
   { key: "Lappimagneetit",  label: "Lappimagneetit" },
   { key: "Sormukset",       label: "Sormukset" },
@@ -316,224 +329,176 @@ var CATS = [
   { key: "Kaulaketjut",     label: "Kaulaketjut" },
   { key: "Riipukset",       label: "Riipukset" },
   { key: "Hiuskorut",       label: "Hiuskorut" },
-  { key: "Kellot",          label: "Kellot" }
+  { key: "Kellot",          label: "Kellot" }          // <- lisätty pilkku aiemman perään
 ];
-var currentCat='all', allFiles=[];
+let currentCat='all', allFiles=[];
 
-function toTitle(s){ return s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,function(m){return m.toUpperCase();}); }
-function countsFrom(list){
-  var o={}; CATS.forEach(function(c){ o[c.key]=0; });
-  list.forEach(function(f){ if(o[f.cat]!=null) o[f.cat]++; });
-  return o;
-}
+const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
+function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
 function renderCats(counts){
-  var wrap=$('#cats'); if(!wrap) return;
+  const wrap=$('#cats'); if(!wrap) return;
   wrap.innerHTML='';
-  var total=0; for(var k in counts){ total+=counts[k]; }
-  function mk(k,l,c){
-    var b=document.createElement('button');
-    b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=l+' ('+(c||0)+')';
-    return b;
-  }
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c||0})`; return b; };
   wrap.appendChild(mk('all','Kaikki',total));
-  CATS.forEach(function(c){ wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)); });
+  CATS.forEach(c=> wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
 }
-var catsEl = $('#cats');
-if(catsEl){
-  catsEl.addEventListener('click',function(e){
-    var b=e.target.closest('.cat-btn'); if(!b) return;
-    currentCat=b.dataset.key;
-    $all('#cats .cat-btn').forEach(function(x){ x.classList.toggle('active',x===b); });
-    showGallery();
-  });
-}
+$('#cats').addEventListener('click',e=>{
+  const b=e.target.closest('.cat-btn'); if(!b) return;
+  currentCat=b.dataset.key;
+  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+  showGallery();
+});
 
 /* ==== Haku ==== */
-var qEl=$('#q'); if(qEl) qEl.addEventListener('input',showGallery);
-var clearEl=$('#clear'); if(clearEl) clearEl.onclick=function(){ if(qEl){ qEl.value=''; } showGallery(); };
+$('#q').addEventListener('input',showGallery);
+$('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
 /* ==== Galleria + lightbox ==== */
 function addFigure(path){
-  var file=path.split('/').pop(); var title=toTitle(file.replace(/\.[^.]+$/,'')); var sku=file.replace(/\.[^.]+$/,'');
-  var fig=document.createElement('figure');
+  const file=path.split('/').pop(); const title=toTitle(file.replace(/\.[^.]+$/,'')); const sku=file.replace(/\.[^.]+$/,'');
+  const fig=document.createElement('figure');
   fig.dataset.file=file; fig.dataset.path=path; fig.dataset.sku=sku; fig.dataset.title=title;
-  fig.innerHTML=
-    '<div class="img-wrap"><img src="'+path+'" alt="'+title+'" loading="lazy" referrerpolicy="no-referrer" /></div>'
-   +'<figcaption>'+title+'</figcaption>'
-   +'<div class="sku">'+sku+'</div>'
-   +'<div class="addrow">'
-   +  '<input type="text" class="size" placeholder="Koko" />'
-   +  '<input type="number" class="qty" min="1" value="1" />'
-   +  '<button class="add" type="button">Lisää koriin</button>'
-   +'</div>';
-  var gal=$('#gallery'); if(gal) gal.appendChild(fig);
+  fig.innerHTML = `
+    <div class="img-wrap"><img src="${path}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" /></div>
+    <figcaption>${title}</figcaption>
+    <div class="sku">${sku}</div>
+    <div class="addrow">
+      <input type="text" class="size" placeholder="Koko" />
+      <input type="number" class="qty" min="1" value="1" />
+      <button class="add" type="button">Lisää koriin</button>
+    </div>`;
+  $('#gallery').appendChild(fig);
 }
-
 function showGallery(){
-  var q = (qEl && qEl.value ? qEl.value : '').trim().toLowerCase();
-  var gal=$('#gallery'); if(!gal) return; gal.innerHTML='';
-  var list=allFiles.filter(function(f){
+  const q=($('#q').value||'').trim().toLowerCase();
+  const gal=$('#gallery'); gal.innerHTML='';
+  const list=allFiles.filter(f=>{
     if(currentCat!=='all' && f.cat!==currentCat) return false;
     if(!q) return true;
-    var name=f.name.toLowerCase(), sku=f.name.replace(/\.[^.]+$/,'').toLowerCase();
-    return name.indexOf(q)>-1 || sku.indexOf(q)>-1;
+    const name=f.name.toLowerCase(), sku=f.name.replace(/\.[^.]+$/,'').toLowerCase();
+    return name.includes(q)||sku.includes(q);
   });
-  var seen={};
-  list.forEach(function(f){ if(seen[f.path]) return; seen[f.path]=1; addFigure(f.path); });
+  const seen=new Set();
+  list.forEach(f=>{ if(seen.has(f.path)) return; seen.add(f.path); addFigure(f.path); });
 }
-
-var galleryEl=$('#gallery');
-if(galleryEl){
-  galleryEl.addEventListener('click',function(e){
-    var fig=e.target.closest('figure'); if(!fig) return;
-
-    if(e.target.classList.contains('add')){
-      var size=(fig.querySelector('.size')||{}).value||'';
-      var qty=parseInt((fig.querySelector('.qty')||{}).value,10); if(!qty||qty<1) qty=1;
-      addToCart(fig.dataset.file,size,qty);
-      /* HUOM: ei enää openCart() automaattisesti */
-      return;
-    }
-
-    var img=e.target.closest('img'); if(img){
-      var li=$('#lightImg'); if(li) li.src=img.src;
-      var lb=$('#lightbox'); if(lb){ lb.classList.add('show'); lb.setAttribute('aria-hidden','false'); }
-    }
-  });
-}
-
-var closeLb=$('#closeLb');
-if(closeLb) closeLb.onclick=function(){
-  var lb=$('#lightbox'); if(lb){ lb.classList.remove('show'); lb.setAttribute('aria-hidden','true'); }
-  var li=$('#lightImg'); if(li) li.src='';
-};
-
-var lbEl=$('#lightbox');
-if(lbEl){
-  lbEl.addEventListener('click',function(e){ if(e.target.id==='lightbox'){ if(closeLb) closeLb.click(); } });
-}
-document.addEventListener('keydown',function(e){
-  var lb=$('#lightbox');
-  if(e.key==='Escape' && lb && lb.classList.contains('show')){ if(closeLb) closeLb.click(); }
+$('#gallery').addEventListener('click',e=>{
+  const fig=e.target.closest('figure'); if(!fig) return;
+  if(e.target.classList.contains('add')){
+    const size=(fig.querySelector('.size')||{}).value||'';
+    const qty=Math.max(1, parseInt((fig.querySelector('.qty')||{}).value,10)||1);
+    addToCart(fig.dataset.file,size,qty);
+    return; // ei automaattista avautumista
+  }
+  const img=e.target.closest('img'); if(img){
+    $('#lightImg').src=img.src;
+    $('#lightbox').classList.add('show');
+    $('#lightbox').setAttribute('aria-hidden','false');
+  }
 });
+$('#closeLb').onclick=()=>{
+  $('#lightbox').classList.remove('show');
+  $('#lightbox').setAttribute('aria-hidden','true');
+  $('#lightImg').src='';
+};
+$('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#closeLb').click(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
 /* ==== Ostoskori ==== */
-var cart=new Map(); var cartEl=$('#cart'), cartCountEl=$('#cartCount');
+let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
 
 function renderCart(){
-  if(!cartEl) return;
   cartEl.innerHTML='';
-  cart.forEach(function(item,name){
-    var row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
-    row.innerHTML=
-      '<div title="'+name+'">'+name+'</div>'
-     +'<input class="cart-input size" type="text" value="'+(item.size||'')+'" placeholder="Koko" />'
-     +'<input class="cart-input qty" type="number" min="1" value="'+(Math.max(1,parseInt(item.qty,10)||1))+'" />'
-     +'<button class="rm" title="Poista" type="button">✕</button>';
+  for(const [name,item] of cart){
+    const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
+    row.innerHTML = `
+      <div title="${name}">${name}</div>
+      <input class="cart-input size" type="text" value="${item.size||''}" placeholder="Koko" />
+      <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" />
+      <button class="rm" title="Poista" type="button">✕</button>`;
     cartEl.appendChild(row);
-  });
-  var count=0; cart.forEach(function(b){ count += Math.max(1,parseInt(b.qty,10)||1); });
-  if(cartCountEl) cartCountEl.textContent=count;
-  try{ localStorage.setItem('b2b_cart', JSON.stringify(Array.from(cart.entries()))); }catch(e){}
+  }
+  let count=0; cart.forEach(it=>{ count += Math.max(1,parseInt(it.qty,10)||1); });
+  cartCountEl.textContent=count;
+  try{ localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()])); }catch(e){}
 }
-
 function addToCart(filename,size,qty){
-  var it=cart.get(filename)||{name:filename,size:'',qty:0};
+  const it=cart.get(filename)||{name:filename,size:'',qty:0};
   it.size=size||it.size; it.qty=Math.max(0,parseInt(it.qty,10)||0)+Math.max(1,qty||1);
   cart.set(filename,it); renderCart();
 }
+function loadCart(){ try{ const raw=localStorage.getItem('b2b_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch(e){} }
+cartEl.addEventListener('input',e=>{
+  const row=e.target.closest('.cart-row'); if(!row) return;
+  const key=row.dataset.key; const it=cart.get(key); if(!it) return;
+  if(e.target.classList.contains('size')) it.size=e.target.value;
+  if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value,10)||1);
+  cart.set(key,it); renderCart();
+});
+cartEl.addEventListener('click',e=>{
+  const row=e.target.closest('.cart-row'); if(!row) return;
+  if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
+});
+$('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
 
-function loadCart(){
-  try{
-    var raw=localStorage.getItem('b2b_cart'); if(!raw) return;
-    cart=new Map(JSON.parse(raw)); renderCart();
-  }catch(e){}
-}
-
-if(cartEl){
-  cartEl.addEventListener('input',function(e){
-    var row=e.target.closest('.cart-row'); if(!row) return;
-    var key=row.dataset.key; var it=cart.get(key); if(!it) return;
-    if(e.target.classList.contains('size')) it.size=e.target.value;
-    if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value,10)||1);
-    cart.set(key,it); renderCart();
-  });
-  cartEl.addEventListener('click',function(e){
-    var row=e.target.closest('.cart-row'); if(!row) return;
-    if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
-  });
-}
-
-$('#cartClear') && ($('#cartClear').onclick=function(){ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } });
-
-/* ==== Mobiilikorin ohjaus (vain napista) ==== */
-var cartPanel    = document.getElementById('cartPanel');
-var cartBackdrop = document.getElementById('cartBackdrop');
-var cartCloseBtn = document.getElementById('cartClose');
-var cartBadgeBtn = document.getElementById('cartBadge');
+/* ==== Off-canvas ohjaus (desktop + mobiili) ==== */
+const cartPanel    = document.getElementById('cartPanel');
+const cartBackdrop = document.getElementById('cartBackdrop');
+const cartCloseBtn = document.getElementById('cartClose');
+const cartBadgeBtn = document.getElementById('cartBadge');
 
 function openCart(){
-  if(cartPanel) cartPanel.classList.add('open');
-  if(cartBackdrop) cartBackdrop.classList.add('on');
+  cartPanel.classList.add('open');
+  cartBackdrop.classList.add('on');
   document.body.classList.add('noscroll');
 }
 function closeCart(){
-  if(cartPanel) cartPanel.classList.remove('open');
-  if(cartBackdrop) cartBackdrop.classList.remove('on');
+  cartPanel.classList.remove('open');
+  cartBackdrop.classList.remove('on');
   document.body.classList.remove('noscroll');
 }
-if (cartBadgeBtn) cartBadgeBtn.onclick = openCart;
-if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
-if (cartBackdrop) cartBackdrop.onclick = closeCart;
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape' && cartPanel && cartPanel.classList.contains('open')) closeCart();
-});
+cartBadgeBtn.onclick = openCart;
+cartCloseBtn.onclick = closeCart;
+cartBackdrop.onclick = closeCart;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && cartPanel.classList.contains('open')) closeCart(); });
 
 /* ==== Lähetys GAS:lle ==== */
 function postViaHiddenForm(url, payloadObj) {
-  var form = document.createElement('form');
+  const form = document.createElement('form');
   form.method = 'POST';
   form.action = url;
   form.target = 'gas_iframe';
   form.style.display = 'none';
-  var input = document.createElement('input');
+  const input = document.createElement('input');
   input.type = 'hidden';
   input.name = 'data';
   input.value = JSON.stringify(payloadObj);
   form.appendChild(input);
   document.body.appendChild(form);
   form.submit();
-  setTimeout(function(){ form.remove(); }, 1500);
+  setTimeout(()=> form.remove(), 1500);
 }
 (function ensureIframe(){
   if(!document.getElementById('gas_iframe')){
-    var ifr=document.createElement('iframe');
+    const ifr=document.createElement('iframe');
     ifr.name='gas_iframe';
     ifr.id='gas_iframe';
     ifr.hidden=true;
     document.body.appendChild(ifr);
   }
 })();
-var emailBtn=$('#cartEmail');
-if(emailBtn) emailBtn.onclick = async function () {
+$('#cartEmail').onclick = async () => {
   if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
-
-  var items  = Array.from(cart.values()).map(function(it){
-    return { name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty,10)||1) };
-  });
-  var sender = "Tuntematon"; try{ sender = sessionStorage.getItem('b2b_name') || "Tuntematon"; }catch(e){}
-  var note   = ($('#note')||{}).value || "";
-  var payload = { secret: GAS_SECRET, items: items, sender: sender, note: note };
+  const items  = [...cart.values()].map(it => ({ name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty,10)||1) }));
+  let sender="Tuntematon"; try{ sender = sessionStorage.getItem('b2b_name') || "Tuntematon"; }catch(e){}
+  const note   = ($('#note')||{}).value || "";
+  const payload = { secret: GAS_SECRET, items, sender, note };
 
   try {
-    var res = await fetch(GAS_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-    var txt = ''; try{ txt = await res.text(); }catch(e){}
+    const res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+    const txt = await res.text().catch(()=> '');
     if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
-  } catch (e) { /* fallback */ }
+  } catch (_) { /* fallback */ }
 
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Lähetetty!');
@@ -542,30 +507,27 @@ if(emailBtn) emailBtn.onclick = async function () {
 /* ==== Manifestin lataus (näyttää kuvat) ==== */
 /* Odotetaan: images/manifest.json -> { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
 async function loadFromManifest(){
-  var spin=$('#spin'); if(spin) spin.style.display='grid';
-  var status=$('#status'); if(status){ status.style.display='none'; status.textContent=''; }
+  const spin=$('#spin'); if(spin) spin.style.display='grid';
+  const status=$('#status'); if(status){ status.style.display='none'; status.textContent=''; }
   try{
-    var res=await fetch('images/manifest.json',{cache:'no-store'});
+    const res=await fetch('images/manifest.json',{cache:'no-store'});
     if(!res.ok) throw new Error('not found');
-    var manifest=await res.json();
-    var files=(manifest.files||[]).filter(function(p){ return /\.(jpg|jpeg|png|gif|webp)$/i.test(p); });
-    files=Array.from(new Set(files));
+    const manifest=await res.json();
+    let files=(manifest.files||[]).filter(p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p));
+    files=[...new Set(files)];
     if(!files.length) throw new Error('empty');
 
-    var root=files[0].split('/')[0];
-    var regs=CATS.map(function(c){ return {key:c.key, re:new RegExp('^'+root+'/'+c.key+'/','i')}; });
-    var byCat=[];
-    files.forEach(function(p){
-      var hit=null;
-      for(var i=0;i<regs.length;i++){ if(regs[i].re.test(p)){ hit=regs[i]; break; } }
+    const root=files[0].split('/')[0];
+    const regs=CATS.map(c=>({key:c.key, re:new RegExp('^'+root+'/'+c.key+'/','i')}));
+    const byCat=[];
+    for(const p of files){
+      const hit=regs.find(r=>r.re.test(p));
       if(hit) byCat.push({path:p,cat:hit.key,name:p.split('/').pop()});
-    });
+    }
 
-    var uniq=new Map();
-    byCat.forEach(function(it){ if(!uniq.has(it.path)) uniq.set(it.path,it); });
-    allFiles=Array.from(uniq.values()).sort(function(a,b){
-      return a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi');
-    });
+    const uniq=new Map();
+    for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
+    allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
     renderCats(countsFrom(allFiles));
     showGallery();
@@ -577,7 +539,7 @@ async function loadFromManifest(){
 }
 
 /* ==== init ==== */
-window.addEventListener('DOMContentLoaded', function(){
+window.addEventListener('DOMContentLoaded', ()=>{
   initGate();
   loadCart();
   loadFromManifest();
