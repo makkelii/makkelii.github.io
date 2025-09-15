@@ -2,10 +2,11 @@
 <html lang="fi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<!-- Zoom sallittu ja aloitusskaala hieman pienempi mobiilissa -->
+<meta name="viewport" content="width=device-width, initial-scale=0.9, viewport-fit=cover" />
 <title>Suomen 585 Oy – Tukkutilaus</title>
 
-<!-- Favicons (jos sinulla jo on nämä juurihakemistossa, voit pitää ne ennallaan) -->
+<!-- Favicons -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -16,13 +17,12 @@
 <meta name="color-scheme" content="light dark" />
 <style>
   :root{
-    /* Hillitty tumma teema */
     --bg:#0f1115;
     --ink:#e8eaf0;
     --muted:#bfc3d3;
     --card:#171923;
     --border:#2a2f3e;
-    --accent:#e0b85a;        /* lämmin korostus (kultahtava) */
+    --accent:#e0b85a;
     --accent-ink:#26252a;
   }
   *{ box-sizing:border-box }
@@ -31,28 +31,22 @@
     margin:0;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     color:var(--ink);
-    background:var(--bg);               /* fallback jos kuvaa ei löydy */
-    overflow-x:hidden;                  /* estää “zoomia” laukaisevan vaakarullan */
+    background:var(--bg);           /* fallback */
+    overflow-x:hidden;
     position:relative;
   }
 
-  /* Yleinen taustakuva koko sivulle
-     - Desktop: fixed → seuraa näkymää
-     - Mobiili: varmempi toteutus (ei aiheuta pinch-zoom ongelmia) */
+  /* Taustakuva – sama toteutus kuin kirjautumisessa */
   body::before{
     content:"";
-    position:fixed;
-    inset:0;
-    z-index:-1;
+    position:fixed; inset:0; z-index:-1;
     background:
       radial-gradient(transparent 60%, rgba(15,17,21,.55)),
       url("images/bg.webp") center/cover no-repeat;
     will-change:transform;
-    transform:translateZ(0); /* parantaa suorituskykyä */
+    transform:translateZ(0);
   }
-
-  /* Safari/iOS-varmistus, jos fixed aiheuttaisi ongelmia joillain laitteilla */
-  @supports (-webkit-touch-callout: none) {
+  @supports (-webkit-touch-callout: none) { /* iOS-varmistus */
     body::before{ position:fixed; }
   }
 
@@ -61,9 +55,7 @@
     color:#f3f4f6;
     padding:.9rem 1rem;
     text-align:center;
-    position:sticky;
-    top:0;
-    z-index:5;
+    position:sticky; top:0; z-index:5;
     backdrop-filter:saturate(120%) blur(6px);
     -webkit-backdrop-filter:saturate(120%) blur(6px);
   }
@@ -72,7 +64,6 @@
   .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
 
-  /* Työkalupalkki */
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.7rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
   .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
@@ -83,7 +74,6 @@
   .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
-  /* Galleria – kuvat näkyvät kokonaan (contain) */
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
 
@@ -105,11 +95,10 @@
   figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-  /* Add-row: Koko | Kpl | Nappi – kapeat kentät */
   .addrow{
     margin-top:auto;
     display:grid; gap:.42rem; align-items:center;
-    grid-template-columns: 60px 46px 1fr;  /* Koko 60px | Kpl 46px | Nappi */
+    grid-template-columns: 60px 46px 1fr;
   }
   .addrow input{
     padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px;
@@ -132,7 +121,6 @@
     .addrow button{ grid-area:add }
   }
 
-  /* Ostoskori – desktop */
   aside{
     background:rgba(23,25,35,.88);
     border:1px solid var(--border); border-radius:14px;
@@ -189,7 +177,6 @@
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 
-  /* Mobiilin liukuva ostoskori + backdrop */
   .cart-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,.4);
     display:none; z-index:1000;
@@ -218,13 +205,12 @@
     .cart-items{ max-height:calc(100dvh - 240px); overflow:auto; }
   }
 
-  /* Lightbox */
   .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100; }
   .lightbox.show{ display:flex }
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 
-  /* Kirjautumisportti – sama taustakuva, läpikuultava kortti */
+  /* Kirjautumisportti – sama tausta */
   .gate{
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
   }
@@ -277,7 +263,6 @@
       <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
     </section>
 
-    <!-- Aside → mobiilissa liukuva paneeli -->
     <aside id="cartPanel" aria-label="Ostoskori">
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
@@ -303,10 +288,8 @@
     </aside>
   </main>
 
-  <!-- Taustasuoja mobiilikorille -->
   <div class="cart-backdrop" id="cartBackdrop" aria-hidden="true"></div>
 
-  <!-- Lightbox -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <button class="close" id="closeLb" type="button">Sulje</button>
     <img id="lightImg" alt="">
@@ -355,7 +338,6 @@ async function initGate(){
   passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
   nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
 
-  // Kirjaudu ulos (ilman sivulatausta)
   $('#logout').onclick=()=>{
     if(!confirm('Kirjaudutaanko ulos?')) return;
     sessionStorage.clear();
@@ -364,7 +346,6 @@ async function initGate(){
     $('#gate').style.display='flex';
     $('#app').setAttribute('aria-hidden','true');
     $('#passInput').value=''; $('#nameInput').focus();
-    // Suljetaan mahdollinen mobiilikori
     closeCart();
   };
 }
@@ -435,7 +416,7 @@ $('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#cl
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
 /* ==== Ostoskori ==== */
-let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
+let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount']);
 function renderCart(){
   cartEl.innerHTML='';
   for(const [name,item] of cart){
@@ -537,7 +518,6 @@ $('#cartEmail').onclick = async () => {
   const payload = { secret: GAS_SECRET, items, sender, note };
 
   try {
-    // 1) Yritä normaali JSON-POST
     let res = await fetch(GAS_ENDPOINT, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
@@ -545,15 +525,13 @@ $('#cartEmail').onclick = async () => {
     });
     let txt = await res.text().catch(()=> '');
     if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
-  } catch (_) { /* fallbackiin */ }
+  } catch (_) { /* fallback */ }
 
-  // 2) Fallback: lomakepostitus (ei esikyselyä → varma doPost)
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Lähetetty!');
 };
 
 /* ==== Manifestin lataus ==== */
-/* Odotetaan: images/manifest.json → { "files": ["images/Kaulaketjut/foo.jpg", ...] } */
 async function loadFromManifest(){
   const spin=$('#spin'); spin?.classList.add('on');
   const status=$('#status'); status.style.display='none'; status.textContent='';
@@ -572,7 +550,6 @@ async function loadFromManifest(){
       const hit=regs.find(r=>r.re.test(p));
       if(hit) byCat.push({path:p,cat:hit.key,name:p.split('/').pop()});
     }
-
     const uniq=new Map();
     for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
     allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
