@@ -2,7 +2,6 @@
 <html lang="fi">
 <head>
 <meta charset="utf-8" />
-<!-- Zoom sallittu ja aloitusskaala hieman pienempi mobiilissa -->
 <meta name="viewport" content="width=device-width, initial-scale=0.9, viewport-fit=cover" />
 <title>Suomen 585 Oy – Tukkutilaus</title>
 
@@ -13,8 +12,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="theme-color" content="#1f2937">
-
 <meta name="color-scheme" content="light dark" />
+
 <style>
   :root{
     --bg:#0f1115;
@@ -31,12 +30,11 @@
     margin:0;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     color:var(--ink);
-    background:var(--bg);           /* fallback */
+    background:var(--bg);
     overflow-x:hidden;
     position:relative;
   }
-
-  /* Taustakuva – sama toteutus kuin kirjautumisessa */
+  /* Taustakuva */
   body::before{
     content:"";
     position:fixed; inset:0; z-index:-1;
@@ -46,9 +44,7 @@
     will-change:transform;
     transform:translateZ(0);
   }
-  @supports (-webkit-touch-callout: none) { /* iOS-varmistus */
-    body::before{ position:fixed; }
-  }
+  @supports (-webkit-touch-callout: none) { body::before{ position:fixed; } }
 
   header{
     background:rgba(31,41,55,.92);
@@ -89,9 +85,7 @@
     display:flex; align-items:center; justify-content:center;
     min-height: 180px;
   }
-  figure img{
-    max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px;
-  }
+  figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; }
   figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
@@ -177,28 +171,20 @@
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 
-  .cart-backdrop{
-    position:fixed; inset:0; background:rgba(0,0,0,.4);
-    display:none; z-index:1000;
-  }
+  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; z-index:1000; }
   .cart-backdrop.on{ display:block; }
 
   @media (max-width:640px){
     body.noscroll{ overflow:hidden; }
-
     #cartPanel{
       position:fixed; top:0; right:0;
       height:100dvh; width:min(92vw,420px);
       background:rgba(23,25,35,.96);
       border-left:1px solid var(--border);
-      border-radius:0;
-      padding:1rem;
+      padding:1rem; border-radius:0;
       box-shadow:-6px 0 24px rgba(0,0,0,.35);
-      transform:translateX(100%);
-      transition:transform .25s ease;
-      z-index:1001;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      transform:translateX(100%); transition:transform .25s ease;
+      z-index:1001; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     }
     #cartPanel.open{ transform:translateX(0); }
     .btn.close{ display:inline-flex; }
@@ -211,12 +197,9 @@
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 
   /* Kirjautumisportti – sama tausta */
-  .gate{
-    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
-  }
+  .gate{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200; }
   .gate::before{
-    content:"";
-    position:fixed; inset:0; z-index:-1;
+    content:""; position:fixed; inset:0; z-index:-1;
     background:
       linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)),
       url("images/bg.webp") center/cover no-repeat;
@@ -242,7 +225,6 @@
 
   <header><h1>Suomen 585 Oy – Tukkutilaus</h1></header>
 
-  <!-- Ostoskorin pikamerkki -->
   <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
 
   <main class="wrap" aria-hidden="true" id="app">
@@ -299,7 +281,7 @@
 /* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx07tW4jk3aeLA6QYI9vTMCwxxmYEQF8uSHZtTu_-dwEjU-tUxrPXH0jcQc7c_1lV5VQA/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
-const PASSWORD_PLAIN = "sala54N4";
+const PASSWORD_PLAIN = "sala54N4";  // voit myös antaa 64-merkkisen SHA-256 -hashin
 /* -------------------------------- */
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -322,15 +304,29 @@ async function initGate(){
   const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
 
   async function tryOpen(){
-    const name=sanitize(nameI.value)||'Tuntematon';
-    const given=passI.value||'';
-    if(!PASSWORD_PLAIN){ sessionStorage.setItem('b2b_name',name); sessionStorage.setItem('b2b_authed','1'); openApp(); return; }
+    const name = sanitize(nameI.value) || 'Tuntematon';
+    const given = (passI.value || '').trim();
+    const PASS  = PASSWORD_PLAIN;
 
-    let ok=false; const h=await sha256Safe(PASSWORD_PLAIN);
-    if(h){ const g=await sha256Safe(given); ok=(g&&g===h); } else { ok=(given===PASSWORD_PLAIN); }
+    // Jos PASS on 64-merkkiä heksaa -> tulkitaan hashiksi, muuten selkokielinen
+    let ok = false;
+    const isHash = /^[a-f0-9]{64}$/i.test(PASS);
 
-    if(ok){ sessionStorage.setItem('b2b_name',name); sessionStorage.setItem('b2b_authed','1'); openApp(); }
-    else{ err.style.display='block'; passI.focus(); passI.select?.(); }
+    if (isHash){
+      const g = await sha256Safe(given);
+      ok = !!g && g.toLowerCase() === PASS.toLowerCase();
+    } else {
+      ok = (given === PASS);
+    }
+
+    if(ok){
+      sessionStorage.setItem('b2b_name', name);
+      sessionStorage.setItem('b2b_authed', '1');
+      openApp();
+    }else{
+      err.style.display='block';
+      passI.focus(); passI.select?.();
+    }
   }
 
   if(sessionStorage.getItem('b2b_authed')==='1'){ openApp(); return; }
