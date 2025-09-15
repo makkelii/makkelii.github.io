@@ -37,17 +37,16 @@
     background:rgba(31,41,55,.92);
     color:#f3f4f6;
     padding:.9rem 1rem;
-    text-align:center;
     position:sticky; top:0; z-index:5;
     backdrop-filter:saturate(120%) blur(6px);
-    display:flex; align-items:center; justify-content:space-between;
-    gap:.75rem;
+    display:flex; align-items:center; justify-content:space-between; gap:.75rem;
   }
   header h1{ margin:0; font-size:clamp(1.05rem,3.4vw,1.6rem) }
 
   .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 380px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
 
+  /* Työkalut */
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.7rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
   .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
@@ -58,6 +57,7 @@
   .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
+  /* Galleria */
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
 
@@ -76,10 +76,11 @@
   figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in }
   figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
 
+  /* Koko | Kpl | Nappi (mobiilissa nappi omalle riville) */
   .addrow{
     margin-top:auto;
     display:grid; gap:.42rem; align-items:center;
-    grid-template-columns: 60px 46px 1fr;   /* Koko | Kpl | Nappi */
+    grid-template-columns: 60px 46px 1fr;
   }
   .addrow input{
     padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px;
@@ -92,7 +93,6 @@
     font-weight:800; cursor:pointer; padding:.46rem .5rem; width:100%;
     font-size:.9rem; line-height:1.05; white-space:nowrap;
   }
-  /* Nappi omalle riville -> mobiilissa parempi */
   @media (max-width:980px){
     .addrow{
       grid-template-columns:1fr 1fr; grid-template-areas:"size qty" "add add";
@@ -102,14 +102,14 @@
     .addrow button{ grid-area:add }
   }
 
-  /* Kori (desktop-paneeli, mutta avautuu napista kuten mobiili) */
-  aside{
-    background:rgba(23,25,35,.88);
-    border:1px solid var(--border); border-radius:14px;
-    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem; z-index:2;
-    backdrop-filter: blur(2px);
+  /* Ostoskori: liukuva paneeli kaikilla laitteilla */
+  .cart-badge{
+    position:fixed; top:12px; right:12px;
+    background:var(--accent); color:var(--accent-ink);
+    border-radius:999px;
+    padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
+    z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
   }
-  /* Kun käytetään liukuvaa paneelia myös desktopilla */
   #cartPanel{
     position:fixed; top:0; right:0;
     height:100dvh; width:min(92vw,420px);
@@ -121,6 +121,9 @@
     z-index:1001; backdrop-filter: blur(6px);
   }
   #cartPanel.open{ transform:translateX(0); }
+  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; z-index:1000; }
+  .cart-backdrop.on{ display:block; }
+
   .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
@@ -157,22 +160,6 @@
 
   .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink); margin-top:.6rem }
 
-  .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-  .cart-badge{
-    position:fixed; top:12px; right:12px;
-    background:var(--accent); color:var(--accent-ink);
-    border-radius:999px;
-    padding:.65rem 1.1rem;
-    font-size:1.05rem;
-    font-weight:800;
-    z-index:900;
-    box-shadow:0 4px 14px rgba(0,0,0,.25);
-    cursor:pointer;
-  }
-
-  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; z-index:1000; }
-  .cart-backdrop.on{ display:block; }
-
   .error{ display:none; background:#4a1010; border:1px solid #a33; color:#ffdede; padding:.7rem; border-radius:10px; margin-bottom:.75rem; white-space:pre-wrap }
   .spinner{ display:none; place-items:center; margin:.6rem 0 }
   .spinner.on{ display:grid }
@@ -185,7 +172,7 @@
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 
-  /* Kirjautumisportti – sama tausta */
+  /* Kirjautumisportti – sama tausta kaikilla laitteilla */
   .gate{
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
     background:linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)), url("images/bg.webp") center/cover no-repeat;
@@ -203,7 +190,7 @@
     <div class="gate-card">
       <h2>Tilausportaali</h2>
       <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
-      <input id="passInput" type="password" placeholder="Salasana (admin: fatso)" autocomplete="current-password" />
+      <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
       <button id="passBtn" type="button">Avaa</button>
       <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
     </div>
@@ -211,9 +198,7 @@
 
   <header>
     <h1>Suomen 585 Oy – Tukkutilaus</h1>
-    <div>
-      <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
-    </div>
+    <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
   </header>
 
   <main class="wrap" aria-hidden="true" id="app">
@@ -234,13 +219,11 @@
       <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
     </section>
 
-    <!-- KORI: liukuva paneeli kaikilla laitteilla -->
+    <!-- KORI: liukuva paneeli -->
     <aside id="cartPanel" aria-label="Ostoskori">
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
-        <div class="cart-actions-right">
-          <button class="btn close" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
-        </div>
+        <button class="btn close" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
       </div>
 
       <div class="cart-head">
@@ -292,14 +275,14 @@ function initGate(){
   function tryOpen(){
     const given = (passI.value||'').trim();
     const name  = sanitize(nameI.value) || 'Tuntematon';
+
     // admin?
     if (name.toLowerCase()===ADMIN_USER && given===ADMIN_PASS) {
       IS_ADMIN = true;
       sessionStorage.setItem('b2b_name', name);
       sessionStorage.setItem('b2b_authed', '1');
       sessionStorage.setItem('b2b_admin', '1');
-      openApp();
-      showGallery(); // piirrä admin-kontrollit
+      openApp(); showGallery();
       return;
     }
     // normaali
@@ -308,8 +291,7 @@ function initGate(){
       sessionStorage.setItem('b2b_name', name);
       sessionStorage.setItem('b2b_authed', '1');
       sessionStorage.removeItem('b2b_admin');
-      openApp();
-      showGallery();
+      openApp(); showGallery();
     } else {
       err.style.display='block';
       passI.focus(); passI.select?.();
@@ -328,14 +310,11 @@ function initGate(){
   nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
 }
 
-/* ==== Kategoriat dynaamisesti ====
-   Luetaan manifestista kaikki polut ja päätellään category = toinen segmentti
-   "images/<Kategoria>/<tiedosto.ext>"
-*/
+/* ==== Kategoriat dynaamisesti ==== */
 let currentCat='all', allFiles=[], NOTES=new Map();
 function toTitleFromFile(path){
   const file = path.split('/').pop();
-  return file.replace(/\.[^.]+$/,''); // SKU==Nimi
+  return file.replace(/\.[^.]+$/,''); // nimi == SKU
 }
 function catFromPath(path){
   const parts = path.split('/');
@@ -351,7 +330,6 @@ function renderCats(counts){
   const total = allFiles.length;
   const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
   wrap.appendChild(mk('all','Kaikki', total));
-  // Järjestä aakkosittain
   const cats = [...new Set(allFiles.map(f=>f.cat))].sort((a,b)=>a.localeCompare(b,'fi'));
   cats.forEach(c=> wrap.appendChild(mk(c,c, counts[c]||0)) );
 }
@@ -371,12 +349,12 @@ async function fetchNotes(){
       NOTES.clear();
       j.notes.forEach(n=>{ if(n && n.sku) NOTES.set(String(n.sku), String(n.note||'')); });
     }
-  }catch(e){ /* ei kaadeta sivua */ }
+  }catch(e){}
 }
 
 /* ==== Galleria ==== */
 function addFigure(path){
-  const name = toTitleFromFile(path); // myös SKU
+  const name = toTitleFromFile(path);
   const cat  = catFromPath(path);
   const note = NOTES.get(name) || '';
 
@@ -482,7 +460,7 @@ cartEl.addEventListener('click',e=>{
 });
 $('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
 
-/* Mobiili/desktop liukuva kori */
+/* Liukuva kori */
 const cartPanel    = document.getElementById('cartPanel');
 const cartBackdrop = document.getElementById('cartBackdrop');
 const cartCloseBtn = document.getElementById('cartClose');
@@ -491,7 +469,7 @@ function openCart(){ cartPanel.classList.add('open'); cartBackdrop.classList.add
 function closeCart(){ cartPanel.classList.remove('open'); cartBackdrop.classList.remove('on'); document.body.classList.remove('noscroll'); }
 if (cartBadgeBtn) cartBadgeBtn.onclick = openCart;
 if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
-if (cartBackdrop) cartBackdrop.onclick = closeCart;
+if (cartBackdrop)  cartBackdrop.onclick  = closeCart;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cartPanel.classList.contains('open')) closeCart(); });
 
 /* ==== Lähetys GAS:lle ==== */
@@ -550,7 +528,7 @@ async function saveAdminNote(name, value){
   return true;
 }
 
-/* ==== Manifestin lataus (näyttää kuvat) ==== */
+/* ==== Manifestin lataus ==== */
 async function loadFromManifest(){
   const spin=$('#spin'); spin && (spin.style.display='grid');
   const status=$('#status'); if(status){ status.style.display='none'; status.textContent=''; }
@@ -563,12 +541,11 @@ async function loadFromManifest(){
     if(!files.length) throw new Error('empty');
 
     const list = files.map(p=>({ path:p, name: toTitleFromFile(p), cat: catFromPath(p) }));
-    // uniikit polut
     const uniq=new Map(); list.forEach(it=>{ if(!uniq.has(it.path)) uniq.set(it.path,it); });
     allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
     renderCats(countsFrom(allFiles));
-    await fetchNotes(); // hae notesit ennen piirtämistä
+    await fetchNotes();
     showGallery();
   }catch(e){
     if(status){ status.textContent='Kuvien haku epäonnistui. Varmista, että images/manifest.json on olemassa ja julkinen.'; status.style.display='block'; }
