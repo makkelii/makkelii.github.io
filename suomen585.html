@@ -2,141 +2,96 @@
 <html lang="fi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
 <title>Suomen 585 Oy – Tukkutilaus</title>
 
-<!-- Favicons (jos sinulla on jo, nämä voi jättää) -->
+<!-- Favicons (jos sinulla jo on nämä juurihakemistossa, voit pitää ne ennallaan) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="theme-color" content="#1f2937">
-<meta name="color-scheme" content="light dark" />
 
+<meta name="color-scheme" content="light dark" />
 <style>
   :root{
+    /* Hillitty tumma teema */
     --bg:#0f1115;
     --ink:#e8eaf0;
     --muted:#bfc3d3;
     --card:#171923;
     --border:#2a2f3e;
-    --accent:#e0b85a;
+    --accent:#e0b85a;        /* lämmin korostus (kultahtava) */
     --accent-ink:#26252a;
   }
-
   *{ box-sizing:border-box }
   html,body{ height:100% }
-
-  /* Peruspohja */
   body{
     margin:0;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    background:var(--bg);
     color:var(--ink);
-    position:relative; /* taustapseudoa varten */
+    background:var(--bg);               /* fallback jos kuvaa ei löydy */
+    overflow-x:hidden;                  /* estää “zoomia” laukaisevan vaakarullan */
+    position:relative;
   }
 
-  /* KOKO SIVUN TAUSTA – desktop & tablet: fixed, koko näytön */
+  /* Yleinen taustakuva koko sivulle
+     - Desktop: fixed → seuraa näkymää
+     - Mobiili: varmempi toteutus (ei aiheuta pinch-zoom ongelmia) */
   body::before{
     content:"";
     position:fixed;
     inset:0;
     z-index:-1;
     background:
-      linear-gradient(180deg, rgba(15,17,21,.30), rgba(15,17,21,.88)),
-      url("images/bg.webp") center / cover no-repeat;
+      radial-gradient(transparent 60%, rgba(15,17,21,.55)),
+      url("images/bg.webp") center/cover no-repeat;
     will-change:transform;
+    transform:translateZ(0); /* parantaa suorituskykyä */
   }
 
-  /* MOBIILI: näytetään tausta näyttävänä bannerina, pehmeä häivytys */
-  @media (max-width: 768px){
-    body::before{
-      position:absolute;      /* ei fixed -> ei iOS-venymistä */
-      top:0; left:0; right:0;
-      height:320px;           /* bannerin korkeus (säädä makusi mukaan) */
-      background:
-        linear-gradient(180deg,
-          rgba(15,17,21,.08) 0%,
-          rgba(15,17,21,.35) 45%,
-          rgba(15,17,21,.85) 90%,
-          rgba(15,17,21,1) 100%),
-        url("images/bg.webp") center top / cover no-repeat;
-    }
+  /* Safari/iOS-varmistus, jos fixed aiheuttaisi ongelmia joillain laitteilla */
+  @supports (-webkit-touch-callout: none) {
+    body::before{ position:fixed; }
   }
 
   header{
-    background:transparent;
+    background:rgba(31,41,55,.92);
     color:#f3f4f6;
     padding:.9rem 1rem;
     text-align:center;
     position:sticky;
     top:0;
     z-index:5;
+    backdrop-filter:saturate(120%) blur(6px);
+    -webkit-backdrop-filter:saturate(120%) blur(6px);
   }
-  header h1{
-    margin:0;
-    font-size:clamp(1.1rem,3.6vw,1.8rem);
-    letter-spacing:.02em;
-    text-shadow:0 2px 10px rgba(0,0,0,.45);
-  }
+  header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem); letter-spacing:.02em }
 
-  .wrap{
-    max-width:1240px;
-    margin:0 auto;
-    padding:1rem;
-    display:grid;
-    grid-template-columns:1fr 400px;
-    gap:1.2rem;
-  }
+  .wrap{ max-width:1240px; margin:0 auto; padding:1rem; display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
 
   /* Työkalupalkki */
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.7rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
-  .search input{
-    flex:1; padding:.6rem .8rem;
-    border:1px solid var(--border);
-    border-radius:10px;
-    background:rgba(23,25,35,.65);
-    color:var(--ink);
-    backdrop-filter: blur(2px);
-  }
-  .search button{
-    border:1px solid var(--border);
-    background:var(--card);
-    border-radius:10px;
-    padding:.6rem .9rem; cursor:pointer; color:var(--ink)
-  }
+  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
+  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .9rem; cursor:pointer; color:var(--ink) }
 
   .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
   .cats::-webkit-scrollbar{ display:none }
-  .cat-btn{
-    border:1px solid var(--border);
-    background:rgba(23,25,35,.7);
-    padding:.55rem .9rem; border-radius:999px; cursor:pointer;
-    font-weight:600; color:var(--ink); white-space:nowrap; backdrop-filter:blur(2px)
-  }
+  .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
-  /* Galleria: kuvat kokonaan (ei väkisin neliöön) */
-  .gallery{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:1rem
-  }
-  @media (max-width:540px){
-    .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) }
-  }
+  /* Galleria – kuvat näkyvät kokonaan (contain) */
+  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
+  @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
 
   figure{
     display:flex; flex-direction:column; gap:.55rem;
-    background:rgba(23,25,35,.92);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:.65rem; margin:0;
-    box-shadow:0 2px 10px rgba(0,0,0,.25);
-    min-height:100%;
+    background:rgba(23,25,35,.82);
+    border:1px solid var(--border); border-radius:14px;
+    padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
     backdrop-filter: blur(2px);
   }
   figure .img-wrap{
@@ -147,17 +102,14 @@
   figure img{
     max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px;
   }
-  figcaption{
-    margin:.2rem 0 0; font-size:.95rem; color:var(--muted);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em
-  }
+  figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
   .sku{ font-size:.8rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
-  /* Add-row: Koko | Kpl | Nappi */
+  /* Add-row: Koko | Kpl | Nappi – kapeat kentät */
   .addrow{
     margin-top:auto;
     display:grid; gap:.42rem; align-items:center;
-    grid-template-columns: 60px 46px 1fr;
+    grid-template-columns: 60px 46px 1fr;  /* Koko 60px | Kpl 46px | Nappi */
   }
   .addrow input{
     padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px;
@@ -171,30 +123,26 @@
     font-size:.9rem; line-height:1.05; white-space:nowrap;
   }
   @media (max-width:560px){
-    .addrow{ grid-template-columns: 1fr 1fr; grid-template-areas:"size size" "qty add"; }
+    .addrow{
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:"size size" "qty add";
+    }
     .addrow .size{ grid-area:size; width:auto }
     .addrow .qty{ grid-area:qty; width:auto }
     .addrow button{ grid-area:add }
   }
 
-  /* Ostoskori (desktop) */
+  /* Ostoskori – desktop */
   aside{
-    background:rgba(23,25,35,.92);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:1rem;
-    box-shadow:0 2px 10px rgba(0,0,0,.25);
-    height:max-content;
-    position:sticky; top:1rem; z-index:2;
+    background:rgba(23,25,35,.88);
+    border:1px solid var(--border); border-radius:14px;
+    padding:1rem; box-shadow:0 2px 10px rgba(0,0,0,.2); height:max-content; position:sticky; top:1rem; z-index:2;
     backdrop-filter: blur(2px);
   }
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
   .cart-actions-right{ display:flex; gap:.5rem; align-items:center; }
-  .btn{
-    border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px;
-    cursor:pointer; font-weight:700; background:var(--card); color:var(--ink)
-  }
+  .btn{ border:1px solid var(--border); padding:.6rem .9rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
   .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
   .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
   .btn.outline{ background:transparent; color:var(--accent); border-color:var(--accent) }
@@ -230,18 +178,10 @@
   }
 
   .note-label{ display:block; margin:.65rem 0 .35rem; font-weight:800 }
-  .note{
-    width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border);
-    border-radius:10px; background:transparent; color:var(--ink)
-  }
+  .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink) }
 
   .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-  .cart-badge{
-    position:fixed; top:12px; right:12px;
-    background:var(--accent); color:var(--accent-ink);
-    border-radius:999px; padding:.5rem .9rem; font-weight:800;
-    z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer
-  }
+  .cart-badge{ position:fixed; top:12px; right:12px; background:var(--accent); color:var(--accent-ink); border-radius:999px; padding:.5rem .9rem; font-weight:800; z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer }
 
   .error{ display:none; background:#4a1010; border:1px solid #a33; color:#ffdede; padding:.7rem; border-radius:10px; margin-bottom:.75rem; white-space:pre-wrap }
   .spinner{ display:none; place-items:center; margin:.6rem 0 }
@@ -249,15 +189,20 @@
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 
-  /* Mobiili: liukuva ostoskori + taustasuoja */
-  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; z-index:1000 }
-  .cart-backdrop.on{ display:block }
+  /* Mobiilin liukuva ostoskori + backdrop */
+  .cart-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.4);
+    display:none; z-index:1000;
+  }
+  .cart-backdrop.on{ display:block; }
+
   @media (max-width:640px){
-    body.noscroll{ overflow:hidden }
+    body.noscroll{ overflow:hidden; }
+
     #cartPanel{
       position:fixed; top:0; right:0;
       height:100dvh; width:min(92vw,420px);
-      background:rgba(23,25,35,.97);
+      background:rgba(23,25,35,.96);
       border-left:1px solid var(--border);
       border-radius:0;
       padding:1rem;
@@ -265,45 +210,34 @@
       transform:translateX(100%);
       transition:transform .25s ease;
       z-index:1001;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
-    #cartPanel.open{ transform:translateX(0) }
-    .btn.close{ display:inline-flex }
-    .cart-items{ max-height:calc(100dvh - 240px); overflow:auto }
+    #cartPanel.open{ transform:translateX(0); }
+    .btn.close{ display:inline-flex; }
+    .cart-items{ max-height:calc(100dvh - 240px); overflow:auto; }
   }
 
   /* Lightbox */
-  .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100 }
+  .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100; }
   .lightbox.show{ display:flex }
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 
-  /* Kirjautumisportti – sama tausta */
+  /* Kirjautumisportti – sama taustakuva, läpikuultava kortti */
   .gate{
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
+  }
+  .gate::before{
+    content:"";
+    position:fixed; inset:0; z-index:-1;
     background:
-      linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.88)),
-      url("images/bg.webp") center / cover no-repeat fixed;
+      linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)),
+      url("images/bg.webp") center/cover no-repeat;
   }
-  @media (max-width:768px){
-    .gate{
-      background:
-        linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.92)),
-        url("images/bg.webp") center top / cover no-repeat; /* ei fixed mobiilissa */
-    }
-  }
-  .gate-card{
-    background:rgba(23,25,35,.92);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:1.2rem; width:min(92vw,400px);
-    box-shadow:0 20px 60px rgba(0,0,0,.35);
-    backdrop-filter: blur(2px);
-  }
+  .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
   .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
-  .gate-card input{
-    width:100%; padding:.7rem .9rem; border:1px solid var(--border);
-    border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink)
-  }
+  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
   .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 </style>
@@ -430,6 +364,8 @@ async function initGate(){
     $('#gate').style.display='flex';
     $('#app').setAttribute('aria-hidden','true');
     $('#passInput').value=''; $('#nameInput').focus();
+    // Suljetaan mahdollinen mobiilikori
+    closeCart();
   };
 }
 
@@ -489,7 +425,7 @@ $('#gallery').addEventListener('click',e=>{
     const size=fig.querySelector('.size').value.trim();
     const qty=Math.max(1,parseInt(fig.querySelector('.qty').value)||1);
     addToCart(fig.dataset.file,size,qty);
-    if (window.matchMedia('(max-width:640px)').matches) openCart(); // avaa kori mobiilissa
+    if (window.matchMedia('(max-width:640px)').matches) openCart();
     return;
   }
   const img=e.target.closest('img'); if(img){ $('#lightImg').src=img.src; $('#lightbox').classList.add('show'); $('#lightbox').setAttribute('aria-hidden','false'); }
@@ -574,7 +510,7 @@ function postViaHiddenForm(url, payloadObj) {
   form.style.display = 'none';
   const input = document.createElement('input');
   input.type = 'hidden';
-  input.name = 'data';
+  input.name = 'data'; // GAS: e.parameter.data (JSON-string)
   input.value = JSON.stringify(payloadObj);
   form.appendChild(input);
   document.body.appendChild(form);
@@ -601,6 +537,7 @@ $('#cartEmail').onclick = async () => {
   const payload = { secret: GAS_SECRET, items, sender, note };
 
   try {
+    // 1) Yritä normaali JSON-POST
     let res = await fetch(GAS_ENDPOINT, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
@@ -610,6 +547,7 @@ $('#cartEmail').onclick = async () => {
     if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
   } catch (_) { /* fallbackiin */ }
 
+  // 2) Fallback: lomakepostitus (ei esikyselyä → varma doPost)
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Lähetetty!');
 };
