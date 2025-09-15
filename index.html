@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Brunbar</title>
+  <title>Suomen 585 Oy</title>
 
   <!-- Faviconit -->
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -13,111 +13,99 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="theme-color" content="#3a006b">
 
-  <!-- Sivun kuvaus -->
-  <meta name="description" content="Brunbar – yhteystiedot" />
-
-  <!-- Kaikki sivun CSS yhdessä lohkossa -->
   <style>
     :root{
-      --purple: #3a006b;               /* Royal Purple */
-      --gold:   #d4af37;               /* Gold */
-      --gold-weak: rgba(212,175,55,.25);
-      --gold-wash: rgba(212,175,55,.06);
+      --purple:#3a006b;
+      --gold:#d4af37;
+      --gold-wash:rgba(212,175,55,0.08);
     }
 
-    html, body { height: 100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+
     body{
-      margin: 0;
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      background: var(--purple);
-      color: var(--gold);
-      display: grid;
-      place-items: center;
-      text-rendering: optimizeLegibility;
-      position: relative;
+      color:var(--gold);
+      display:grid;
+      place-items:center;
+      text-align:center;
+
+      /* Taustakuva + tumma kalvo luettavuuden vuoksi */
+      background:
+        linear-gradient(rgba(20,10,40,.65),rgba(20,10,40,.65)),
+        url("images/bg.webp") center/cover no-repeat fixed;
     }
 
-    .wrap{ width: min(92ch, 92vw); }
-
-    .top-btn {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: var(--gold);
-      color: var(--purple);
-      padding: 0.7rem 1.2rem;
-      border-radius: 8px;
-      font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    .top-btn{
+      position:absolute;
+      top:1rem; right:1rem;
+      background:var(--gold);
+      color:var(--purple);
+      padding:.7rem 1.2rem;
+      border-radius:8px;
+      font-weight:700;
+      text-decoration:none;
+      box-shadow:0 2px 6px rgba(0,0,0,.35);
+      transition:background .2s;
     }
-    .top-btn:hover{ filter: brightness(1.05); }
+    .top-btn:hover{background:#e1c45c}
 
-    .card {
-      text-align: center;
-      padding: clamp(2rem, 4vw, 4rem);
-      border: 2px solid var(--gold-weak);
-      border-radius: 1.25rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      position: relative;
-      background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.20));
+    .card{
+      background:rgba(58,0,107,.8);
+      border:2px solid var(--gold-wash);
+      border-radius:1.25rem;
+      padding:2.5rem 2rem;
+      max-width:480px;
+      box-shadow:0 8px 28px rgba(0,0,0,.55);
     }
-
-    h1 {
-      font-size: clamp(2.25rem, 6vw, 4rem);
-      letter-spacing: 0.06em;
-      margin: 0 0 1rem 0;
-      font-weight: 700;
+    h1{
+      margin:0 0 1rem;
+      font-size:clamp(2rem,6vw,3.5rem);
+      letter-spacing:.05em;
     }
-    h2 { font-size: 1.15rem; margin: 1.25rem 0 .4rem; }
-
-    .sep {
-      width: 90%;
-      height: 1px;
-      margin: 1rem auto 1.25rem;
-      background: var(--gold-weak);
+    h2{
+      font-size:1.25rem;
+      margin-top:1.5rem;
+      margin-bottom:.5rem;
     }
-
-    .contact { font-size: clamp(1rem, 2.6vw, 1.15rem); line-height: 1.7; }
-
-    a { color: var(--gold); text-decoration-color: var(--gold-weak); }
-    a:hover, a:focus { text-decoration: underline; text-underline-offset: 3px; }
-
-    footer {
-      position: fixed;
-      left: 0; right: 0; bottom: 1rem;
-      text-align: center;
-      font-size: .9rem;
-      color: var(--gold-weak);
+    .contact{
+      line-height:1.6;
+      font-size:1.05rem;
+    }
+    .contact a{
+      color:var(--gold);
+      text-decoration:none;
+    }
+    .contact a:hover{ text-decoration:underline }
+    footer{
+      position:fixed;
+      bottom:.6rem; left:0; right:0;
+      text-align:center;
+      font-size:.9rem;
+      color:var(--gold-wash);
     }
   </style>
 </head>
 <body>
-  <!-- Nappi oikeaan yläkulmaan -->
-  <a href="suomen585.html" class="top-btn">Suomen 585 Oy</a>
+  <!-- Painike Suomen 585 Oy -sivulle -->
+  <a href="suomen585.html" class="top-btn">Tilausportaali</a>
 
-  <main class="wrap">
-    <section class="card" aria-label="Brunbar yhteystiedot">
-      <h1>BRUNBAR</h1>
-      <div class="sep" role="presentation"></div>
+  <main>
+    <section class="card">
+      <h1>Suomen 585 Oy</h1>
 
+      <h2></h2>
       <div class="contact">
-        <h2>Automaatiojärjestelmät ja teollisuuden ratkaisut:</h2>
-        Max Barman<br>
-        <a href="tel:+358449721998">+358 44 972 1998</a><br>
-        <a href="mailto:Max.Barman@brunbar.fi">Max.Barman@brunbar.fi</a>
+        Olavi Barman<br>
+        <a href="tel:+358449721998">+358 40 0777 508</a><br>
+        <a href="mailto:Barmanol@gmail.com">Barmanol@gmail.com</a>
       </div>
 
-      <div class="contact">
-        <h2>Taloushallinto-, kirjanpito ja konsultointipalvelut:</h2>
-        Anna Sinkkonen<br>
-        <a href="tel:+358404115802">+358 40 411 5802</a><br>
-        <a href="mailto:Anna.Sinkkonen@brunbar.fi">Anna.Sinkkonen@brunbar.fi</a>
-      </div>
+     
     </section>
   </main>
 
-  <footer>© <span id="y"></span> Brunbar</footer>
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <footer>© <span id="y"></span> Suomen 585 Oy</footer>
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
 </body>
 </html>
