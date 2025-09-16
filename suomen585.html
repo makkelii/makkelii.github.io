@@ -609,31 +609,34 @@ $('#cartEmail').onclick = async () => {
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify(payload)
     });
-    const txt = (await res.text().catch(()=> '')).trim();
 
-    // hyväksy "OK", "ok", tai JSON kuten {"ok":true}
+    // 1) jos status 200–299 → yritä tulkita OK
+    const txt = (await res.text().catch(()=> '')).trim();
+    const upper = txt.toUpperCase();
+
     let ok = false;
-    if (txt.toUpperCase() === 'OK') ok = true;
-    else {
-      try { const j = JSON.parse(txt); if (j && (j.ok === true || j.status === 'OK')) ok = true; } catch (_){}
-    }
+    // hyväksy “OK”, “OK\n”, “ok”, json {ok:true}, tai mikä tahansa missä esiintyy “OK” eikä “ERROR”
+    if (upper === 'OK' || upper === '"OK"' || upper.includes('>OK<')) ok = true;
+    try { const j = JSON.parse(txt); if (j && (j.ok === true || j.status === 'OK')) ok = true; } catch(_){}
+    if (!ok && res.ok && upper.includes('OK') && !upper.includes('ERROR')) ok = true;
 
     if (ok) {
       alert('Tilaus lähetetty sähköpostiin!');
       closeCart(); cart.clear(); renderCart(); $('#note').value='';
       return;
     } else {
-      console.warn('GAS vastasi odottamattomasti:', txt);
+      console.warn('GAS vastasi:', txt);
     }
   } catch (e) {
     console.warn('JSON-POST epäonnistui:', e);
   }
 
-  // Fallback: varmistuslähetys lomakkeella (ei näe vastausta)
+  // Fallback: varmistuslähetys lomakkeella (toimii nytkin, mutta ei enää pitäisi tarvita)
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Tilaus lähetetty (fallback)!');
   closeCart(); cart.clear(); renderCart(); $('#note').value='';
 };
+
 
 /* ---------- Manifest + kuvat ---------- */
 async function loadFromManifest(){
