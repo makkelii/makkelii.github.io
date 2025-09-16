@@ -338,24 +338,34 @@ async function loadTexts(){
 }
 
 async function saveText(sku, text){
-  // hyväksyy sekä key/text että sku/note – GAS tukee molempia
-  const payloadA = { action:"setNote", key: sku, text: text, secret: GAS_SECRET };
+  // YKSINKERTAISTETTU: käytetään vain sku/note -avaimia
+  const payload = { action:"setNote", sku:String(sku), note:String(text), secret:GAS_SECRET };
+
   try{
     const res = await fetch(GAS_ENDPOINT, {
-      method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payloadA)
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
     });
     const t = (await res.text().catch(()=> '')).trim().toUpperCase();
-    if (t === 'OK'){ textMap[sku]=text; return true; }
+    if (t === 'OK'){ 
+      textMap[sku]=String(text);
+      return true; 
+    }
   }catch(_){}
-  // fallback vanhalle nimitykselle
+
+  // Fallback: sama payload lomakemuodossa (jos JSON-POST ei syystä toimi)
   try{
-    const payloadB = { action:"setNote", sku: sku, note: text, secret: GAS_SECRET };
-    const res2 = await fetch(GAS_ENDPOINT, {
-      method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payloadB)
-    });
-    const t2 = (await res2.text().catch(()=> '')).trim().toUpperCase();
-    if (t2 === 'OK'){ textMap[sku]=text; return true; }
+    const form = new FormData();
+    form.append('data', JSON.stringify(payload));
+    const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: form });
+    const t2 = (await r2.text().catch(()=> '')).trim().toUpperCase();
+    if (t2 === 'OK'){
+      textMap[sku]=String(text);
+      return true;
+    }
   }catch(_){}
+
   return false;
 }
 
