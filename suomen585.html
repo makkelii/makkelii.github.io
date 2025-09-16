@@ -1,656 +1,202 @@
-<!doctype html>
-<html lang="fi">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Suomen 585 Oy – Tukkutilaus</title>
+/***** Suomen585 B2B – GAS *****/
 
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="theme-color" content="#1f2937">
+const SECRET         = 'p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h';
+const RECIPIENT      = 'suomen585@gmail.com'; // <-- vaihda tarvittaessa
+const SUBJECT_PREFIX = '[B2B Tilaus] ';
+const SHEET_ID       = 'PAINA_TAHAN_OMA_TAULUKON_ID'; // <-- oma Sheet ID
+const SHEET_TAB      = 'Notes';
+const PROP_KEY       = 'NOTES_JSON';
+const GLOBAL_PROP    = 'GLOBAL_NOTE';
 
-<style>
-  :root{
-    --bg:#0f1115;
-    --ink:#e8eaf0;
-    --muted:#bfc3d3;
-    --card:#171923;
-    --cardGlass:rgba(23,25,35,.86);
-    --border:#2a2f3e;
-    --accent:#e0b85a;
-    --accent-ink:#26252a;
-  }
-  *{ box-sizing:border-box }
-  html,body{ height:100% }
-  body{
-    margin:0;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    color:var(--ink);
-    background:var(--bg) url("images/bg.webp") center/cover no-repeat;
-    overflow-x:hidden;
-  }
+const cto = s => ContentService.createTextOutput(String(s)).setMimeType(ContentService.MimeType.TEXT);
+const jsonOut = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+const htmlEsc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-  header{
-    background:rgba(31,41,55,.92);
-    color:#f3f4f6;
-    padding:.9rem 1rem;
-    text-align:center;
-    position:sticky; top:0; z-index:5;
-    backdrop-filter:saturate(120%) blur(6px);
-  }
-  header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem) }
-
-  .wrap{ max-width:1240px; margin:0 auto; padding:1rem }
-
-  .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.7rem 0 1rem }
-  .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
-  .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
-  .search button{ border:1px solid var(--border); background:var(--card); border-radius:10px; padding:.6rem .9rem; cursor:pointer; color:var(--ink) }
-
-  .cats{ display:flex; gap:.5rem; margin:.25rem 0 .9rem; overflow:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none }
-  .cats::-webkit-scrollbar{ display:none }
-  .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
-  .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
-
-  /* Yleisviesti */
-  .global-note{
-    background:var(--cardGlass);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:.75rem .9rem;
-    margin:.4rem 0 1rem;
-  }
-  .global-note-view{
-    white-space:pre-wrap;
-    color:var(--ink);
-    font-size:.98rem;
-  }
-  .global-note.empty .global-note-view{ color:var(--muted) }
-  .global-note textarea{
-    width:100%;
-    min-height:84px;
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:.55rem .65rem;
-    background:#0f1115;
-    color:var(--ink);
-    font-size:.98rem;
-  }
-  .pill{ border:1px solid var(--border); background:var(--card); color:var(--ink); border-radius:999px; padding:.25rem .6rem; cursor:pointer; font-weight:600 }
-  .pill.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
-
-  .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
-  @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
-
-  figure{
-    display:flex; flex-direction:column; gap:.55rem;
-    background:var(--cardGlass);
-    border:1px solid var(--border); border-radius:14px;
-    padding:.65rem; margin:0; box-shadow:0 2px 10px rgba(0,0,0,.2); min-height:100%;
-    backdrop-filter: blur(2px);
-  }
-  figure .img-wrap{
-    width:100%; background:#0b0d12; border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    min-height:180px;
-  }
-  figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in }
-  figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
-
-  /* Admin-muokkaus SKU-note */
-  .note-line{ display:flex; gap:.4rem; align-items:flex-start; margin-top:.1rem; flex-direction:column }
-  .note-text{ width:100%; font-size:.92rem; color:var(--ink); white-space:pre-wrap; word-break:break-word; }
-  .note-edit{ display:none; width:100% }
-  .note-edit textarea{ width:100%; min-height:70px; border:1px solid var(--border); border-radius:10px; padding:.5rem; background:#0f1115; color:var(--ink) }
-  .note-actions{ display:flex; gap:.4rem; margin-top:.3rem }
-
-  /* Add to cart */
-  .addrow{
-    margin-top:auto;
-    display:grid; gap:.42rem;
-    grid-template-columns: 1fr 80px;
-    grid-template-areas: "size qty" "btn btn";
-  }
-  .addrow .size{ grid-area:size; width:100%; padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px; background:transparent; color:var(--ink); font-size:.9rem }
-  .addrow .qty{ grid-area:qty; width:100%; padding:.42rem .45rem; border:1px solid var(--border); border-radius:9px; background:transparent; color:var(--ink); text-align:center; font-size:.9rem }
-  .addrow button{
-    grid-area:btn;
-    border:none; border-radius:9px; background:var(--accent); color:var(--accent-ink);
-    font-weight:800; cursor:pointer; padding:.55rem .6rem; width:100%;
-    font-size:1rem; line-height:1.05; white-space:nowrap;
-  }
-
-  /* Cart */
-  .cart-badge{
-    position:fixed; top:12px; right:12px;
-    background:var(--accent); color:var(--accent-ink);
-    border-radius:999px; padding:.65rem 1.1rem;
-    font-size:1.05rem; font-weight:800;
-    z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
-  }
-  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1000; }
-  .cart-backdrop.on{ display:block; }
-  body.noscroll{ overflow:hidden; }
-
-  #cartPanel{
-    position:fixed; top:0; right:0;
-    height:100dvh; width:min(92vw,480px);
-    background:rgba(23,25,35,.96);
-    border-left:1px solid var(--border);
-    padding:1rem; border-radius:0;
-    box-shadow:-6px 0 24px rgba(0,0,0,.35);
-    transform:translateX(100%); transition:transform .25s ease;
-    z-index:1001; backdrop-filter: blur(6px);
-  }
-  #cartPanel.open{ transform:translateX(0); }
-  .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
-  .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
-  .btn{ border:1px solid var(--border); padding:.55rem .8rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
-  .btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
-  .btn.danger{ background:#ffe8e8; color:#800; border-color:#ffd0d0 }
-  .btn.ghost{ background:transparent; color:var(--muted) }
-
-  .cart-head{
-    position:sticky; top:0; z-index:1;
-    background:linear-gradient(0deg, rgba(23,25,35,.96), rgba(23,25,35,.96));
-    backdrop-filter:blur(3px);
-    padding:.45rem .2rem; margin:-.2rem -.2rem .4rem;
-    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem;
-    font-weight:800; color:var(--muted); border-bottom:1px solid var(--border);
-  }
-  .cart-items{ max-height:calc(100dvh - 260px); overflow:auto; padding:.2rem }
-  .cart-row{
-    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center;
-    padding:.35rem 0; border-bottom:1px dashed var(--border)
-  }
-  .cart-row:last-child{ border-bottom:none }
-  .cart-input{ width:100%; padding:.42rem .55rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--ink); text-align:center; font-size:.92rem }
-  .rm{ border:none; background:#ffe8e8; color:#6b0000; border-radius:8px; padding:.42rem 0; cursor:pointer; font-weight:800; line-height:1; text-align:center }
-
-  .note{ width:100%; min-height:90px; padding:.6rem; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--ink); margin-top:.6rem }
-  .cart-actions{ display:flex; flex-wrap:wrap; gap:.6rem; margin-top:.8rem }
-
-  .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100; }
-  .lightbox.show{ display:flex }
-  .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
-  .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
-
-  .gate{
-    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
-    background:
-      linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)),
-      url("images/bg.webp") center/cover no-repeat;
-  }
-  .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
-  .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
-  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
-  .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
-  .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
-</style>
-</head>
-<body>
-  <!-- Kirjautumisportti -->
-  <div class="gate" id="gate" aria-hidden="false">
-    <div class="gate-card">
-      <h2>Tilausportaali</h2>
-      <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
-      <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
-      <button id="passBtn" type="button">Avaa</button>
-      <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
-    </div>
-  </div>
-
-  <header><h1>Suomen 585 Oy – Tukkutilaus</h1></header>
-
-  <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
-
-  <main class="wrap" aria-hidden="true" id="app">
-    <section>
-      <div id="status" class="error" style="display:none"></div>
-
-      <div class="toolbar">
-        <div class="search">
-          <input id="q" type="search" placeholder="Hae nimellä tai SKU:lla…" />
-          <button id="clear" type="button">Tyhjennä</button>
-        </div>
-        <div class="cats" id="cats"></div>
-      </div>
-
-      <!-- Yleisviesti (näkyy kaikille; admin voi muokata) -->
-      <div id="globalNote" class="global-note">
-        <div class="global-note-view" id="globalNoteView">Ei tiedotetta.</div>
-        <div class="global-note-actions" id="globalNoteActions" style="display:none">
-          <button class="pill" id="globalNoteEdit">Muokkaa</button>
-        </div>
-        <div class="global-note-edit" id="globalNoteEditWrap" style="display:none">
-          <textarea id="globalNoteTextarea" rows="3" placeholder="Kirjoita tiedote…"></textarea>
-          <div class="note-actions" style="margin-top:.35rem;display:flex;gap:.4rem">
-            <button class="pill primary" id="globalNoteSave">Tallenna</button>
-            <button class="pill" id="globalNoteCancel">Peruuta</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="spinner" id="spin" style="display:none"></div>
-      <div class="gallery" id="gallery" aria-live="polite"></div>
-
-      <div style="margin-top:1rem"><a href="index.html" class="btn ghost">← Takaisin</a></div>
-    </section>
-  </main>
-
-  <!-- Ostoskori -->
-  <aside id="cartPanel" aria-label="Ostoskori">
-    <div class="cart-top">
-      <div class="cart-title">Ostoskori</div>
-      <div style="display:flex; gap:.5rem">
-        <button class="btn" id="logout" type="button" title="Kirjaudu ulos">Kirjaudu ulos</button>
-        <button class="btn" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
-      </div>
-    </div>
-
-    <div class="cart-head">
-      <div>Tuote / SKU</div><div>Koko</div><div>Kpl</div><div></div>
-    </div>
-    <div class="cart-items" id="cart"></div>
-
-    <textarea id="note" class="note" placeholder="Lisätiedot (esim. viite, toimitus)…"></textarea>
-
-    <div class="cart-actions">
-      <button class="btn danger" id="cartClear" type="button">Tyhjennä kori</button>
-      <button class="btn primary" id="cartEmail" type="button">Lähetä tilaus</button>
-    </div>
-  </aside>
-  <div class="cart-backdrop" id="cartBackdrop" aria-hidden="true"></div>
-
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="close" id="closeLb" type="button">Sulje</button>
-    <img id="lightImg" alt="">
-  </div>
-
-<script>
-/* Pieni virheloki, jotta ongelmat näkyvät konsoliin eivätkä hiljaisesti katkaise skriptiä */
-window.addEventListener('error', e => { console.error('JS Error:', e.message, e.filename+':'+e.lineno); });
-
-/* ---------- ASETUKSET ---------- */
-const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbxrnpCCyBorTLp2XFwK30g72O7DNhOhSDzTHueSjW1AgTdC4vn5da2iq346YBIBYbEC3Q/exec";
-const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
-const PASSWORD_PLAIN = "sala54N4";
-const ADMIN_USER     = "admin";
-const ADMIN_PASS     = "fatso";
-/* -------------------------------- */
-
-const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
-
-let currentCat='all', allFiles=[], textMap={};
-
-const CATS = [
-  { key: "Magneetit",       label: "Magneetit" },
-  { key: "Lappimagneetit",  label: "Lappimagneetit" },
-  { key: "Sormukset",       label: "Sormukset" },
-  { key: "Ranneketjut",     label: "Ranneketjut" },
-  { key: "Kaulaketjut",     label: "Kaulaketjut" },
-  { key: "Riipukset",       label: "Riipukset" },
-  { key: "Hiuskorut",       label: "Hiuskorut" },
-  { key: "Kellot",          label: "Kellot" }
-];
-const isAdmin = ()=> (sessionStorage.getItem('b2b_admin')==='1');
-
-/* ---------- Kirjautuminen ---------- */
-function refreshUIAfterAuth(){
-  loadGlobalNote();
-  if(allFiles.length){
-    renderCats(countsFrom(allFiles));
-    showGallery();
-  }
+/* ---------- SHEET ---------- */
+function getSheet_(){
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sh   = ss.getSheetByName(SHEET_TAB) || ss.insertSheet(SHEET_TAB);
+  const hdr = sh.getRange(1,1,1,3).getValues()[0] || [];
+  if ((hdr[0]||'') !== 'SKU') sh.getRange(1,1,1,3).setValues([['SKU','NOTE','UPDATED']]);
+  return sh;
 }
-function openApp(isAdminFlag){
-  $('#gate').style.display='none';
-  $('#app').setAttribute('aria-hidden','false');
-  $('#gateErr').style.display='none';
-  try{
-    sessionStorage.setItem('b2b_authed','1');
-    sessionStorage.setItem('b2b_admin', isAdminFlag ? '1' : '0');
-  }catch(_){}
-  refreshUIAfterAuth();
-}
-function initGate(){
-  const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
-  function tryOpen(){
-    const name = sanitize(nameI.value)||'Tuntematon';
-    const pass = (passI.value||'').trim();
-    if (name.toLowerCase()===ADMIN_USER && pass===ADMIN_PASS){
-      sessionStorage.setItem('b2b_name','Admin');
-      openApp(true); return;
-    }
-    if (pass===PASSWORD_PLAIN){
-      sessionStorage.setItem('b2b_name',name);
-      openApp(false); return;
-    }
-    err.style.display='block'; passI.focus(); passI.select?.();
+function upsertNoteToSheet_(sku, note){
+  const sh = getSheet_();
+  const last = sh.getLastRow();
+  const data = last >= 2 ? sh.getRange(2,1,last-1,3).getValues() : [];
+  const map  = new Map();
+  for (let i=0;i<data.length;i++){
+    const k = String(data[i][0]||'').trim();
+    if (k) map.set(k, i+2);
   }
-  try{
-    if(sessionStorage.getItem('b2b_authed')==='1'){ $('#gate').style.display='none'; $('#app').setAttribute('aria-hidden','false'); }
-  }catch(_){}
-  btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
-  $('#logout').onclick=()=>{
-    if(!confirm('Kirjaudutaanko ulos?')) return;
-    sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
-    $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
-    $('#passInput').value=''; $('#nameInput').value=''; $('#nameInput').focus(); closeCart();
-  };
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  const row = map.get(sku);
+  if (row) sh.getRange(row,2,1,2).setValues([[note, now]]); else sh.appendRow([sku, note, now]);
+}
+function readAllNotesFromSheet_(){
+  const sh = getSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return [];
+  const data = sh.getRange(2,1,last-1,2).getValues(); // SKU, NOTE
+  const out = [];
+  for (let i=0;i<data.length;i++){
+    const sku  = String(data[i][0]||'').trim();
+    const note = String(data[i][1]||'').trim();
+    if (sku) out.push({ sku, note });
+  }
+  return out;
 }
 
-/* ---------- Kategoriat & haku ---------- */
-const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
-function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
-function renderCats(counts){
-  const wrap=$('#cats'); wrap.innerHTML='';
-  const total=Object.values(counts).reduce((a,b)=>a+b,0);
-  const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
-  wrap.appendChild(mk('all','Kaikki',total)); CATS.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
+/* ---------- PROPS fallback ---------- */
+function readNotesFromProps_(){
+  const raw = PropertiesService.getScriptProperties().getProperty(PROP_KEY) || '{}';
+  const obj = JSON.parse(raw);
+  const arr = [];
+  Object.keys(obj).forEach(sku => arr.push({ sku, note:String(obj[sku]||'') }));
+  return arr;
 }
-$('#cats').addEventListener('click',e=>{ const b=e.target.closest('.cat-btn'); if(!b) return; currentCat=b.dataset.key; $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b)); showGallery(); });
-$('#q').addEventListener('input',()=>showGallery());
-$('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
+function upsertNoteToProps_(sku, note){
+  const props = PropertiesService.getScriptProperties();
+  const obj = JSON.parse(props.getProperty(PROP_KEY) || '{}');
+  obj[sku] = String(note||'');
+  props.setProperty(PROP_KEY, JSON.stringify(obj));
+}
 
 /* ---------- Global note ---------- */
-async function loadGlobalNote(){
-  try{
-    const r = await fetch(GAS_ENDPOINT + "?action=getGlobal", { cache: "no-store" });
-    if(!r.ok) throw new Error("net");
-    const j = await r.json();
-    const txt = (j && typeof j.note === 'string') ? j.note : "";
-    renderGlobalNote(txt);
-  }catch(_){
-    renderGlobalNote("");
+function getGlobalNote_(){
+  return PropertiesService.getScriptProperties().getProperty(GLOBAL_PROP) || '';
+}
+function setGlobalNote_(txt){
+  PropertiesService.getScriptProperties().setProperty(GLOBAL_PROP, String(txt||''));
+}
+
+/* ---------- Backend state & migrate ---------- */
+function backendState_(){
+  try {
+    const arr = readAllNotesFromSheet_();
+    return { backend:'sheet', count: arr.length };
+  } catch (e) {
+    const arr = readNotesFromProps_();
+    return { backend:'props', count: arr.length, error: String(e) };
   }
 }
-function renderGlobalNote(text){
-  const wrap = $('#globalNote');
-  const view = $('#globalNoteView');
-  const acts = $('#globalNoteActions');
-  const editWrap = $('#globalNoteEditWrap');
-  const ta   = $('#globalNoteTextarea');
-  const isAdm = isAdmin();
+function migratePropsToSheet_(){
+  const state = backendState_();
+  if (state.backend !== 'sheet') throw new Error('Sheet ei käytettävissä');
+  const propsArr = readNotesFromProps_();
+  if (!propsArr.length) return { migrated: 0 };
+  propsArr.forEach(({sku, note}) => upsertNoteToSheet_(sku, note));
+  PropertiesService.getScriptProperties().deleteProperty(PROP_KEY);
+  return { migrated: propsArr.length };
+}
 
-  const t = String(text||'').trim();
-  view.textContent = t || "Ei tiedotetta.";
-  wrap.classList.toggle('empty', !t);
+/* ---------- doGet ---------- */
+function doGet(e){
+  try{
+    const p = (e && e.parameter) || {};
+    if (p.ping) return cto('OK');
 
-  acts.style.display = isAdm ? '' : 'none';
-  editWrap.style.display = 'none';
-  if (isAdm) ta.value = t;
+    if (p.action === 'getNotes'){
+      try { return jsonOut({ ok:true, backend:'sheet', notes: readAllNotesFromSheet_() }); }
+      catch (_) { return jsonOut({ ok:true, backend:'props', notes: readNotesFromProps_() }); }
+    }
 
-  if (!wrap._bound){
-    wrap._bound = true;
-    $('#globalNoteEdit').onclick = ()=>{ editWrap.style.display=''; acts.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); };
-    $('#globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
-    $('#globalNoteSave').onclick = async ()=>{
-      const newText = ta.value;
-      const ok = await saveGlobalNote(newText);
-      if (ok){ renderGlobalNote(newText); }
-      else { alert('Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.'); }
-    };
+    if (p.action === 'getGlobal'){
+      return jsonOut({ ok:true, note: getGlobalNote_() });
+    }
+
+    if (p.action === 'where'){
+      return jsonOut( backendState_() );
+    }
+
+    if (p.action === 'mailtest' && p.secret === SECRET){
+      MailApp.sendEmail({
+        to: RECIPIENT,
+        subject: SUBJECT_PREFIX + 'Mail test',
+        htmlBody: 'Testi ' + new Date(),
+        name: 'B2B Tilausportaali'
+      });
+      return cto('OK');
+    }
+
+    return cto('OK');
+  }catch(err){
+    return cto('ERROR: ' + (err && err.message ? err.message : err));
   }
 }
-async function saveGlobalNote(text){
-  const payload = { action: "setGlobal", note: String(text||''), secret: GAS_SECRET };
-  try{
-    const r = await fetch(GAS_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const t = (await r.text().catch(()=> '')).trim().toUpperCase();
-    if (t.startsWith('OK')) return true;
-  }catch(_){}
-  try{
-    const fd = new FormData(); fd.append('data', JSON.stringify(payload));
-    const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: fd });
-    const t2 = (await r2.text().catch(()=> '')).trim().toUpperCase();
-    if (t2.startsWith('OK')) return true;
-  }catch(_){}
-  return false;
-}
 
-/* ---------- Admin-tekstit (SKU) ---------- */
-async function loadTexts(){
+/* ---------- doPost ---------- */
+function doPost(e){
   try{
-    const r = await fetch(GAS_ENDPOINT + "?action=getNotes", {cache:'no-store'});
-    if(r.ok){
-      const data = await r.json();
-      if (data && Array.isArray(data.notes)){
-        const m={}; data.notes.forEach(x=>{ if(x && x.sku!=null) m[String(x.sku)]=String(x.note||''); });
-        textMap = m; return;
+    // JSON voi tulla joko postData.contents (text/plain / application/json) tai lomakekenttänä "data"
+    let raw = (e && e.postData && e.postData.contents) || '';
+    if (!raw && e && e.parameter && e.parameter.data) raw = e.parameter.data;
+    if (!raw) return cto('ERROR: no json payload');
+    const data = JSON.parse(raw);
+
+    if (!data || data.secret !== SECRET) return cto('ERROR: bad secret');
+
+    const act = String(data.action||'').trim();
+
+    if (act === 'setNote'){
+      const sku  = String(data.sku ?? data.key ?? '').trim();
+      const note = String(data.note ?? data.text ?? '').trim();
+      if (!sku) return cto('ERROR: sku missing');
+      try { upsertNoteToSheet_(sku, note); }
+      catch(_) { upsertNoteToProps_(sku, note); }
+      return cto('OK');
+    }
+
+    if (act === 'setGlobal'){
+      const note = String(data.note || '').trim();
+      setGlobalNote_(note);
+      return cto('OK');
+    }
+
+    if (act === 'migrate'){
+      const out = migratePropsToSheet_();
+      return jsonOut(out);
+    }
+
+    // TILAUS → sähköposti
+    if (act === '' || act === 'order') {
+      const items  = Array.isArray(data.items) ? data.items : [];
+      if (!items.length) return cto('ERROR: empty cart');
+
+      const sender = (data.sender||'Tuntematon').toString();
+      const note   = (data.note||'').toString();
+      const tz = Session.getScriptTimeZone();
+      const ts = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss');
+
+      const rows = [];
+      rows.push('<b>Aika:</b> ' + ts);
+      rows.push('<b>Lähettäjä:</b> ' + htmlEsc(sender));
+      rows.push('');
+      items.forEach(it=>{
+        const name = String(it.name||'');
+        const size = String(it.size||'');
+        const qty  = Math.max(1, parseInt(it.qty,10)||1);
+        rows.push('&#8226; ' + htmlEsc(name)
+          + (size ? ' &nbsp; <b>Koko:</b> ' + htmlEsc(size) : '')
+          + ' &nbsp; <b>Kpl:</b> ' + qty);
+      });
+      if (note){
+        rows.push('');
+        rows.push('<b>Lisätiedot:</b><br>'+htmlEsc(note).replace(/\n/g,'<br>'));
       }
-    }
-  }catch(_){}
-  try{
-    const r2 = await fetch(GAS_ENDPOINT + "?action=getTexts", {cache:'no-store'});
-    if(r2.ok){
-      const data2 = await r2.json();
-      if (data2 && typeof data2 === 'object' && !Array.isArray(data2)){ textMap = data2; return; }
-    }
-  }catch(_){}
-  textMap = {};
-}
-async function saveText(sku, text){
-  const payload = { action:"setNote", sku:String(sku), note:String(text), secret:GAS_SECRET };
-  try{
-    const res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
-    const t = (await res.text().catch(()=> '')).trim().toUpperCase();
-    if (t.startsWith('OK')){ textMap[sku]=String(text); return true; }
-  }catch(_){}
-  try{
-    const fd = new FormData(); fd.append('data', JSON.stringify(payload));
-    const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: fd });
-    const t2 = (await r2.text().catch(()=> '')).trim().toUpperCase();
-    if (t2.startsWith('OK')){ textMap[sku]=String(text); return true; }
-  }catch(_){}
-  return false;
-}
 
-/* ---------- Galleria + lightbox ---------- */
-function addFigure(path){
-  const file=path.split('/').pop(); const title=toTitle(file.replace(/\.[^.]+$/,'')); const sku=file.replace(/\.[^.]+$/,'');
-  const note = textMap[sku] || "";
-  const fig=document.createElement('figure');
-  fig.dataset.file=file; fig.dataset.path=path; fig.dataset.sku=sku; fig.dataset.title=title;
-  fig.innerHTML=`
-    <div class="img-wrap"><img src="${path}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" /></div>
-    <figcaption>${title}</figcaption>
-    <div class="note-line" data-sku="${sku}">
-      <div class="note-text">${note ? note.replace(/</g,"&lt;") : ""}</div>
-      ${isAdmin() ? `<button class="pill" data-act="edit">Muokkaa</button>` : ``}
-      <div class="note-edit">
-        <textarea>${note ? note.replace(/</g,"&lt;") : ""}</textarea>
-        <div class="note-actions">
-          <button class="pill primary" data-act="save">Tallenna</button>
-          <button class="pill" data-act="cancel">Peruuta</button>
-        </div>
-      </div>
-    </div>
-    <div class="addrow">
-      <input type="text" class="size" placeholder="Koko" />
-      <input type="number" class="qty" min="1" value="1" />
-      <button class="add" type="button">Lisää koriin</button>
-    </div>`;
-  $('#gallery').appendChild(fig);
-}
-function showGallery(){
-  const q=$('#q').value.trim().toLowerCase(); const gal=$('#gallery'); gal.innerHTML='';
-  const list=allFiles.filter(f=>{
-    if(currentCat!=='all' && f.cat!==currentCat) return false;
-    if(!q) return true;
-    const name=f.name.toLowerCase(), sku=f.name.replace(/\.[^.]+$/,'').toLowerCase();
-    return name.includes(q)||sku.includes(q);
-  });
-  const seen=new Set(); for(const f of list){ if(seen.has(f.path)) continue; seen.add(f.path); addFigure(f.path); }
-}
-$('#gallery').addEventListener('click',async e=>{
-  const fig=e.target.closest('figure'); if(!fig) return;
-  if(e.target.classList.contains('add')){
-    const size=fig.querySelector('.size').value.trim();
-    const qty=Math.max(1,parseInt(fig.querySelector('.qty').value)||1);
-    addToCart(fig.dataset.file,size,qty); return;
+      MailApp.sendEmail({
+        to: RECIPIENT,
+        subject: SUBJECT_PREFIX + sender,
+        htmlBody: rows.join('<br>'),
+        name: 'B2B Tilausportaali'
+      });
+
+      return cto('OK');
+    }
+
+    return cto('ERROR: unknown action');
+  }catch(err){
+    return cto('ERROR: ' + (err && err.message ? err.message : err));
   }
-  if (e.target.dataset.act){
-    const line = e.target.closest('.note-line');
-    const sku  = line.dataset.sku;
-    const view = line.querySelector('.note-text');
-    const edit = line.querySelector('.note-edit');
-    const ta   = line.querySelector('textarea');
-    const editBtn = line.querySelector('[data-act="edit"]');
-
-    if (e.target.dataset.act==='edit'){
-      edit.style.display='block'; if(editBtn) editBtn.style.display='none';
-      ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);
-      return;
-    }
-    if (e.target.dataset.act==='cancel'){
-      edit.style.display='none'; if(editBtn) editBtn.style.display='';
-      ta.value = textMap[sku] || "";
-      return;
-    }
-    if (e.target.dataset.act==='save'){
-      const newText = ta.value;
-      const ok = await saveText(sku, newText);
-      if (ok){
-        view.textContent = newText;
-        edit.style.display='none'; if(editBtn) editBtn.style.display='';
-      }else{
-        alert("Tallennus epäonnistui. Tarkista GAS & SECRET.");
-      }
-      return;
-    }
-  }
-  const img=e.target.closest('img'); if(img){ $('#lightImg').src=img.src; $('#lightbox').classList.add('show'); $('#lightbox').setAttribute('aria-hidden','false'); }
-});
-$('#closeLb').onclick=()=>{ $('#lightbox').classList.remove('show'); $('#lightbox').setAttribute('aria-hidden','true'); $('#lightImg').src=''; };
-$('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#closeLb').click(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
-
-/* ---------- Ostoskori ---------- */
-let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
-function renderCart(){
-  cartEl.innerHTML='';
-  for(const [name,item] of cart){
-    const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
-    row.innerHTML=`<div title="${name}">${name}</div>
-      <input class="cart-input size" type="text" value="${item.size||''}" placeholder="Koko" />
-      <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
-      <button class="rm" title="Poista" type="button">✕</button>`;
-    cartEl.appendChild(row);
-  }
-  cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
-  localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()]));
 }
-function addToCart(filename,size,qty){
-  const it=cart.get(filename)||{name:filename,size:'',qty:0};
-  it.size=size||it.size; it.qty=Math.max(0,parseInt(it.qty)||0)+Math.max(1,qty||1);
-  cart.set(filename,it); renderCart();
-}
-function loadCart(){ try{ const raw=localStorage.getItem('b2b_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch{} }
-cartEl.addEventListener('input',e=>{
-  const row=e.target.closest('.cart-row'); if(!row) return;
-  const key=row.dataset.key; const it=cart.get(key); if(!it) return;
-  if(e.target.classList.contains('size')) it.size=e.target.value;
-  if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value)||1);
-  cart.set(key,it); renderCart();
-});
-cartEl.addEventListener('click',e=>{
-  const row=e.target.closest('.cart-row'); if(!row) return;
-  if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
-});
-$('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
-
-/* ---------- Liukuva kori ---------- */
-const cartPanel    = document.getElementById('cartPanel');
-const cartBackdrop = document.getElementById('cartBackdrop');
-const cartCloseBtn = document.getElementById('cartClose');
-const cartBadgeBtn = document.getElementById('cartBadge');
-function openCart(){ cartPanel.classList.add('open'); cartBackdrop.classList.add('on'); document.body.classList.add('noscroll'); }
-function closeCart(){ cartPanel.classList.remove('open'); cartBackdrop.classList.remove('on'); document.body.classList.remove('noscroll'); }
-if (cartBadgeBtn) cartBadgeBtn.onclick = openCart;
-if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
-if (cartBackdrop) cartBackdrop.onclick = closeCart;
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cartPanel.classList.contains('open')) closeCart(); });
-
-/* ---------- Lähetys GAS:lle ---------- */
-function postViaHiddenForm(url, payloadObj) {
-  const form = document.createElement('form');
-  form.method = 'POST'; form.action = url; form.target = 'gas_iframe'; form.style.display = 'none';
-  const input = document.createElement('input'); input.type = 'hidden'; input.name = 'data'; input.value = JSON.stringify(payloadObj);
-  form.appendChild(input); document.body.appendChild(form); form.submit(); setTimeout(()=> form.remove(), 1500);
-}
-(function ensureIframe(){
-  if(!document.getElementById('gas_iframe')){
-    const ifr=document.createElement('iframe'); ifr.name='gas_iframe'; ifr.id='gas_iframe'; ifr.hidden=true; document.body.appendChild(ifr);
-  }
-})();
-
-$('#cartEmail').onclick = async () => {
-  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
-
-  const items  = [...cart.values()].map(it => ({
-    name: it.name,
-    size: it.size || "",
-    qty:  Math.max(1, parseInt(it.qty)||1)
-  }));
-  const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
-  const note   = $('#note').value || "";
-
-  // Ei CORS-preflightia → käytä lomaketta ensisijaisesti
-  const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-
-  alert('Tilaus lähetetty!');
-  closeCart(); cart.clear(); renderCart(); $('#note').value='';
-};
-
-
-
-/* ---------- Manifest + kuvat ---------- */
-async function loadFromManifest(){
-  const spin=$('#spin'); if(spin) spin.style.display='grid';
-  const status=$('#status'); if(status){ status.style.display='none'; status.textContent=''; }
-  try{
-    const res=await fetch('images/manifest.json',{cache:'no-store'});
-    if(!res.ok) throw new Error('not found');
-    const manifest=await res.json();
-    let files=(manifest.files||[]).filter(p=>/\.(jpe?g|png|gif|webp)$/i.test(p));
-    files=[...new Set(files)];
-    if(!files.length) throw new Error('empty');
-
-    const byCat=[];
-    for(const p of files){
-      const parts=p.split('/');
-      if(parts.length>=3){
-        const cat=parts[1]; byCat.push({path:p,cat,name:p.split('/').pop()});
-      }
-    }
-    const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
-    allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-
-    const catKeys=new Set(CATS.map(c=>c.key));
-    allFiles=allFiles.filter(x=>catKeys.has(x.cat));
-
-    renderCats(countsFrom(allFiles));
-    await loadTexts();
-    showGallery();
-  }catch(e){
-    if(status){ status.textContent='Kuvien haku epäonnistui. Varmista että images/manifest.json on olemassa ja julkinen.'; status.style.display='block'; }
-  }finally{ if(spin) spin.style.display='none'; }
-}
-
-/* ---------- init ---------- */
-window.addEventListener('DOMContentLoaded', async ()=>{
-  initGate();
-  loadCart();
-  await loadFromManifest();
-  await loadGlobalNote();
-});
-</script>
-</body>
-</html>
