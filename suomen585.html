@@ -199,7 +199,6 @@
 
 <script>
 /* ---------- ASETUKSET ---------- */
-/* PÄIVITÄ TÄMÄ URL omaan Web App /exec -osoitteeseesi */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbw_MANktBK_wL89Y2mQtCm9Dr99VfA2duKg8TE95MNSpk_ug5QKFnvVPBZauT9h6LdcHw/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
@@ -432,32 +431,41 @@ if (cartBackdrop) cartBackdrop.onclick = closeCart;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cartPanel.classList.contains('open')) closeCart(); });
 
 /* ---------- Lähetys GAS:lle (FormData – ei preflightia) ---------- */
-$('#cartEmail').onclick = async () => {
-  if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
+function sendOrder(payload){
+  const fd = new FormData();
+  fd.append('data', JSON.stringify(payload)); // GAS: e.parameter.data
+  return fetch(GAS_ENDPOINT, { method:'POST', body: fd }).then(r=>r.text());
+}
 
-  const items  = [...cart.values()].map(it => ({
-    name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1)
-  }));
-  const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
-  const note   = $('#note').value || "";
-  const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
+document.addEventListener('DOMContentLoaded', () => {
+  const btnSend = document.getElementById('cartEmail');
+  btnSend.addEventListener('click', async () => {
+    try{
+      if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
 
-  try {
-    const fd = new FormData();
-    fd.append('data', JSON.stringify(payload));            // GAS lukee e.parameter.data
-    const res = await fetch(GAS_ENDPOINT, { method:'POST', body: fd }); // EI headers-objektia
-    const txt = (await res.text()).trim();                 // OK_MAILAPP / OK_GMAILAPP / JSON
-    if (txt.toUpperCase().includes('OK') || txt.startsWith('{')) {
-      alert('Tilaus lähetetty!');
-      closeCart(); cart.clear(); renderCart(); $('#note').value='';
-      return;
+      const items  = [...cart.values()].map(it => ({
+        name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1)
+      }));
+      const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
+      const note   = document.getElementById('note').value || "";
+      const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
+
+      console.log('[Order] Lähetetään…', payload);
+      const txt = (await sendOrder(payload)).trim();
+      console.log('[Order] GAS-vastaus:', txt);
+
+      if (txt.toUpperCase().includes('OK') || txt.startsWith('{')) {
+        alert('Tilaus lähetetty!');
+        closeCart(); cart.clear(); renderCart(); document.getElementById('note').value='';
+        return;
+      }
+      alert('Lähetys epäonnistui: ' + txt);
+    }catch(err){
+      console.error('Lähetysvirhe:', err);
+      alert('Lähetys epäonnistui. Avaa konsoli (F12) nähdäksesi virheen.');
     }
-    console.warn('GAS vastasi:', txt);
-  } catch (e) {
-    console.warn('POST-virhe:', e);
-  }
-  alert('Lähetys epäonnistui.');
-};
+  });
+});
 
 /* ---------- Manifest + kuvat ---------- */
 async function loadFromManifest(){
