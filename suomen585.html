@@ -272,6 +272,9 @@
   </div>
 
 <script>
+/* Pieni virheloki, jotta ongelmat näkyvät konsoliin eivätkä hiljaisesti katkaise skriptiä */
+window.addEventListener('error', e => { console.error('JS Error:', e.message, e.filename+':'+e.lineno); });
+
 /* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbxrnpCCyBorTLp2XFwK30g72O7DNhOhSDzTHueSjW1AgTdC4vn5da2iq346YBIBYbEC3Q/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
@@ -586,6 +589,7 @@ function postViaHiddenForm(url, payloadObj) {
     const ifr=document.createElement('iframe'); ifr.name='gas_iframe'; ifr.id='gas_iframe'; ifr.hidden=true; document.body.appendChild(ifr);
   }
 })();
+
 $('#cartEmail').onclick = async () => {
   if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
 
@@ -626,13 +630,6 @@ $('#cartEmail').onclick = async () => {
   }
 
   // Fallback: varmistuslähetys lomakkeella (ei näe vastausta)
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-  alert('Tilaus lähetetty (fallback)!');
-  closeCart(); cart.clear(); renderCart(); $('#note').value='';
-};
-
-
-  // 2) Fallback: lomake
   postViaHiddenForm(GAS_ENDPOINT, payload);
   alert('Tilaus lähetetty (fallback)!');
   closeCart(); cart.clear(); renderCart(); $('#note').value='';
