@@ -601,41 +601,14 @@ $('#cartEmail').onclick = async () => {
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
 
+  // Ei CORS-preflightia → käytä lomaketta ensisijaisesti
   const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
-
-  try {
-    const res = await fetch(GAS_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    // 1) jos status 200–299 → yritä tulkita OK
-    const txt = (await res.text().catch(()=> '')).trim();
-    const upper = txt.toUpperCase();
-
-    let ok = false;
-    // hyväksy “OK”, “OK\n”, “ok”, json {ok:true}, tai mikä tahansa missä esiintyy “OK” eikä “ERROR”
-    if (upper === 'OK' || upper === '"OK"' || upper.includes('>OK<')) ok = true;
-    try { const j = JSON.parse(txt); if (j && (j.ok === true || j.status === 'OK')) ok = true; } catch(_){}
-    if (!ok && res.ok && upper.includes('OK') && !upper.includes('ERROR')) ok = true;
-
-    if (ok) {
-      alert('Tilaus lähetetty sähköpostiin!');
-      closeCart(); cart.clear(); renderCart(); $('#note').value='';
-      return;
-    } else {
-      console.warn('GAS vastasi:', txt);
-    }
-  } catch (e) {
-    console.warn('JSON-POST epäonnistui:', e);
-  }
-
-  // Fallback: varmistuslähetys lomakkeella (toimii nytkin, mutta ei enää pitäisi tarvita)
   postViaHiddenForm(GAS_ENDPOINT, payload);
-  alert('Tilaus lähetetty (fallback)!');
+
+  alert('Tilaus lähetetty!');
   closeCart(); cart.clear(); renderCart(); $('#note').value='';
 };
+
 
 
 /* ---------- Manifest + kuvat ---------- */
