@@ -29,8 +29,7 @@
     margin:0;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     color:var(--ink);
-    /* TAUSTA KIINNI: */
-    background:var(--bg) url("images/bg.webp") center/cover fixed no-repeat;
+    background:var(--bg) url("images/bg.webp") center/cover fixed no-repeat; /* <- pysyy paikallaan */
     overflow-x:hidden;
   }
 
@@ -197,7 +196,7 @@
   <div class="gate" id="gate" aria-hidden="false">
     <div class="gate-card">
       <h2>Tilausportaali</h2>
-      <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
+      <input id="nameInput" type="text" placeholder="Nimi / yritys (tai admin)" autocomplete="name" />
       <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
       <button id="passBtn" type="button">Avaa</button>
       <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
@@ -274,8 +273,8 @@
 
 <script>
 /* ---------- ASETUKSET ---------- */
-const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx7gguZAl0AButEOiQVQhThKqK-ocWAp22zUm4guzctb9perARKuCE9sFh60UoHE_MBcg/exec";
-const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
+const GAS_ENDPOINT   = "PASTA_TAHAN_OMA_EXEC_URL"; // <-- VAIHDA
+const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h"; // pidä samana GAS:ssa
 const PASSWORD_PLAIN = "sala54N4";
 const ADMIN_USER     = "admin";
 const ADMIN_PASS     = "fatso";
@@ -331,18 +330,21 @@ function initGate(){
     }
     err.style.display='block'; passI.focus(); passI.select?.();
   }
+  // auto-open jos on jo kirjautunut
   try{
-    if(sessionStorage.getItem('b2b_authed')==='1'){ $('#gate').style.display='none'; $('#app').setAttribute('aria-hidden','false'); }
+    if(sessionStorage.getItem('b2b_authed')==='1'){
+      $('#gate').style.display='none';
+      $('#app').setAttribute('aria-hidden','false');
+    }
   }catch(_){}
-
   btn.onclick=tryOpen;
   passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
   nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
 
+  // uloskirjautuminen
   $('#logout').onclick=()=>{
     if(!confirm('Kirjaudutaanko ulos?')) return;
-    try{ sessionStorage.clear(); localStorage.removeItem('b2b_cart'); }catch(_){}
-    cart.clear(); renderCart();
+    sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
     $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
     $('#passInput').value=''; $('#nameInput').value=''; $('#nameInput').focus(); closeCart();
   };
@@ -365,7 +367,7 @@ $('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 async function loadGlobalNote(){
   try{
     const r = await fetch(GAS_ENDPOINT + "?action=getGlobal", { cache: "no-store" });
-    if(!r.ok) throw new Error("net");
+    if(!r.ok) throw 0;
     const j = await r.json();
     const txt = (j && typeof j.note === 'string') ? j.note : "";
     renderGlobalNote(txt);
@@ -395,39 +397,32 @@ function renderGlobalNote(text){
     $('#globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
     $('#globalNoteSave').onclick = async ()=>{
       const newText = ta.value;
-      const ok = await saveGlobalNote(newText);
-      if (ok){ renderGlobalNote(newText); }
-      else { alert('Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.'); }
+      const payload = { action: "setGlobal", note: String(newText||''), secret: GAS_SECRET };
+      const ok = await postJsonWithFallback(payload);
+      if (ok) renderGlobalNote(newText);
+      else alert('Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.');
     };
   }
-}
-/* Tallenna yleisviesti LOMAKKEELLA (ei CORS): */
-async function saveGlobalNote(text){
-  const payload = { action: "setGlobal", note: String(text||''), secret: GAS_SECRET };
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-  return true;
 }
 
 /* ---------- Admin-tekstit (SKU) ---------- */
 async function loadTexts(){
   try{
     const r = await fetch(GAS_ENDPOINT + "?action=getNotes", {cache:'no-store'});
-    if(r.ok){
-      const data = await r.json();
-      if (data && Array.isArray(data.notes)){
-        const m={}; data.notes.forEach(x=>{ if(x && x.sku!=null) m[String(x.sku)]=String(x.note||''); });
-        textMap = m; return;
-      }
+    if(!r.ok) throw 0;
+    const data = await r.json();
+    const m={};
+    if (data && Array.isArray(data.notes)){
+      data.notes.forEach(x=>{ if(x && x.sku!=null) m[String(x.sku)]=String(x.note||''); });
     }
-  }catch(_){}
-  textMap = {};
+    textMap = m;
+  }catch(_){
+    textMap = {};
+  }
 }
-/* Tallenna SKU-note LOMAKKEELLA (ei CORS): */
 async function saveText(sku, text){
   const payload = { action:"setNote", sku:String(sku), note:String(text), secret:GAS_SECRET };
-  postViaHiddenForm(GAS_ENDPOINT, payload);
-  textMap[sku]=String(text);
-  return true;
+  return postJsonWithFallback(payload);
 }
 
 /* ---------- Galleria + lightbox ---------- */
@@ -498,6 +493,7 @@ $('#gallery').addEventListener('click',async e=>{
       if (ok){
         view.textContent = newText;
         edit.style.display='none'; if(editBtn) editBtn.style.display='';
+        textMap[sku]=newText;
       }else{
         alert("Tallennus epäonnistui. Tarkista GAS & SECRET.");
       }
@@ -556,34 +552,45 @@ if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
 if (cartBackdrop) cartBackdrop.onclick = closeCart;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cartPanel.classList.contains('open')) closeCart(); });
 
-/* ---------- Lomake-POST (ei CORS) ---------- */
+/* ---------- GAS POST helperit ---------- */
 function postViaHiddenForm(url, payloadObj) {
   const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = url;
-  form.target = 'gas_iframe';
-  form.style.display = 'none';
-  const input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'data'; // GAS: e.parameter.data (JSON)
-  input.value = JSON.stringify(payloadObj);
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(()=> form.remove(), 1500);
+  form.method = 'POST'; form.action = url; form.target = 'gas_iframe'; form.style.display = 'none';
+  const input = document.createElement('input'); input.type = 'hidden'; input.name = 'data'; input.value = JSON.stringify(payloadObj);
+  form.appendChild(input); document.body.appendChild(form); form.submit(); setTimeout(()=> form.remove(), 1500);
 }
 (function ensureIframe(){
   if(!document.getElementById('gas_iframe')){
-    const ifr=document.createElement('iframe');
-    ifr.name='gas_iframe';
-    ifr.id='gas_iframe';
-    ifr.hidden=true;
-    document.body.appendChild(ifr);
+    const ifr=document.createElement('iframe'); ifr.name='gas_iframe'; ifr.id='gas_iframe'; ifr.hidden=true; document.body.appendChild(ifr);
   }
 })();
 
-/* ---------- Tilauksen lähetys – vain lomakkeella ---------- */
-$('#cartEmail').onclick = () => {
+/** Lähettää JSONilla; jos vastaus ei ole OK*, tekee form-fallbackin.
+    Palauttaa true, jos OK saatiin (tai fallback tehtiin), muuten false. */
+async function postJsonWithFallback(payload){
+  let ok = false, txt = '';
+  try {
+    const res = await fetch(GAS_ENDPOINT, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    txt = (await res.text().catch(()=> '')).trim();
+    const up = txt.toUpperCase();
+    if (up==='OK' || up.startsWith('OK_')) ok = true;
+  } catch (e) {
+    // jatketaan fallbackiin
+  }
+  if (!ok){
+    postViaHiddenForm(GAS_ENDPOINT, payload);
+    // Emme saa vastausta fallbackista, joten palautetaan silti true – pyyntö lähetettiin
+    ok = true;
+  }
+  return ok;
+}
+
+/* ---------- Tilaus ---------- */
+$('#cartEmail').onclick = async () => {
   if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
 
   const items  = [...cart.values()].map(it => ({
@@ -595,10 +602,14 @@ $('#cartEmail').onclick = () => {
   const note   = $('#note').value || "";
 
   const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
-  postViaHiddenForm(GAS_ENDPOINT, payload);
 
-  alert('Tilaus lähetetty!');
-  closeCart(); cart.clear(); renderCart(); $('#note').value='';
+  const ok = await postJsonWithFallback(payload);
+  if (ok){
+    alert('Tilaus lähetetty!');
+    closeCart(); cart.clear(); renderCart(); $('#note').value='';
+  }else{
+    alert('Tilauksen lähetys epäonnistui. Tarkista yhteys.');
+  }
 };
 
 /* ---------- Manifest + kuvat ---------- */
