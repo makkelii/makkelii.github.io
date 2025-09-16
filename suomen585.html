@@ -72,7 +72,6 @@
   }
   figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in }
   figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
-  .sku{ display:none }
 
   /* Admin-muokkaus */
   .note-line{ display:flex; gap:.4rem; align-items:flex-start; margin-top:.1rem; flex-direction:column }
@@ -313,32 +312,30 @@ $('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
 /* ---------- Admin-tekstit ---------- */
 async function loadTexts(){
-  // 1) Moderni muoto: { ok:true, notes:[{sku,note}...] } -> mapiksi
+  // 1) uusi muoto: { ok:true, notes:[{sku,note}...] }
   try{
     const r = await fetch(GAS_ENDPOINT + "?action=getNotes", {cache:'no-store'});
     if(r.ok){
       const data = await r.json();
       if (data && Array.isArray(data.notes)){
-        const m={}; data.notes.forEach(x=>{ m[String(x.sku||'')] = String(x.note||''); });
+        const m={}; data.notes.forEach(x=>{ if(x && x.sku!=null) m[String(x.sku)]=String(x.note||''); });
         textMap = m; return;
       }
     }
   }catch(_){}
-  // 2) Yhteensopivuus: { "SKU1":"note", ... }
+  // 2) yhteensopivuus: { sku:note, ... }
   try{
     const r2 = await fetch(GAS_ENDPOINT + "?action=getTexts", {cache:'no-store'});
     if(r2.ok){
       const data2 = await r2.json();
-      if (data2 && typeof data2 === 'object' && !Array.isArray(data2)){
-        textMap = data2; return;
-      }
+      if (data2 && typeof data2 === 'object' && !Array.isArray(data2)){ textMap = data2; return; }
     }
   }catch(_){}
   textMap = {};
 }
 
 async function saveText(sku, text){
-  // YKSINKERTAISTETTU: käytetään vain sku/note -avaimia
+  // Yksiselitteinen muoto: setNote + sku/note + secret
   const payload = { action:"setNote", sku:String(sku), note:String(text), secret:GAS_SECRET };
 
   try{
@@ -348,22 +345,15 @@ async function saveText(sku, text){
       body: JSON.stringify(payload)
     });
     const t = (await res.text().catch(()=> '')).trim().toUpperCase();
-    if (t === 'OK'){ 
-      textMap[sku]=String(text);
-      return true; 
-    }
+    if (t.startsWith('OK')){ textMap[sku]=String(text); return true; }
   }catch(_){}
 
-  // Fallback: sama payload lomakemuodossa (jos JSON-POST ei syystä toimi)
+  // Fallback: sama lomakkeella
   try{
-    const form = new FormData();
-    form.append('data', JSON.stringify(payload));
-    const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: form });
+    const fd = new FormData(); fd.append('data', JSON.stringify(payload));
+    const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: fd });
     const t2 = (await r2.text().catch(()=> '')).trim().toUpperCase();
-    if (t2 === 'OK'){
-      textMap[sku]=String(text);
-      return true;
-    }
+    if (t2.startsWith('OK')){ textMap[sku]=String(text); return true; }
   }catch(_){}
 
   return false;
@@ -512,8 +502,7 @@ $('#cartEmail').onclick = async () => {
   const items  = [...cart.values()].map(it => ({ name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1) }));
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
-  // HUOM: actionia ei pakko lähettää – GAS tukee tätä
-  const payload = { secret: GAS_SECRET, items, sender, note };
+  const payload = { secret: GAS_SECRET, items, sender, note }; // tilaus toimii jo tällä
 
   try {
     let res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
