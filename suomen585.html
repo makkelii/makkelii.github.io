@@ -55,6 +55,33 @@
   .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
+  /* Yleisviesti */
+  .global-note{
+    background:var(--cardGlass);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:.75rem .9rem;
+    margin:.4rem 0 1rem;
+  }
+  .global-note-view{
+    white-space:pre-wrap;
+    color:var(--ink);
+    font-size:.98rem;
+  }
+  .global-note.empty .global-note-view{ color:var(--muted) }
+  .global-note textarea{
+    width:100%;
+    min-height:84px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:.55rem .65rem;
+    background:#0f1115;
+    color:var(--ink);
+    font-size:.98rem;
+  }
+  .pill{ border:1px solid var(--border); background:var(--card); color:var(--ink); border-radius:999px; padding:.25rem .6rem; cursor:pointer; font-weight:600 }
+  .pill.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
+
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
 
@@ -73,15 +100,14 @@
   figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in }
   figcaption{ margin:.2rem 0 0; font-size:.95rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.4em }
 
-  /* Admin-muokkaus */
+  /* Admin-muokkaus SKU-note */
   .note-line{ display:flex; gap:.4rem; align-items:flex-start; margin-top:.1rem; flex-direction:column }
   .note-text{ width:100%; font-size:.92rem; color:var(--ink); white-space:pre-wrap; word-break:break-word; }
   .note-edit{ display:none; width:100% }
   .note-edit textarea{ width:100%; min-height:70px; border:1px solid var(--border); border-radius:10px; padding:.5rem; background:#0f1115; color:var(--ink) }
   .note-actions{ display:flex; gap:.4rem; margin-top:.3rem }
-  .pill{ border:1px solid var(--border); background:var(--card); color:var(--ink); border-radius:999px; padding:.25rem .6rem; cursor:pointer; font-weight:600 }
-  .pill.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
+  /* Add to cart */
   .addrow{
     margin-top:auto;
     display:grid; gap:.42rem;
@@ -97,6 +123,7 @@
     font-size:1rem; line-height:1.05; white-space:nowrap;
   }
 
+  /* Cart */
   .cart-badge{
     position:fixed; top:12px; right:12px;
     background:var(--accent); color:var(--accent-ink);
@@ -104,7 +131,6 @@
     font-size:1.05rem; font-weight:800;
     z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
   }
-
   .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1000; }
   .cart-backdrop.on{ display:block; }
   body.noscroll{ overflow:hidden; }
@@ -166,10 +192,11 @@
 </style>
 </head>
 <body>
+  <!-- Kirjautumisportti -->
   <div class="gate" id="gate" aria-hidden="false">
     <div class="gate-card">
       <h2>Tilausportaali</h2>
-      <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
+      <input id="nameInput" type="text" placeholder="Nimi / yritys (tai admin)" autocomplete="name" />
       <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
       <button id="passBtn" type="button">Avaa</button>
       <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
@@ -192,6 +219,21 @@
         <div class="cats" id="cats"></div>
       </div>
 
+      <!-- Yleisviesti (näkyy kaikille; admin voi muokata) -->
+      <div id="globalNote" class="global-note">
+        <div class="global-note-view" id="globalNoteView">Ei tiedotetta.</div>
+        <div class="global-note-actions" id="globalNoteActions" style="display:none">
+          <button class="pill" id="globalNoteEdit">Muokkaa</button>
+        </div>
+        <div class="global-note-edit" id="globalNoteEditWrap" style="display:none">
+          <textarea id="globalNoteTextarea" rows="3" placeholder="Kirjoita tiedote…"></textarea>
+          <div class="note-actions" style="margin-top:.35rem;display:flex;gap:.4rem">
+            <button class="pill primary" id="globalNoteSave">Tallenna</button>
+            <button class="pill" id="globalNoteCancel">Peruuta</button>
+          </div>
+        </div>
+      </div>
+
       <div class="spinner" id="spin" style="display:none"></div>
       <div class="gallery" id="gallery" aria-live="polite"></div>
 
@@ -199,6 +241,7 @@
     </section>
   </main>
 
+  <!-- Ostoskori -->
   <aside id="cartPanel" aria-label="Ostoskori">
     <div class="cart-top">
       <div class="cart-title">Ostoskori</div>
@@ -222,6 +265,7 @@
   </aside>
   <div class="cart-backdrop" id="cartBackdrop" aria-hidden="true"></div>
 
+  <!-- Lightbox -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <button class="close" id="closeLb" type="button">Sulje</button>
     <img id="lightImg" alt="">
@@ -229,7 +273,7 @@
 
 <script>
 /* ---------- ASETUKSET ---------- */
-const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbx3Hs1f5XLaTYXBw2IyZ9-6GtTlJK3fJctS3sc-P-87Tthu7xiGmN-v6RyBndAaiqWjLQ/exec";
+const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbxQNubJfiZ7jabt31OO1BmP2pzz2KNaaWxUX8OsZoDqi9u8--BbWVbEwsI2dJxRQvvO/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 const PASSWORD_PLAIN = "sala54N4";
 const ADMIN_USER     = "admin";
@@ -255,6 +299,7 @@ const isAdmin = ()=> (sessionStorage.getItem('b2b_admin')==='1');
 
 /* ---------- Kirjautuminen ---------- */
 function refreshUIAfterAuth(){
+  loadGlobalNote();
   if(allFiles.length){
     renderCats(countsFrom(allFiles));
     showGallery();
@@ -310,9 +355,64 @@ $('#cats').addEventListener('click',e=>{ const b=e.target.closest('.cat-btn'); i
 $('#q').addEventListener('input',()=>showGallery());
 $('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
-/* ---------- Admin-tekstit ---------- */
+/* ---------- Global note ---------- */
+async function loadGlobalNote(){
+  try{
+    const r = await fetch(GAS_ENDPOINT + "?action=getGlobal", { cache: "no-store" });
+    if(!r.ok) throw new Error("net");
+    const j = await r.json();
+    const txt = (j && typeof j.note === 'string') ? j.note : "";
+    renderGlobalNote(txt);
+  }catch(_){
+    renderGlobalNote("");
+  }
+}
+function renderGlobalNote(text){
+  const wrap = $('#globalNote');
+  const view = $('#globalNoteView');
+  const acts = $('#globalNoteActions');
+  const editWrap = $('#globalNoteEditWrap');
+  const ta   = $('#globalNoteTextarea');
+  const isAdm = isAdmin();
+
+  const t = String(text||'').trim();
+  view.textContent = t || "Ei tiedotetta.";
+  wrap.classList.toggle('empty', !t);
+
+  acts.style.display = isAdm ? '' : 'none';
+  editWrap.style.display = 'none';
+  if (isAdm) ta.value = t;
+
+  if (!wrap._bound){
+    wrap._bound = true;
+    $('#globalNoteEdit').onclick = ()=>{ editWrap.style.display=''; acts.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); };
+    $('#globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
+    $('#globalNoteSave').onclick = async ()=>{
+      const newText = ta.value;
+      const ok = await saveGlobalNote(newText);
+      if (ok){ renderGlobalNote(newText); }
+      else { alert('Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.'); }
+    };
+  }
+}
+async function saveGlobalNote(text){
+  const payload = { action: "setGlobal", note: String(text||''), secret: GAS_SECRET };
+  try{
+    const r = await fetch(GAS_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const t = (await r.text().catch(()=> '')).trim().toUpperCase();
+    if (t.startsWith('OK')) return true;
+  }catch(_){}
+  try{
+    const fd = new FormData(); fd.append('data', JSON.stringify(payload));
+    const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: fd });
+    const t2 = (await r2.text().catch(()=> '')).trim().toUpperCase();
+    if (t2.startsWith('OK')) return true;
+  }catch(_){}
+  return false;
+}
+
+/* ---------- Admin-tekstit (SKU) ---------- */
 async function loadTexts(){
-  // 1) uusi muoto: { ok:true, notes:[{sku,note}...] }
   try{
     const r = await fetch(GAS_ENDPOINT + "?action=getNotes", {cache:'no-store'});
     if(r.ok){
@@ -323,7 +423,6 @@ async function loadTexts(){
       }
     }
   }catch(_){}
-  // 2) yhteensopivuus: { sku:note, ... }
   try{
     const r2 = await fetch(GAS_ENDPOINT + "?action=getTexts", {cache:'no-store'});
     if(r2.ok){
@@ -333,29 +432,19 @@ async function loadTexts(){
   }catch(_){}
   textMap = {};
 }
-
 async function saveText(sku, text){
-  // Yksiselitteinen muoto: setNote + sku/note + secret
   const payload = { action:"setNote", sku:String(sku), note:String(text), secret:GAS_SECRET };
-
   try{
-    const res = await fetch(GAS_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
     const t = (await res.text().catch(()=> '')).trim().toUpperCase();
     if (t.startsWith('OK')){ textMap[sku]=String(text); return true; }
   }catch(_){}
-
-  // Fallback: sama lomakkeella
   try{
     const fd = new FormData(); fd.append('data', JSON.stringify(payload));
     const r2 = await fetch(GAS_ENDPOINT, { method:'POST', body: fd });
     const t2 = (await r2.text().catch(()=> '')).trim().toUpperCase();
     if (t2.startsWith('OK')){ textMap[sku]=String(text); return true; }
   }catch(_){}
-
   return false;
 }
 
@@ -502,14 +591,13 @@ $('#cartEmail').onclick = async () => {
   const items  = [...cart.values()].map(it => ({ name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1) }));
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
-  const payload = { secret: GAS_SECRET, items, sender, note }; // tilaus toimii jo tällä
+  const payload = { secret: GAS_SECRET, items, sender, note };
 
   try {
     let res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
     let txt = await res.text().catch(()=> ''); 
     if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
   } catch (_) {}
-  // fallback
   postViaHiddenForm(GAS_ENDPOINT, payload); alert('Lähetetty!');
 };
 
@@ -551,6 +639,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   initGate();
   loadCart();
   await loadFromManifest();
+  await loadGlobalNote();
 });
 </script>
 </body>
