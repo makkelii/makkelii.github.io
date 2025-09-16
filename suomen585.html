@@ -597,10 +597,8 @@ $('#cartEmail').onclick = async () => {
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
 
-  // Lähetä aina action:"order"
   const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
 
-  // 1) JSON-POST
   try {
     const res = await fetch(GAS_ENDPOINT, {
       method:'POST',
@@ -608,16 +606,31 @@ $('#cartEmail').onclick = async () => {
       body: JSON.stringify(payload)
     });
     const txt = (await res.text().catch(()=> '')).trim();
-    if (txt === 'OK') {
+
+    // hyväksy "OK", "ok", tai JSON kuten {"ok":true}
+    let ok = false;
+    if (txt.toUpperCase() === 'OK') ok = true;
+    else {
+      try { const j = JSON.parse(txt); if (j && (j.ok === true || j.status === 'OK')) ok = true; } catch (_){}
+    }
+
+    if (ok) {
       alert('Tilaus lähetetty sähköpostiin!');
       closeCart(); cart.clear(); renderCart(); $('#note').value='';
       return;
-    } else if (txt.startsWith('ERROR')) {
-      console.error('GAS error:', txt);
+    } else {
+      console.warn('GAS vastasi odottamattomasti:', txt);
     }
   } catch (e) {
-    console.warn('JSON-post epäonnistui, kokeillaan lomake-fallbackia', e);
+    console.warn('JSON-POST epäonnistui:', e);
   }
+
+  // Fallback: varmistuslähetys lomakkeella (ei näe vastausta)
+  postViaHiddenForm(GAS_ENDPOINT, payload);
+  alert('Tilaus lähetetty (fallback)!');
+  closeCart(); cart.clear(); renderCart(); $('#note').value='';
+};
+
 
   // 2) Fallback: lomake
   postViaHiddenForm(GAS_ENDPOINT, payload);
