@@ -38,7 +38,6 @@
     display:grid; grid-template-columns:1fr 400px; gap:1.2rem }
   @media (max-width:980px){ .wrap{ grid-template-columns:1fr } }
 
-  /* Työkalupalkki + kategoriat */
   .toolbar{ display:flex; flex-wrap:wrap; gap:.6rem; margin:.6rem 0 1rem }
   .search{ flex:1; min-width:260px; display:flex; gap:.45rem }
   .search input{ flex:1; padding:.6rem .8rem; border:1px solid var(--border); border-radius:10px; background:rgba(15,17,21,.35); color:var(--ink) }
@@ -49,7 +48,6 @@
   .cat-btn{ border:1px solid var(--border); background:rgba(23,25,35,.75); padding:.55rem .9rem; border-radius:999px; cursor:pointer; font-weight:600; color:var(--ink); white-space:nowrap }
   .cat-btn.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink) }
 
-  /* Galleria */
   .gallery{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem }
   @media (max-width:540px){ .gallery{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) } }
 
@@ -67,16 +65,11 @@
   }
   figure img{ max-width:100%; height:auto; display:block; object-fit:contain; border-radius:6px; cursor:zoom-in }
   figcaption{ margin:.2rem 0 0; font-size:1rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-
-  /* Note (kaikille näkyvä) */
   .note-view{ font-size:.92rem; color:var(--muted); white-space:pre-wrap; margin-top:.15rem }
   .note-view.hidden{ display:none }
-
-  /* Admin-muokkaus */
   .noteField{ width:100%; margin:.45rem 0 .35rem; padding:.5rem .6rem; border:1px solid var(--border); border-radius:10px; background:rgba(0,0,0,.2); color:var(--ink) }
   .saveBtn{ border:none; border-radius:9px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer; padding:.5rem .75rem }
 
-  /* Koko | Kpl | Nappi – mobiilissa nappi omalle riville */
   .addrow{
     margin-top:auto; display:grid; gap:.42rem; align-items:center;
     grid-template-columns: 60px 46px 1fr;
@@ -99,7 +92,6 @@
     .addrow button{ grid-area:add }
   }
 
-  /* Ostoskori: liukuva paneeli */
   .cart-badge{
     background:var(--accent); color:var(--accent-ink);
     border-radius:999px; padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
@@ -150,13 +142,11 @@
   .spinner.on{ display:grid }
   .spinner:before{ content:""; width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite }
 
-  /* Lightbox */
   .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:1100; }
   .lightbox.show{ display:flex }
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
 
-  /* Kirjautumisportti – sama tausta */
   .gate{
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
     background:linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)), url("images/bg.webp") center/cover no-repeat;
@@ -202,7 +192,7 @@
       <div style="margin-top:1rem"><a href="index.html" class="btn">← Takaisin</a></div>
     </section>
 
-    <!-- KORI: liukuva paneeli -->
+    <!-- KORI -->
     <aside id="cartPanel" aria-label="Ostoskori">
       <div class="cart-top">
         <div class="cart-title">Ostoskori</div>
@@ -236,9 +226,8 @@
 
 <script>
 /* ---------- ASETUKSET ---------- */
-/* Käytä viimeisintä GAS-osoitettasi */
-const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbzq9LxDMU3L0Hcmsk3H37cG-q_XShKZ32OB75Es_rNqNzRPEliT63gF7Fc14P3hWRjkug/exec";
-const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
+const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbzjQaKRj4K49g3lFAAKRC6Nhwy_OocXngxtjWzpJYvNHJptzf4rLAKOPrsqQJrefsWlcQ/exec";
+const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h"; // sama kuin GAS:ssa
 const PASSWORD_PLAIN = "sala54N4";       // normaali käyttäjä
 const ADMIN_USER     = "admin";
 const ADMIN_PASS     = "fatso";
@@ -251,7 +240,7 @@ const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 let IS_ADMIN = false;
 let allFiles = [];          // { path, name, cat }
 let NOTES   = new Map();    // sku -> note
-let CATS    = [];           // löydetyt kategoriat
+let CATS    = [];
 let currentCat = 'all';
 
 /* ===== Kirjautuminen ===== */
@@ -266,36 +255,28 @@ function initGate(){
     const given = (passI.value||'').trim();
     const name  = sanitize(nameI.value) || 'Tuntematon';
 
-    // Admin
     if (name === ADMIN_USER && given === ADMIN_PASS) {
       IS_ADMIN = true;
       sessionStorage.setItem('b2b_name', 'ADMIN');
       sessionStorage.setItem('b2b_authed', '1');
       sessionStorage.setItem('b2b_admin', '1');
-      openApp();
-      initDataAndRender();
-      return;
+      openApp(); initDataAndRender(); return;
     }
-    // Normaali
     if (given === PASSWORD_PLAIN) {
       IS_ADMIN = false;
       sessionStorage.setItem('b2b_name', name);
       sessionStorage.setItem('b2b_authed', '1');
       sessionStorage.removeItem('b2b_admin');
-      openApp();
-      initDataAndRender();
-    } else {
-      err.style.display='block';
-      passI.focus(); passI.select?.();
+      openApp(); initDataAndRender(); return;
     }
+    err.style.display='block';
+    passI.focus(); passI.select?.();
   }
 
   try{
     if(sessionStorage.getItem('b2b_authed')==='1'){
       IS_ADMIN = sessionStorage.getItem('b2b_admin')==='1';
-      openApp();
-      initDataAndRender();
-      return;
+      openApp(); initDataAndRender(); return;
     }
   }catch(e){}
 
@@ -303,7 +284,6 @@ function initGate(){
   passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
   nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
 
-  // Uloskirjautuminen
   $('#logout').onclick=()=>{
     if(!confirm('Kirjaudutaanko ulos?')) return;
     try{
@@ -315,37 +295,36 @@ function initGate(){
 }
 
 /* ===== Apuja ===== */
-function toNameFromPath(p){ return p.split('/').pop().replace(/\.[^.]+$/,''); } // SKU = tiedostonimi ilman päätettä
+function toNameFromPath(p){ return p.split('/').pop().replace(/\.[^.]+$/,''); }
 function catFromPath(p){ const parts=p.split('/'); return (parts.length>=3? parts[1] : 'Muut'); }
 
-/* ===== Muistiinpanot (kaikille lataus, admin voi tallentaa) ===== */
+/* ===== Muistiinpanot ===== */
+// GAS palauttaa: { ok:true, notes:[ { sku, note }, ... ] }
 async function fetchNotes(){
   try{
-    const r = await fetch(GAS_ENDPOINT+'?action=getnotes',{cache:'no-store'});
-    const j = await r.json();               // { "sku":"note", ... }
+    const r = await fetch(GAS_ENDPOINT+'?action=getNotes',{cache:'no-store'});
+    const j = await r.json();
     NOTES.clear();
-    Object.entries(j).forEach(([sku,note])=> NOTES.set(String(sku), String(note||'')));
-  }catch(e){ /* ei estä sivua */ }
+    const arr = Array.isArray(j.notes) ? j.notes : [];
+    arr.forEach(x => NOTES.set(String(x.sku||''), String(x.note||'')));
+  }catch(e){}
 }
 async function saveAdminNote(sku, value){
-  const payload = { action:'savenote', sku:String(sku), note:String(value), secret:GAS_SECRET };
+  const payload = { action:'setNote', sku:String(sku), note:String(value), secret:GAS_SECRET };
   try{
     const r = await fetch(GAS_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const txt = (await r.text()).trim();
     if (txt === 'OK') return true;
   }catch(e){}
-  // Fallback-lomake (ei jää jumiin jos fetch epäonnistuu)
   postViaHiddenForm(GAS_ENDPOINT, payload);
   return true;
 }
 
 /* ===== Manifesti + kategoriat ===== */
 function buildCategories(files){
-  // poimi toiset polkuosat (images/<TÄMÄ>/...)
   const set = new Set();
   files.forEach(p => set.add(catFromPath(p)));
-  const arr = [...set].sort((a,b)=> a.localeCompare(b,'fi'));
-  CATS = arr;
+  CATS = [...set].sort((a,b)=> a.localeCompare(b,'fi'));
 }
 function renderCats(){
   const wrap = $('#cats'); if(!wrap) return;
@@ -378,9 +357,7 @@ async function loadFromManifest(){
   const manifest=await res.json();
   let files=(manifest.files||[]).filter(p=>/\.(jpg|jpeg|png|gif|webp)$/i.test(p));
   files=[...new Set(files)];
-  // rakenna kategoriat
   buildCategories(files);
-  // muodosta tiedot
   allFiles = files.map(p=>({ path:p, name: toNameFromPath(p), cat: catFromPath(p) }));
 }
 
@@ -391,44 +368,58 @@ async function initDataAndRender(){
   status && (status.style.display='none', status.textContent='');
 
   try{
-    await loadFromManifest();   // kuvalista + kategoriat
-    await fetchNotes();         // kaikkien nähtäväksi
+    await loadFromManifest();
+    await fetchNotes();
     renderCats();
     showGallery();
   }catch(e){
-    if(status){ status.textContent='Kuvien haku epäonnistui. Tarkista, että images/manifest.json on olemassa ja julkinen.'; status.style.display='block'; }
+    if(status){ status.textContent='Kuvien haku epäonnistui. Tarkista images/manifest.json.'; status.style.display='block'; }
   }finally{
     spin && (spin.classList.remove('on'));
   }
 }
 
-/* ===== Galleria ===== */
+/* ===== Galleria (XSS-turvallinen render) ===== */
 function addFigure(file){
-  const {path, name} = file; // name = SKU
+  const {path, name} = file;
   const note = NOTES.get(name) || '';
 
   const fig=document.createElement('figure');
   fig.dataset.name=name; fig.dataset.path=path;
 
-  fig.innerHTML=`
-    <div class="img-wrap"><img src="${path}" alt="${name}" loading="lazy" /></div>
-    <figcaption title="${name}">${name}</figcaption>
+  const imgWrap=document.createElement('div'); imgWrap.className='img-wrap';
+  const img=document.createElement('img'); img.src=path; img.alt=name; img.loading='lazy';
+  imgWrap.appendChild(img);
 
-    <!-- kaikille näkyvä teksti -->
-    <div class="note-view ${note ? '' : 'hidden'}" data-note-view>${note || ''}</div>
+  const cap=document.createElement('figcaption'); cap.title=name; cap.textContent=name;
 
-    ${IS_ADMIN ? `
-      <!-- adminille muokkaus -->
-      <textarea class="noteField" rows="2" data-note-edit placeholder="Kuvaus / muistiinpano…">${note}</textarea>
-      <button class="saveBtn" type="button" data-save>Tallenna</button>
-    ` : ''}
+  const noteView=document.createElement('div');
+  noteView.className = 'note-view' + (note ? '' : ' hidden');
+  noteView.dataset.noteView = '';
+  noteView.textContent = note;
 
-    <div class="addrow" style="margin-top:.5rem">
-      <input type="text" class="size" placeholder="Koko" />
-      <input type="number" class="qty" min="1" value="1" />
-      <button class="add" type="button">Lisää koriin</button>
-    </div>`;
+  fig.appendChild(imgWrap);
+  fig.appendChild(cap);
+  fig.appendChild(noteView);
 
+  if (IS_ADMIN){
+    const ta=document.createElement('textarea');
+    ta.className='noteField'; ta.rows=2; ta.dataset.noteEdit=''; ta.placeholder='Kuvaus / muistiinpano…'; ta.value=note;
+
+    const save=document.createElement('button');
+    save.className='saveBtn'; save.type='button'; save.dataset.save=''; save.textContent='Tallenna';
+
+    fig.appendChild(ta);
+    fig.appendChild(save);
+  }
+
+  const add=document.createElement('div'); add.className='addrow'; add.style.marginTop='.5rem';
+  const sizeI=document.createElement('input'); sizeI.type='text'; sizeI.className='size'; sizeI.placeholder='Koko';
+  const qtyI=document.createElement('input'); qtyI.type='number'; qtyI.className='qty'; qtyI.min='1'; qtyI.value='1';
+  const btn=document.createElement('button'); btn.className='add'; btn.type='button'; btn.textContent='Lisää koriin';
+  add.append(sizeI, qtyI, btn);
+
+  fig.appendChild(add);
   $('#gallery').appendChild(fig);
 }
 
@@ -456,7 +447,6 @@ function showGallery(){
 $('#gallery').addEventListener('click',async (e)=>{
   const fig=e.target.closest('figure'); if(!fig) return;
 
-  // Lisää koriin
   if(e.target.classList.contains('add')){
     const size=(fig.querySelector('.size')||{}).value||'';
     const qty =Math.max(1,parseInt((fig.querySelector('.qty')||{}).value)||1);
@@ -464,7 +454,6 @@ $('#gallery').addEventListener('click',async (e)=>{
     return;
   }
 
-  // Admin tallenna
   if(e.target.matches('[data-save]') && IS_ADMIN){
     const sku  = fig.dataset.name;
     const ta   = fig.querySelector('[data-note-edit]');
@@ -483,7 +472,6 @@ $('#gallery').addEventListener('click',async (e)=>{
     return;
   }
 
-  // Lightbox
   const img=e.target.closest('img'); if(img){
     $('#lightImg').src=img.src;
     $('#lightbox').classList.add('show');
@@ -551,7 +539,7 @@ function postViaHiddenForm(url, payloadObj) {
   form.style.display = 'none';
   const input = document.createElement('input');
   input.type = 'hidden';
-  input.name = 'data'; // GAS: e.parameter.data (JSON-string)
+  input.name = 'data';
   input.value = JSON.stringify(payloadObj);
   form.appendChild(input);
   document.body.appendChild(form);
@@ -572,7 +560,7 @@ $('#cartEmail').onclick = async () => {
   const items  = [...cart.values()].map(it => ({ name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1) }));
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
-  const payload = { secret: GAS_SECRET, items, sender, note };
+  const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
 
   try {
     let res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
