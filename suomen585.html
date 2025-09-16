@@ -588,17 +588,41 @@ function postViaHiddenForm(url, payloadObj) {
 })();
 $('#cartEmail').onclick = async () => {
   if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
-  const items  = [...cart.values()].map(it => ({ name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1) }));
+
+  const items  = [...cart.values()].map(it => ({
+    name: it.name,
+    size: it.size || "",
+    qty:  Math.max(1, parseInt(it.qty)||1)
+  }));
   const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
   const note   = $('#note').value || "";
-  const payload = { secret: GAS_SECRET, items, sender, note };
 
+  // Lähetä aina action:"order"
+  const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
+
+  // 1) JSON-POST
   try {
-    let res = await fetch(GAS_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
-    let txt = await res.text().catch(()=> ''); 
-    if (txt && txt.trim()==='OK') { alert('Lähetetty!'); return; }
-  } catch (_) {}
-  postViaHiddenForm(GAS_ENDPOINT, payload); alert('Lähetetty!');
+    const res = await fetch(GAS_ENDPOINT, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const txt = (await res.text().catch(()=> '')).trim();
+    if (txt === 'OK') {
+      alert('Tilaus lähetetty sähköpostiin!');
+      closeCart(); cart.clear(); renderCart(); $('#note').value='';
+      return;
+    } else if (txt.startsWith('ERROR')) {
+      console.error('GAS error:', txt);
+    }
+  } catch (e) {
+    console.warn('JSON-post epäonnistui, kokeillaan lomake-fallbackia', e);
+  }
+
+  // 2) Fallback: lomake
+  postViaHiddenForm(GAS_ENDPOINT, payload);
+  alert('Tilaus lähetetty (fallback)!');
+  closeCart(); cart.clear(); renderCart(); $('#note').value='';
 };
 
 /* ---------- Manifest + kuvat ---------- */
