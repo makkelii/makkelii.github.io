@@ -303,7 +303,6 @@ function initGate(){
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
 
-/* Näytä vain ei-tyhjät kategoriat ja korjaa currentCat tarvittaessa */
 function renderCats(counts){
   const wrap = $('#cats');
   wrap.innerHTML = '';
@@ -327,7 +326,6 @@ function renderCats(counts){
   visible.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
 }
 
-/* Varotoimi – älä vaihda piilokategoriaan */
 $('#cats').addEventListener('click',e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
   const key = b.dataset.key;
@@ -516,18 +514,20 @@ $('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#cl
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
 /* ---------- Ostoskori ---------- */
-/* MUUTETTU: erottele avaimessa myös koko */
+/* Avain erottaa nimen ja koon: filename||size */
 let cart = new Map();
 const cartEl = $('#cart'), cartCountEl = $('#cartCount');
 
-const normSize = s => (String(s||'').trim().toLowerCase());        // normalisoitu koko avainta varten
+const normSize = s => (String(s||'').trim().toLowerCase());
 const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
 
 function renderCart(){
   cartEl.innerHTML='';
   for(const [key,item] of cart){
+    const niceName = toTitle(String(item.name).replace(/\.[^.]+$/,'')); // ilman .jpg
+    const label = item.size ? `${niceName} — ${item.size}` : niceName;  // <<< NIMI + KOKO
     const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=key;
-    row.innerHTML=`<div title="${item.name}">${item.name}</div>
+    row.innerHTML=`<div title="${item.name}">${label}</div>
       <input class="cart-input size" type="text" value="${(item.size||'').replace(/"/g,'&quot;')}" placeholder="Koko" />
       <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
       <button class="rm" title="Poista" type="button">✕</button>`;
@@ -537,7 +537,6 @@ function renderCart(){
   localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()]));
 }
 
-/* MUUTETTU: sama tuote eri koolla -> eri avain */
 function addToCart(filename,size,qty){
   const key = makeKey(filename, size);
   const it  = cart.get(key) || {name:filename,size:size||'',qty:0};
@@ -555,7 +554,6 @@ function loadCart(){
   }catch{}
 }
 
-/* MUUTETTU: jos käyttäjä muuttaa kokoa korissa, siirrä rivin avain */
 cartEl.addEventListener('input',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
   const oldKey=row.dataset.key; const it=cart.get(oldKey); if(!it) return;
@@ -567,7 +565,6 @@ cartEl.addEventListener('input',e=>{
     if (newKey !== oldKey){
       cart.delete(oldKey);
       if (cart.has(newKey)){
-        // jos sama tuote ja koko on jo korissa, kasaa määrät
         const tgt = cart.get(newKey);
         tgt.qty = Math.max(1,parseInt(tgt.qty)||1) + Math.max(1,parseInt(it.qty)||1);
         cart.set(newKey, tgt);
