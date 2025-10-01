@@ -114,8 +114,9 @@
   .btn.ghost{ background:transparent; color:var(--muted) }
 
   .cart-items{ max-height:calc(100dvh - 260px); overflow:auto; padding:.2rem }
+  /* Kolme saraketta: Nimi | Kpl | Poista */
   .cart-row{
-    display:grid; grid-template-columns:1fr 90px 60px 34px; gap:.6rem; align-items:center;
+    display:grid; grid-template-columns:1fr 80px 34px; gap:.6rem; align-items:center;
     padding:.35rem 0; border-bottom:1px dashed var(--border)
   }
   .cart-row:last-child{ border-bottom:none }
@@ -473,9 +474,17 @@ function showGallery(){
 $('#gallery').addEventListener('click',async e=>{
   const fig=e.target.closest('figure'); if(!fig) return;
   if(e.target.classList.contains('add')){
-    const size=fig.querySelector('.size').value.trim();
-    const qty=Math.max(1,parseInt(fig.querySelector('.qty').value)||1);
-    addToCart(fig.dataset.file,size,qty); return;
+    const sizeI = fig.querySelector('.size');
+    const qtyI  = fig.querySelector('.qty');
+    const size  = (sizeI.value||'').trim();
+    const qty   = Math.max(1,parseInt(qtyI.value)||1);
+
+    addToCart(fig.dataset.file,size,qty);
+
+    /* NOLLAUS LISÄYKSEN JÄLKEEN */
+    sizeI.value = '';
+    qtyI.value  = '1';
+    return;
   }
   if (e.target.dataset.act){
     const line = e.target.closest('.note-line');
@@ -525,10 +534,9 @@ function renderCart(){
   cartEl.innerHTML='';
   for(const [key,item] of cart){
     const niceName = toTitle(String(item.name).replace(/\.[^.]+$/,'')); // ilman .jpg
-    const label = item.size ? `${niceName} — ${item.size}` : niceName;  // <<< NIMI + KOKO
+    const label = item.size ? `${niceName} — ${item.size}` : niceName;  // NIMI + KOKO
     const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=key;
     row.innerHTML=`<div title="${item.name}">${label}</div>
-      <input class="cart-input size" type="text" value="${(item.size||'').replace(/"/g,'&quot;')}" placeholder="Koko" />
       <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
       <button class="rm" title="Poista" type="button">✕</button>`;
     cartEl.appendChild(row);
@@ -556,30 +564,11 @@ function loadCart(){
 
 cartEl.addEventListener('input',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
-  const oldKey=row.dataset.key; const it=cart.get(oldKey); if(!it) return;
-
-  if(e.target.classList.contains('size')){
-    const newSize = e.target.value;
-    const newKey  = makeKey(it.name, newSize);
-    it.size = newSize;
-    if (newKey !== oldKey){
-      cart.delete(oldKey);
-      if (cart.has(newKey)){
-        const tgt = cart.get(newKey);
-        tgt.qty = Math.max(1,parseInt(tgt.qty)||1) + Math.max(1,parseInt(it.qty)||1);
-        cart.set(newKey, tgt);
-      } else {
-        cart.set(newKey, it);
-      }
-      row.dataset.key = newKey;
-    } else {
-      cart.set(oldKey, it);
-    }
-  }
+  const key=row.dataset.key; const it=cart.get(key); if(!it) return;
 
   if(e.target.classList.contains('qty')){
     it.qty=Math.max(1,parseInt(e.target.value)||1);
-    cart.set(oldKey,it);
+    cart.set(key,it);
   }
 
   renderCart();
