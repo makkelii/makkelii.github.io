@@ -303,13 +303,46 @@ function initGate(){
 /* ---------- Kategoriat & haku ---------- */
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
+
+/* MUUTOS 1: Näytä vain ei-tyhjät kategoriat ja korjaa currentCat tarvittaessa */
 function renderCats(counts){
-  const wrap=$('#cats'); wrap.innerHTML='';
-  const total=Object.values(counts).reduce((a,b)=>a+b,0);
-  const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
-  wrap.appendChild(mk('all','Kaikki',total)); CATS.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
+  const wrap = $('#cats');
+  wrap.innerHTML = '';
+
+  const total = Object.values(counts).reduce((a,b)=>a+b,0);
+  const visible = CATS.filter(c => (counts[c.key]||0) > 0);
+
+  if (currentCat !== 'all' && (!counts[currentCat] || counts[currentCat] === 0)) {
+    currentCat = 'all';
+  }
+
+  const mk=(k,l,c)=>{
+    const b=document.createElement('button');
+    b.className='cat-btn'+(k===currentCat?' active':'');
+    b.dataset.key=k;
+    b.textContent=`${l} (${c})`;
+    return b;
+  };
+
+  wrap.appendChild(mk('all','Kaikki',total));
+  visible.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
 }
-$('#cats').addEventListener('click',e=>{ const b=e.target.closest('.cat-btn'); if(!b) return; currentCat=b.dataset.key; $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b)); showGallery(); });
+
+/* MUUTOS 2: Varotoimi – älä vaihda piilokategoriaan */
+$('#cats').addEventListener('click',e=>{
+  const b = e.target.closest('.cat-btn'); if(!b) return;
+  const key = b.dataset.key;
+
+  if (key !== 'all') {
+    const cntMap = countsFrom(allFiles);
+    if (!cntMap[key]) return;
+  }
+
+  currentCat = key;
+  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+  showGallery();
+});
+
 $('#q').addEventListener('input',()=>showGallery());
 $('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
@@ -368,7 +401,6 @@ async function saveGlobalNote(text){
     const {ok,text:t} = await fetchTxt(GAS_ENDPOINT, { method:'POST', body: fd });
     const up = (t||'').trim().toUpperCase();
     if (ok && up.startsWith('OK')) return true;
-    // hyväksy myös JSON { ok:true }
     try{ const j=JSON.parse(t||'{}'); if (j && j.ok) return true; }catch(_){}
   }catch(_){}
   return false;
@@ -556,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Tilaus lähetetty!');
         closeCart(); cart.clear(); renderCart(); document.getElementById('note').value='';
       } else {
-        // näytä GAS-virhe selkeästi
         let msg = (text||'').trim();
         try{ const j=JSON.parse(text||'{}'); if(j && (j.error||j.mailStatus)){ msg = JSON.stringify(j); } }catch(_){}
         alert('Lähetys epäonnistui ('+status+'): ' + (msg||'ei vastausta'));
@@ -590,9 +621,17 @@ async function loadFromManifest(){
     const catKeys=new Set(CATS.map(c=>c.key));
     allFiles=allFiles.filter(x=>catKeys.has(x.cat));
 
-    renderCats(countsFrom(allFiles));
+    const cnt = countsFrom(allFiles);
+    renderCats(cnt);
+
     await loadTexts();
     showGallery();
+
+    /* MUUTOS 3 (varmistus): jos currentCat on tyhjä, palauta 'all' */
+    if (currentCat !== 'all' && (!cnt[currentCat] || cnt[currentCat] === 0)) {
+      currentCat = 'all';
+      renderCats(cnt);
+    }
   }catch(e){
     // näytetään vain hiljaa galleriavirheet
   }
