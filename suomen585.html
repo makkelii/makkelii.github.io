@@ -213,14 +213,12 @@
 
 <script>
 /* ---------- ASETUKSET ---------- */
-/* Jos sinulla on käytössä eri GAS deploy, vaihda vain tämä: */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbz_0avqZOhQsteBeJ7ZLJqbunfmMPp4WTPZItPOe78XaAw1VFnVtaDkzFNwKTwXt2cr/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 
 const PASSWORD_PLAIN = "sala54N4";
 const ADMIN_USER     = "admin";
 const ADMIN_PASS     = "fatso";
-/* -------------------------------- */
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
@@ -233,7 +231,7 @@ const CATS = [
   { key: "Sormukset",       label: "Sormukset" },
   { key: "Ranneketjut",     label: "Ranneketjut" },
   { key: "Kaulaketjut",     label: "Kaulaketjut" },
-  { key: "Rocks Steel",       label: "Rocks Steel" },
+  { key: "Rocks Steel",     label: "Rocks Steel" },
   { key: "Riipukset",       label: "Riipukset" },
   { key: "Puukorut",        label: "Puukorut" },
   { key: "Muut",            label: "Muut" }, 
@@ -305,7 +303,7 @@ function initGate(){
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
 
-/* MUUTOS 1: Näytä vain ei-tyhjät kategoriat ja korjaa currentCat tarvittaessa */
+/* Näytä vain ei-tyhjät kategoriat ja korjaa currentCat tarvittaessa */
 function renderCats(counts){
   const wrap = $('#cats');
   wrap.innerHTML = '';
@@ -329,7 +327,7 @@ function renderCats(counts){
   visible.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
 }
 
-/* MUUTOS 2: Varotoimi – älä vaihda piilokategoriaan */
+/* Varotoimi – älä vaihda piilokategoriaan */
 $('#cats').addEventListener('click',e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
   const key = b.dataset.key;
@@ -518,12 +516,18 @@ $('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#cl
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
 /* ---------- Ostoskori ---------- */
-let cart=new Map(); const cartEl=$('#cart'), cartCountEl=$('#cartCount');
+/* MUUTETTU: erottele avaimessa myös koko */
+let cart = new Map();
+const cartEl = $('#cart'), cartCountEl = $('#cartCount');
+
+const normSize = s => (String(s||'').trim().toLowerCase());        // normalisoitu koko avainta varten
+const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
+
 function renderCart(){
   cartEl.innerHTML='';
-  for(const [name,item] of cart){
-    const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=name;
-    row.innerHTML=`<div title="${name}">${name}</div>
+  for(const [key,item] of cart){
+    const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=key;
+    row.innerHTML=`<div title="${item.name}">${item.name}</div>
       <input class="cart-input size" type="text" value="${(item.size||'').replace(/"/g,'&quot;')}" placeholder="Koko" />
       <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
       <button class="rm" title="Poista" type="button">✕</button>`;
@@ -532,21 +536,63 @@ function renderCart(){
   cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
   localStorage.setItem('b2b_cart', JSON.stringify([...cart.entries()]));
 }
+
+/* MUUTETTU: sama tuote eri koolla -> eri avain */
 function addToCart(filename,size,qty){
-  const it=cart.get(filename)||{name:filename,size:'',qty:0};
-  it.size=size||it.size; it.qty=Math.max(0,parseInt(it.qty)||0)+Math.max(1,qty||1);
-  cart.set(filename,it); renderCart();
+  const key = makeKey(filename, size);
+  const it  = cart.get(key) || {name:filename,size:size||'',qty:0};
+  it.size = size || it.size;
+  it.qty  = Math.max(0,parseInt(it.qty)||0) + Math.max(1,qty||1);
+  cart.set(key,it);
+  renderCart();
 }
-function loadCart(){ try{ const raw=localStorage.getItem('b2b_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch{} }
+
+function loadCart(){
+  try{
+    const raw=localStorage.getItem('b2b_cart'); if(!raw) return;
+    cart=new Map(JSON.parse(raw));
+    renderCart();
+  }catch{}
+}
+
+/* MUUTETTU: jos käyttäjä muuttaa kokoa korissa, siirrä rivin avain */
 cartEl.addEventListener('input',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
-  const key=row.dataset.key; const it=cart.get(key); if(!it) return;
-  if(e.target.classList.contains('size')) it.size=e.target.value;
-  if(e.target.classList.contains('qty'))  it.qty=Math.max(1,parseInt(e.target.value)||1);
-  cart.set(key,it); renderCart();
+  const oldKey=row.dataset.key; const it=cart.get(oldKey); if(!it) return;
+
+  if(e.target.classList.contains('size')){
+    const newSize = e.target.value;
+    const newKey  = makeKey(it.name, newSize);
+    it.size = newSize;
+    if (newKey !== oldKey){
+      cart.delete(oldKey);
+      if (cart.has(newKey)){
+        // jos sama tuote ja koko on jo korissa, kasaa määrät
+        const tgt = cart.get(newKey);
+        tgt.qty = Math.max(1,parseInt(tgt.qty)||1) + Math.max(1,parseInt(it.qty)||1);
+        cart.set(newKey, tgt);
+      } else {
+        cart.set(newKey, it);
+      }
+      row.dataset.key = newKey;
+    } else {
+      cart.set(oldKey, it);
+    }
+  }
+
+  if(e.target.classList.contains('qty')){
+    it.qty=Math.max(1,parseInt(e.target.value)||1);
+    cart.set(oldKey,it);
+  }
+
+  renderCart();
 });
-cartEl.addEventListener('click',e=>{ const row=e.target.closest('.cart-row'); if(!row) return;
-  if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
+
+cartEl.addEventListener('click',e=>{
+  const row=e.target.closest('.cart-row'); if(!row) return;
+  if(e.target.classList.contains('rm')){
+    cart.delete(row.dataset.key); renderCart();
+  }
 });
 $('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
 
@@ -628,13 +674,12 @@ async function loadFromManifest(){
     await loadTexts();
     showGallery();
 
-    /* MUUTOS 3 (varmistus): jos currentCat on tyhjä, palauta 'all' */
     if (currentCat !== 'all' && (!cnt[currentCat] || cnt[currentCat] === 0)) {
       currentCat = 'all';
       renderCats(cnt);
     }
   }catch(e){
-    // näytetään vain hiljaa galleriavirheet
+    // hiljainen galleriavirhe
   }
 }
 
