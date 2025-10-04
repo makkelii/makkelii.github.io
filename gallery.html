@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Kuvagalleria – Suomen 585 Oy</title>
+<title data-i18n="meta.title">Kuvagalleria – Suomen 585 Oy</title>
 
 <link rel="icon" href="/favicon.ico" sizes="any">
 <meta name="theme-color" content="#1f2937">
@@ -22,6 +22,14 @@
     background:var(--bg) url("images/bg.webp") center/cover fixed no-repeat;
     overflow-x:hidden;
   }
+
+  .lang{
+    position:fixed; top:.6rem; right:.6rem; z-index:2000;
+    background:rgba(31,41,55,.92); border:1px solid var(--border); border-radius:10px;
+    display:flex; gap:.25rem; padding:.25rem; backdrop-filter:saturate(120%) blur(6px);
+  }
+  .lang button{ border:none; background:transparent; color:var(--ink); padding:.45rem .55rem; border-radius:8px; cursor:pointer; font-weight:700 }
+  .lang button.active{ background:var(--accent); color:var(--accent-ink) }
 
   header{
     background:rgba(31,41,55,.92);
@@ -66,16 +74,24 @@
 </style>
 </head>
 <body>
+  <!-- Kielivalitsin -->
+  <nav class="lang" aria-label="Language">
+    <button data-lang="fi" aria-label="Suomi">FI</button>
+    <button data-lang="en" aria-label="English">EN</button>
+    <button data-lang="sv" aria-label="Svenska">SV</button>
+    <button data-lang="de" aria-label="Deutsch">DE</button>
+  </nav>
+
   <header>
-    <h1>Kuvagalleria</h1>
+    <h1 data-i18n="hero.title">Kuvagalleria</h1>
   </header>
 
   <main class="wrap">
     <section>
       <div class="toolbar">
         <div class="search">
-          <input id="q" type="search" placeholder="Hae nimellä tai SKU:lla…" />
-          <button id="clear" type="button">Tyhjennä</button>
+          <input id="q" type="search" data-i18n-attr="placeholder:search.placeholder" placeholder="Hae nimellä tai SKU:lla…" />
+          <button id="clear" type="button" data-i18n="search.clear">Tyhjennä</button>
         </div>
         <div class="cats" id="cats"></div>
       </div>
@@ -83,53 +99,69 @@
       <div class="gallery" id="gallery" aria-live="polite"></div>
 
       <div style="margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap">
-        <a href="index.html" class="btn ghost">← Etusivulle</a>
-        <a href="suomen585.html" class="btn">Avaa tilausportaali</a>
+        <a href="index.html" class="btn ghost" data-i18n="nav.home">← Etusivulle</a>
+        <a href="suomen585.html" class="btn" data-i18n="nav.portal">Avaa tilausportaali</a>
       </div>
     </section>
   </main>
 
   <!-- Lightbox -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="close" id="closeLb" type="button">Sulje</button>
+    <button class="close" id="closeLb" type="button" data-i18n="lightbox.close">Sulje</button>
     <img id="lightImg" alt="">
   </div>
 
 <script>
-/* --- Sama kategoriajoukko kuin tilaussivulla --- */
-const CATS = [
-  { key: "Magneetit",       label: "Magneetit" },
-  { key: "Lappimagneetit",  label: "Lappimagneetit" },
-  { key: "Sormukset",       label: "Sormukset" },
-  { key: "Ranneketjut",     label: "Ranneketjut" },
-  { key: "Kaulaketjut",     label: "Kaulaketjut" },
-  { key: "Rocks Steel",     label: "Rocks Steel" },
-  { key: "Riipukset",       label: "Riipukset" },
-  { key: "Seiðr",           label: "Seiðr" },
-  { key: "Puukorut",        label: "Puukorut" },
-  { key: "Muut",            label: "Muut" }, 
-  { key: "Hopeakorut",      label: "Hopeakorut" },
-  { key: "Hiuskorut",       label: "Hiuskorut" },
-  { key: "Kellot",          label: "Kellot" }
-];
+/* --- i18n --- */
+const translations = {
+  fi:{ meta:{title:"Kuvagalleria – Suomen 585 Oy"}, hero:{title:"Kuvagalleria"}, search:{placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä"}, nav:{home:"← Etusivulle", portal:"Avaa tilausportaali"}, lightbox:{close:"Sulje"}, cats:{all:"Kaikki"},
+       catsLabels:{"Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot"} },
+  en:{ meta:{title:"Image Gallery – Suomen 585 Oy"}, hero:{title:"Image Gallery"}, search:{placeholder:"Search by name or SKU…", clear:"Clear"}, nav:{home:"← Home", portal:"Open ordering portal"}, lightbox:{close:"Close"}, cats:{all:"All"},
+       catsLabels:{"Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Watches"} },
+  sv:{ meta:{title:"Bildgalleri – Suomen 585 Oy"}, hero:{title:"Bildgalleri"}, search:{placeholder:"Sök på namn eller SKU…", clear:"Rensa"}, nav:{home:"← Startsida", portal:"Öppna beställningsportalen"}, lightbox:{close:"Stäng"}, cats:{all:"Alla"},
+       catsLabels:{"Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor"} },
+  de:{ meta:{title:"Bildergalerie – Suomen 585 Oy"}, hero:{title:"Bildergalerie"}, search:{placeholder:"Nach Name oder SKU suchen…", clear:"Leeren"}, nav:{home:"← Startseite", portal:"Zum Bestellportal"}, lightbox:{close:"Schließen"}, cats:{all:"Alle"},
+       catsLabels:{"Magneetit":"Magnete","Lappimagneetit":"Lappland-Magnete","Sormukset":"Ringe","Ranneketjut":"Armbänder","Kaulaketjut":"Halsketten","Rocks Steel":"Rocks Steel","Riipukset":"Anhänger","Seiðr":"Seiðr","Puukorut":"Holzschmuck","Muut":"Sonstiges","Hopeakorut":"Silberschmuck","Hiuskorut":"Haaraccessoires","Kellot":"Uhren"} }
+};
+const DEFAULT_LANG='fi';
+const $ = s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
-const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+function getLang(){ return localStorage.getItem('lang') || (navigator.language||'fi').slice(0,2).replace(/^(en|sv|de)$/,'$1') || DEFAULT_LANG; }
+function t(key, lang){ const dict=translations[lang]||translations[DEFAULT_LANG]; return key.split('.').reduce((o,k)=>o&&o[k], dict); }
+function setLang(lang){
+  $$('[data-i18n]').forEach(el=>{ const val=t(el.getAttribute('data-i18n'), lang); if(typeof val==='string') el.textContent=val; });
+  $$('[data-i18n-attr]').forEach(el=>{
+    el.getAttribute('data-i18n-attr').split(',').map(s=>s.trim()).forEach(p=>{
+      const [attr, key] = p.split(':'); const val = t(key, lang); if(typeof val==='string') el.setAttribute(attr, val);
+    });
+  });
+  const titleT=t('meta.title', lang); if(titleT) document.title=titleT;
+  renderCats(countsFrom(allFiles), lang);
+  $$('.lang button').forEach(b=> b.classList.toggle('active', b.dataset.lang===lang));
+  localStorage.setItem('lang', lang); document.documentElement.lang=lang;
+}
+$$('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> setLang(b.dataset.lang)));
+
+/* --- Sama kategoriajärjestys kuin tilaussivulla --- */
+const CATS_ORDER = ["Magneetit","Lappimagneetit","Sormukset","Ranneketjut","Kaulaketjut","Rocks Steel","Riipukset","Seiðr","Puukorut","Muut","Hopeakorut","Hiuskorut","Kellot"];
+
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
 
 let currentCat='all', allFiles=[];
 
 /* --- Kategoriat & haku (tyhjät pois) --- */
-function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
-function renderCats(counts){
+function countsFrom(list){ const o=Object.fromEntries(CATS_ORDER.map(k=>[k,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
+function renderCats(counts, lang){
   const wrap = $('#cats'); wrap.innerHTML='';
   const total = Object.values(counts).reduce((a,b)=>a+b,0);
-  const visible = CATS.filter(c => (counts[c.key]||0) > 0);
+  const visible = CATS_ORDER.filter(k => (counts[k]||0) > 0);
 
   if (currentCat !== 'all' && (!counts[currentCat] || counts[currentCat] === 0)) currentCat = 'all';
 
+  const labels = translations[lang]?.catsLabels || translations[DEFAULT_LANG].catsLabels;
   const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
-  wrap.appendChild(mk('all','Kaikki',total));
-  visible.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
+  wrap.appendChild(mk('all', t('cats.all', lang), total));
+  visible.forEach(key=> wrap.appendChild(mk(key, labels[key]||key, counts[key]||0)));
 }
 $('#cats').addEventListener('click',e=>{
   const b=e.target.closest('.cat-btn'); if(!b) return;
@@ -188,11 +220,11 @@ async function loadFromManifest(){
     const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
     allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
-    const catKeys=new Set(CATS.map(c=>c.key));
+    const catKeys=new Set(CATS_ORDER);
     allFiles=allFiles.filter(x=>catKeys.has(x.cat));
 
     const cnt = countsFrom(allFiles);
-    renderCats(cnt);
+    renderCats(cnt, getLang());
     showGallery();
   }catch(e){
     // hiljainen galleriavirhe
@@ -200,7 +232,11 @@ async function loadFromManifest(){
 }
 
 /* --- init --- */
-window.addEventListener('DOMContentLoaded', loadFromManifest);
+window.addEventListener('DOMContentLoaded', ()=>{
+  $$('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> setLang(b.dataset.lang)));
+  setLang(getLang());
+  loadFromManifest();
+});
 </script>
 </body>
 </html>
