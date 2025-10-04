@@ -23,7 +23,7 @@
     overflow-x:hidden;
   }
 
-  /* Kielivalitsin siirretty hieman vasemmalle, ettei osu koriin */
+  /* Kielivalitsin – siirretty hieman vasemmalle, ei osu kori-badgeteen */
   .lang{
     position:fixed; top:.6rem; right:72px; z-index:2000;
     background:rgba(31,41,55,.92); border:1px solid var(--border); border-radius:10px;
@@ -98,23 +98,17 @@
     font-weight:800; cursor:pointer; padding:.55rem .6rem; width:100%; font-size:1rem; line-height:1.05; white-space:nowrap;
   }
 
-  /* Ostoskorin badge: alkuperäinen ulkoasu + korkea z-index + yläkulma */
+  /* Ostoskorimerkki */
   .cart-badge{
     position:fixed; top:12px; right:12px;
     background:var(--accent); color:var(--accent-ink);
     border-radius:999px; padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
-    z-index:2101; /* yli .lang (2000) */
+    z-index:2101; /* yli .lang (2000), mutta alle paneelin */
     box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
   }
 
-  /* Varmistus: hyvin kapeilla näytöillä siirrä kielivalitsin hiukan alemmas */
-  @media (max-width:420px){
-    .lang{ top:3.6rem; right:.6rem; }
-  }
-
- /* ennen: 1000 ja 1001 */
-.cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:3999; }
-#cartPanel{ position:fixed; top:0; right:0; /* … */ z-index:4000; }
+  /* Backdrop ja paneeli – paneeli aina ylimpänä */
+  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:4000; }
   .cart-backdrop.on{ display:block; }
   body.noscroll{ overflow:hidden; }
 
@@ -123,9 +117,17 @@
     background:rgba(23,25,35,.96); border-left:1px solid var(--border);
     padding:1rem; border-radius:0; box-shadow:-6px 0 24px rgba(0,0,0,.35);
     transform:translateX(100%); transition:transform .25s ease;
-    z-index:1001; backdrop-filter: blur(6px);
+    z-index:4001; /* yli backdropin, kielivalitsimen ja bagden */
+    backdrop-filter: blur(6px);
   }
   #cartPanel.open{ transform:translateX(0); }
+
+  /* Valinnainen: piilota kielivalinta & badge pehmeästi paneelin ollessa auki */
+  body.cart-open .cart-badge,
+  body.cart-open .lang{
+    opacity:0; pointer-events:none; transition:opacity .15s ease;
+  }
+
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
   .btn{ border:1px solid var(--border); padding:.55rem .8rem; border-radius:10px; cursor:pointer; font-weight:700; background:var(--card); color:var(--ink) }
@@ -158,6 +160,11 @@
   .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
   .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
+
+  /* Kapeat näytöt: kielivalitsin alemmas */
+  @media (max-width:420px){
+    .lang{ top:3.6rem; right:.6rem; }
+  }
 </style>
 </head>
 <body>
@@ -240,7 +247,7 @@
   </div>
 
 <script>
-/* ---------- ASETUKSET (pidetty koskemattomina) ---------- */
+/* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbz_0avqZOhQsteBeJ7ZLJqbunfmMPp4WTPZItPOe78XaAw1VFnVtaDkzFNwKTwXt2cr/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 
@@ -250,98 +257,58 @@ const ADMIN_PASS     = "fatso";
 
 /* ---------- i18n ---------- */
 const translations = {
-  fi:{
-    meta:{ title:"Suomen 585 Oy – Tukkutilaus" },
-    gate:{ title:"Tilausportaali", namePh:"Nimi / yritys", passPh:"Salasana", open:"Avaa", err:"Väärä salasana. Yritä uudelleen." },
-    search:{ placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä" },
-    cats:{ all:"Kaikki" },
-    global:{ noNote:"Ei tiedotetta.", edit:"Muokkaa", notePh:"Kirjoita tiedote…" },
-    actions:{ save:"Tallenna", cancel:"Peruuta" },
-    nav:{ back:"← Takaisin" },
-    cart:{ title:"Ostoskori", openTitle:"Avaa ostoskori", closeAria:"Sulje kori", notePh:"Lisätiedot (esim. viite, toimitus)…", clear:"Tyhjennä kori", send:"Lähetä tilaus", removeTitle:"Poista" },
-    lightbox:{ close:"Sulje" },
-    addrow:{ sizePh:"Koko", add:"Lisää koriin" },
-    auth:{ logout:"Kirjaudu ulos", logoutTitle:"Kirjaudu ulos", confirmLogout:"Kirjaudutaanko ulos?" },
-    alerts:{
-      cartEmpty:"Ostoskori on tyhjä.",
-      orderSent:"Tilaus lähetetty!",
-      saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.",
-      globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.",
-      clearCart:"Tyhjennetäänkö kori?"
-    },
-    catsLabels:{
-      "Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot"
-    }
-  },
-  en:{
-    meta:{ title:"Suomen 585 Oy – Wholesale Orders" },
-    gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
-    search:{ placeholder:"Search by name or SKU…", clear:"Clear" },
-    cats:{ all:"All" },
-    global:{ noNote:"No announcement.", edit:"Edit", notePh:"Write an announcement…" },
-    actions:{ save:"Save", cancel:"Cancel" },
-    nav:{ back:"← Back" },
-    cart:{ title:"Cart", openTitle:"Open cart", closeAria:"Close cart", notePh:"Additional info (e.g., reference, delivery)…", clear:"Empty cart", send:"Send order", removeTitle:"Remove" },
-    lightbox:{ close:"Close" },
-    addrow:{ sizePh:"Size", add:"Add to cart" },
-    auth:{ logout:"Log out", logoutTitle:"Log out", confirmLogout:"Log out now?" },
-    alerts:{
-      cartEmpty:"Your cart is empty.",
-      orderSent:"Order sent!",
-      saveFail:"Saving failed. Check GAS & SECRET.",
-      globalSaveFail:"Saving the notice failed. Check GAS & SECRET.",
-      clearCart:"Empty the cart?"
-    },
-    catsLabels:{
-      "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Clocks"
-    }
-  },
-  sv:{
-    meta:{ title:"Suomen 585 Oy – Partibeställning" },
-    gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
-    search:{ placeholder:"Sök på namn eller SKU…", clear:"Rensa" },
-    cats:{ all:"Alla" },
-    global:{ noNote:"Ingen notis.", edit:"Redigera", notePh:"Skriv en notis…" },
-    actions:{ save:"Spara", cancel:"Avbryt" },
-    nav:{ back:"← Tillbaka" },
-    cart:{ title:"Varukorg", openTitle:"Öppna varukorg", closeAria:"Stäng varukorg", notePh:"Ytterligare info (t.ex. referens, leverans)…", clear:"Töm varukorg", send:"Skicka beställning", removeTitle:"Ta bort" },
-    lightbox:{ close:"Stäng" },
-    addrow:{ sizePh:"Storlek", add:"Lägg i korgen" },
-    auth:{ logout:"Logga ut", logoutTitle:"Logga ut", confirmLogout:"Logga ut nu?" },
-    alerts:{
-      cartEmpty:"Varukorgen är tom.",
-      orderSent:"Beställningen har skickats!",
-      saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.",
-      globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.",
-      clearCart:"Tömma varukorgen?"
-    },
-    catsLabels:{
-      "Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor"
-    }
-  },
-  de:{
-    meta:{ title:"Suomen 585 Oy – Großhandelsbestellung" },
-    gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
-    search:{ placeholder:"Nach Name oder SKU suchen…", clear:"Leeren" },
-    cats:{ all:"Alle" },
-    global:{ noNote:"Keine Mitteilung.", edit:"Bearbeiten", notePh:"Mitteilung schreiben…" },
-    actions:{ save:"Speichern", cancel:"Abbrechen" },
-    nav:{ back:"← Zurück" },
-    cart:{ title:"Warenkorb", openTitle:"Warenkorb öffnen", closeAria:"Warenkorb schließen", notePh:"Zusätzliche Infos (z. B. Referenz, Lieferung)…", clear:"Warenkorb leeren", send:"Bestellung senden", removeTitle:"Entfernen" },
-    lightbox:{ close:"Schließen" },
-    addrow:{ sizePh:"Größe", add:"In den Warenkorb" },
-    auth:{ logout:"Abmelden", logoutTitle:"Abmelden", confirmLogout:"Jetzt abmelden?" },
-    alerts:{
-      cartEmpty:"Ihr Warenkorb ist leer.",
-      orderSent:"Bestellung gesendet!",
-      saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.",
-      globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.",
-      clearCart:"Warenkorb leeren?"
-    },
-    catsLabels:{
-      "Magneetit":"Magnete","Lappimagneetit":"Lappland-Magnete","Sormukset":"Ringe","Ranneketjut":"Armbänder","Kaulaketjut":"Halsketten","Rocks Steel":"Rocks Steel","Riipukset":"Anhänger","Seiðr":"Seiðr","Puukorut":"Holzschmuck","Muut":"Sonstiges","Hopeakorut":"Silberschmuck","Hiuskorut":"Haaraccessoires","Kellot":"Uhren"
-    }
-  }
+  fi:{ meta:{ title:"Suomen 585 Oy – Tukkutilaus" },
+      gate:{ title:"Tilausportaali", namePh:"Nimi / yritys", passPh:"Salasana", open:"Avaa", err:"Väärä salasana. Yritä uudelleen." },
+      search:{ placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä" },
+      cats:{ all:"Kaikki" },
+      global:{ noNote:"Ei tiedotetta.", edit:"Muokkaa", notePh:"Kirjoita tiedote…" },
+      actions:{ save:"Tallenna", cancel:"Peruuta" },
+      nav:{ back:"← Takaisin" },
+      cart:{ title:"Ostoskori", openTitle:"Avaa ostoskori", closeAria:"Sulje kori", notePh:"Lisätiedot (esim. viite, toimitus)…", clear:"Tyhjennä kori", send:"Lähetä tilaus", removeTitle:"Poista" },
+      lightbox:{ close:"Sulje" },
+      addrow:{ sizePh:"Koko", add:"Lisää koriin" },
+      auth:{ logout:"Kirjaudu ulos", logoutTitle:"Kirjaudu ulos", confirmLogout:"Kirjaudutaanko ulos?" },
+      alerts:{ cartEmpty:"Ostoskori on tyhjä.", orderSent:"Tilaus lähetetty!", saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.", globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.", clearCart:"Tyhjennetäänkö kori?" },
+      catsLabels:{ "Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot" } },
+  en:{ meta:{ title:"Suomen 585 Oy – Wholesale Orders" },
+      gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
+      search:{ placeholder:"Search by name or SKU…", clear:"Clear" },
+      cats:{ all:"All" },
+      global:{ noNote:"No announcement.", edit:"Edit", notePh:"Write an announcement…" },
+      actions:{ save:"Save", cancel:"Cancel" },
+      nav:{ back:"← Back" },
+      cart:{ title:"Cart", openTitle:"Open cart", closeAria:"Close cart", notePh:"Additional info (e.g., reference, delivery)…", clear:"Empty cart", send:"Send order", removeTitle:"Remove" },
+      lightbox:{ close:"Close" },
+      addrow:{ sizePh:"Size", add:"Add to cart" },
+      auth:{ logout:"Log out", logoutTitle:"Log out", confirmLogout:"Log out now?" },
+      alerts:{ cartEmpty:"Your cart is empty.", orderSent:"Order sent!", saveFail:"Saving failed. Check GAS & SECRET.", globalSaveFail:"Saving the notice failed. Check GAS & SECRET.", clearCart:"Empty the cart?" },
+      catsLabels:{ "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Clocks" } },
+  sv:{ meta:{ title:"Suomen 585 Oy – Partibeställning" },
+      gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
+      search:{ placeholder:"Sök på namn eller SKU…", clear:"Rensa" },
+      cats:{ all:"Alla" },
+      global:{ noNote:"Ingen notis.", edit:"Redigera", notePh:"Skriv en notis…" },
+      actions:{ save:"Spara", cancel:"Avbryt" },
+      nav:{ back:"← Tillbaka" },
+      cart:{ title:"Varukorg", openTitle:"Öppna varukorg", closeAria:"Stäng varukorg", notePh:"Ytterligare info (t.ex. referens, leverans)…", clear:"Töm varukorg", send:"Skicka beställning", removeTitle:"Ta bort" },
+      lightbox:{ close:"Stäng" },
+      addrow:{ sizePh:"Storlek", add:"Lägg i korgen" },
+      auth:{ logout:"Logga ut", logoutTitle:"Logga ut", confirmLogout:"Logga ut nu?" },
+      alerts:{ cartEmpty:"Varukorgen är tom.", orderSent:"Beställningen har skickats!", saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.", globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.", clearCart:"Tömma varukorgen?" },
+      catsLabels:{ "Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor" } },
+  de:{ meta:{ title:"Suomen 585 Oy – Großhandelsbestellung" },
+      gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
+      search:{ placeholder:"Nach Name oder SKU suchen…", clear:"Leeren" },
+      cats:{ all:"Alle" },
+      global:{ noNote:"Keine Mitteilung.", edit:"Bearbeiten", notePh:"Mitteilung schreiben…" },
+      actions:{ save:"Speichern", cancel:"Abbrechen" },
+      nav:{ back:"← Zurück" },
+      cart:{ title:"Warenkorb", openTitle:"Warenkorb öffnen", closeAria:"Warenkorb schließen", notePh:"Zusätzliche Infos (z. B. Referenz, Lieferung)…", clear:"Warenkorb leeren", send:"Bestellung senden", removeTitle:"Entfernen" },
+      lightbox:{ close:"Schließen" },
+      addrow:{ sizePh:"Größe", add:"In den Warenkorb" },
+      auth:{ logout:"Abmelden", logoutTitle:"Abmelden", confirmLogout:"Jetzt abmelden?" },
+      alerts:{ cartEmpty:"Ihr Warenkorb ist leer.", orderSent:"Bestellung gesendet!", saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.", globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.", clearCart:"Warenkorb leeren?" },
+      catsLabels:{ "Magneetit":"Magnete","Lappimagneetit":"Lappland-Magnete","Sormukset":"Ringe","Ranneketjut":"Armbänder","Kaulaketjut":"Halsketten","Rocks Steel":"Rocks Steel","Riipukset":"Anhänger","Seiðr":"Seiðr","Puukorut":"Holzschmuck","Muut":"Sonstiges","Hopeakorut":"Silberschmuck","Hiuskorut":"Haaraccessoires","Kellot":"Uhren" } }
 };
 
 const DEFAULT_LANG='fi';
@@ -382,7 +349,6 @@ function setLang(lang){
 }
 
 /* ---------- DOM helpers ---------- */
-const $q = s => document.querySelector(s), $$q = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 
 let currentCat='all', allFiles=[], textMap={};
@@ -422,7 +388,6 @@ function openApp(isAdminFlag){
   refreshUIAfterAuth();
 }
 function initGate(){
-  const lang = currentLang();
   const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
   function tryOpen(){
     const name = sanitize(nameI.value)||'Tuntematon';
@@ -685,8 +650,8 @@ function renderCart(){
   cartEl.innerHTML='';
   const lang = currentLang();
   for(const [key,item] of cart){
-    const niceName = toTitle(String(item.name).replace(/\.[^.]+$/,'')); 
-    const label = item.size ? `${niceName} — ${item.size}` : niceName;  
+    const niceName = toTitle(String(item.name).replace(/\.[^.]+$/,''));
+    const label = item.size ? `${niceName} — ${item.size}` : niceName;
     const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=key;
     row.innerHTML=`<div title="${item.name}">${label}</div>
       <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
@@ -739,8 +704,8 @@ const cartPanel    = document.getElementById('cartPanel');
 const cartBackdrop = document.getElementById('cartBackdrop');
 const cartCloseBtn = document.getElementById('cartClose');
 const cartBadgeBtn = document.getElementById('cartBadge');
-function openCart(){ cartPanel.classList.add('open'); cartBackdrop.classList.add('on'); document.body.classList.add('noscroll'); }
-function closeCart(){ cartPanel.classList.remove('open'); cartBackdrop.classList.remove('on'); document.body.classList.remove('noscroll'); }
+function openCart(){ cartPanel.classList.add('open'); cartBackdrop.classList.add('on'); document.body.classList.add('noscroll','cart-open'); }
+function closeCart(){ cartPanel.classList.remove('open'); cartBackdrop.classList.remove('on'); document.body.classList.remove('noscroll','cart-open'); }
 if (cartBadgeBtn) cartBadgeBtn.onclick = openCart;
 if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
 if (cartBackdrop) cartBackdrop.onclick = closeCart;
