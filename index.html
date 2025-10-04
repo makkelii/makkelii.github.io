@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Suomen 585 Oy</title>
+  <title data-i18n="meta.title">Suomen 585 Oy</title>
 
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -33,6 +33,16 @@
         linear-gradient(rgba(28,28,28,.7),rgba(28,28,28,.7)),
         url("images/bg.webp") center/cover no-repeat fixed;
     }
+
+    .lang{
+      position:fixed; top:.6rem; right:.6rem; z-index:20;
+      background:rgba(40,40,40,.85); border:1px solid var(--accent-wash); border-radius:10px;
+      display:flex; gap:.25rem; padding:.25rem;
+    }
+    .lang button{
+      border:none; background:transparent; color:var(--text); padding:.45rem .55rem; border-radius:8px; cursor:pointer; font-weight:700;
+    }
+    .lang button.active{ background:var(--accent); color:#1c1c1c }
 
     .card{
       background:rgba(40,40,40,.85);
@@ -83,9 +93,17 @@
   </style>
 </head>
 <body>
+  <!-- Kielivalitsin -->
+  <nav class="lang" aria-label="Language">
+    <button data-lang="fi" aria-label="Suomi">FI</button>
+    <button data-lang="en" aria-label="English">EN</button>
+    <button data-lang="sv" aria-label="Svenska">SV</button>
+    <button data-lang="de" aria-label="Deutsch">DE</button>
+  </nav>
+
   <main>
     <section class="card">
-      <h1>Suomen 585 Oy</h1>
+      <h1 data-i18n="hero.title">Suomen 585 Oy</h1>
 
       <div class="contact">
         Olavi Barman<br>
@@ -94,13 +112,81 @@
       </div>
 
       <div class="btnrow">
-        <a href="suomen585.html" class="portal-btn">Kirjaudu tilausportaaliin</a>
-        <a href="gallery.html" class="portal-btn">Avaa kuvagalleria</a>
+        <a href="suomen585.html" class="portal-btn" data-i18n="actions.openPortal">Kirjaudu tilausportaaliin</a>
+        <a href="gallery.html" class="portal-btn" data-i18n="actions.openGallery">Avaa kuvagalleria</a>
       </div>
     </section>
   </main>
 
   <footer>© <span id="y"></span> Suomen 585 Oy</footer>
-  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+
+  <script>
+  /* -------- i18n -------- */
+  const translations = {
+    fi: {
+      meta:{ title:"Suomen 585 Oy" },
+      hero:{ title:"Suomen 585 Oy" },
+      actions:{
+        openPortal:"Kirjaudu tilausportaaliin",
+        openGallery:"Avaa kuvagalleria"
+      }
+    },
+    en:{
+      meta:{ title:"Suomen 585 Oy" },
+      hero:{ title:"Suomen 585 Oy" },
+      actions:{
+        openPortal:"Open ordering portal",
+        openGallery:"Open image gallery"
+      }
+    },
+    sv:{
+      meta:{ title:"Suomen 585 Oy" },
+      hero:{ title:"Suomen 585 Oy" },
+      actions:{
+        openPortal:"Öppna beställningsportalen",
+        openGallery:"Öppna bildgalleriet"
+      }
+    },
+    de:{
+      meta:{ title:"Suomen 585 Oy" },
+      hero:{ title:"Suomen 585 Oy" },
+      actions:{
+        openPortal:"Zum Bestellportal",
+        openGallery:"Bildergalerie öffnen"
+      }
+    }
+  };
+
+  const DEFAULT_LANG = 'fi';
+  const $ = s=>document.querySelector(s);
+  const $$= s=>[...document.querySelectorAll(s)];
+
+  function getLang(){
+    return localStorage.getItem('lang')
+        || (navigator.language||'fi').slice(0,2).replace(/^(en|sv|de)$/,'$1') || DEFAULT_LANG;
+  }
+  function setLang(lang){
+    const dict = translations[lang]||translations[DEFAULT_LANG];
+    // data-i18n -> textContent
+    $$('[data-i18n]').forEach(el=>{
+      const key = el.getAttribute('data-i18n');
+      const val = key.split('.').reduce((o,k)=>o&&o[k], dict);
+      if (typeof val === 'string') el.textContent = val;
+    });
+    // document title
+    const titleKey = $('[data-i18n][data-i18n="meta.title"]');
+    document.title = dict?.meta?.title || document.title;
+
+    // mark buttons
+    $$('.lang button').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
+    localStorage.setItem('lang', lang);
+    document.documentElement.lang = lang;
+  }
+
+  $$('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> setLang(b.dataset.lang)));
+
+  document.getElementById('y').textContent = new Date().getFullYear();
+  setLang(getLang());
+  </script>
 </body>
 </html>
