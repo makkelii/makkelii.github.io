@@ -112,7 +112,9 @@
     .lang{ top:3.6rem; right:.6rem; }
   }
 
-  .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1000; }
+ /* ennen: 1000 ja 1001 */
+.cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:3999; }
+#cartPanel{ position:fixed; top:0; right:0; /* … */ z-index:4000; }
   .cart-backdrop.on{ display:block; }
   body.noscroll{ overflow:hidden; }
 
