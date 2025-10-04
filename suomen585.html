@@ -98,10 +98,12 @@
   }
 
   .cart-badge{
-    position:fixed; top:12px; right:12px; background:var(--accent); color:var(--accent-ink);
-    border-radius:999px; padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
-    z-index:900; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
-  }
+  position:fixed;
+  top:60px;            /* ennen: 12px */
+  right:12px;
+  z-index:2100;        /* nostetaan varmuuden vuoksi yli .lang:n */
+}
+
   .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:1000; }
   .cart-backdrop.on{ display:block; }
   body.noscroll{ overflow:hidden; }
