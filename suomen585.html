@@ -672,23 +672,32 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ---------- Manifest + kuvat ---------- */
 async function loadFromManifest(){
   try{
-    const res=await fetch('images/manifest.json',{cache:'no-store'});
+    const res = await fetch('images/manifest.json',{cache:'no-store'});
     if(!res.ok) throw new Error('not found');
-    const manifest=await res.json();
-    let files=(manifest.files||[]).filter(p=>/\.(jpe?g|png|gif|webp)$/i.test(p));
-    files=[...new Set(files)];
-    if(!files.length) throw new Error('empty');
+    const manifest = await res.json();
 
-    const byCat=[];
-    for(const p of files){
-      const parts=p.split('/');
-      const cat=(parts[1]||'Muut');
-      byCat.push({path:p,cat,name:p.split('/').pop()});
+    // 1) Vain kategoriakansiosta tulevat kuvat: images/<cat>/<file>.(jpg|png|gif|webp)
+    const valid = (manifest.files || []).filter(p =>
+      /^images\/[^/]+\/[^/]+\.(?:jpe?g|png|gif|webp)$/i.test(p)
+    );
+
+    if (!valid.length) throw new Error('empty');
+
+    // 2) Poimi kategoria ja tiedostonimi
+    const byCat = [];
+    for (const p of valid){
+      const [, cat, file] = p.match(/^images\/([^/]+)\/([^/]+)$/i) || [];
+      if (!cat || !file) continue;
+      byCat.push({ path:p, cat, name:file });
     }
-    /* Ei karsita kategorioita – kaikki näytetään */
-    const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
-    allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
+    // 3) Poista duplikaatit ja lajittele
+    const uniq = new Map();
+    for (const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path, it); }
+    allFiles = [...uniq.values()]
+      .sort((a,b) => a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
+
+    // 4) Päivitä kategoriat ja galleria
     const cnt = countsFrom(allFiles);
     renderCats(cnt, currentLang());
 
