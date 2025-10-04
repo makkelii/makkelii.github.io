@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Suomen 585 Oy – Tukkutilaus</title>
+<title data-i18n="meta.title">Suomen 585 Oy – Tukkutilaus</title>
 
 <link rel="icon" href="/favicon.ico" sizes="any">
 <meta name="theme-color" content="#1f2937">
@@ -22,6 +22,14 @@
     background:var(--bg) url("images/bg.webp") center/cover fixed no-repeat;
     overflow-x:hidden;
   }
+
+  .lang{
+    position:fixed; top:.6rem; right:.6rem; z-index:2000;
+    background:rgba(31,41,55,.92); border:1px solid var(--border); border-radius:10px;
+    display:flex; gap:.25rem; padding:.25rem; backdrop-filter:saturate(120%) blur(6px);
+  }
+  .lang button{ border:none; background:transparent; color:var(--ink); padding:.45rem .55rem; border-radius:8px; cursor:pointer; font-weight:700 }
+  .lang button.active{ background:var(--accent); color:var(--accent-ink) }
 
   header{
     background:rgba(31,41,55,.92);
@@ -114,7 +122,6 @@
   .btn.ghost{ background:transparent; color:var(--muted) }
 
   .cart-items{ max-height:calc(100dvh - 260px); overflow:auto; padding:.2rem }
-  /* Kolme saraketta: Nimi | Kpl | Poista */
   .cart-row{
     display:grid; grid-template-columns:1fr 80px 34px; gap:.6rem; align-items:center;
     padding:.35rem 0; border-bottom:1px dashed var(--border)
@@ -142,78 +149,86 @@
 </style>
 </head>
 <body>
+  <!-- Kielivalitsin -->
+  <nav class="lang" aria-label="Language">
+    <button data-lang="fi" aria-label="Suomi">FI</button>
+    <button data-lang="en" aria-label="English">EN</button>
+    <button data-lang="sv" aria-label="Svenska">SV</button>
+    <button data-lang="de" aria-label="Deutsch">DE</button>
+  </nav>
+
   <div class="gate" id="gate" aria-hidden="false">
     <div class="gate-card">
-      <h2>Tilausportaali</h2>
-      <input id="nameInput" type="text" placeholder="Nimi / yritys" autocomplete="name" />
-      <input id="passInput" type="password" placeholder="Salasana" autocomplete="current-password" />
-      <button id="passBtn" type="button">Avaa</button>
-      <div class="gate-err" id="gateErr">Väärä salasana. Yritä uudelleen.</div>
+      <h2 data-i18n="gate.title">Tilausportaali</h2>
+      <input id="nameInput" type="text" data-i18n-attr="placeholder:gate.namePh" placeholder="Nimi / yritys" autocomplete="name" />
+      <input id="passInput" type="password" data-i18n-attr="placeholder:gate.passPh" placeholder="Salasana" autocomplete="current-password" />
+      <button id="passBtn" type="button" data-i18n="gate.open">Avaa</button>
+      <div class="gate-err" id="gateErr" data-i18n="gate.err">Väärä salasana. Yritä uudelleen.</div>
     </div>
   </div>
 
-  <header><h1>Suomen 585 Oy – Tukkutilaus</h1></header>
+  <header><h1 data-i18n="meta.title">Suomen 585 Oy – Tukkutilaus</h1></header>
 
-  <button class="cart-badge" id="cartBadge" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
+  <button class="cart-badge" id="cartBadge" data-i18n-attr="title:cart.openTitle" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
 
   <main class="wrap" aria-hidden="true" id="app">
     <section>
       <div class="toolbar">
         <div class="search">
-          <input id="q" type="search" placeholder="Hae nimellä tai SKU:lla…" />
-          <button id="clear" type="button">Tyhjennä</button>
+          <input id="q" type="search" data-i18n-attr="placeholder:search.placeholder" placeholder="Hae nimellä tai SKU:lla…" />
+          <button id="clear" type="button" data-i18n="search.clear">Tyhjennä</button>
         </div>
         <div class="cats" id="cats"></div>
       </div>
 
       <!-- Yleisviesti (näkyy kaikille; admin voi muokata) -->
       <div id="globalNote" class="global-note">
-        <div class="global-note-view" id="globalNoteView">Ei tiedotetta.</div>
+        <div class="global-note-view" id="globalNoteView" data-i18n="global.noNote">Ei tiedotetta.</div>
         <div class="global-note-actions" id="globalNoteActions" style="display:none">
-          <button class="pill" id="globalNoteEdit">Muokkaa</button>
+          <button class="pill" id="globalNoteEdit" data-i18n="global.edit">Muokkaa</button>
         </div>
         <div class="global-note-edit" id="globalNoteEditWrap" style="display:none">
-          <textarea id="globalNoteTextarea" rows="3" placeholder="Kirjoita tiedote…"></textarea>
+          <textarea id="globalNoteTextarea" rows="3" data-i18n-attr="placeholder:global.notePh" placeholder="Kirjoita tiedote…"></textarea>
           <div class="note-actions" style="margin-top:.35rem;display:flex;gap:.4rem">
-            <button class="pill primary" id="globalNoteSave">Tallenna</button>
-            <button class="pill" id="globalNoteCancel">Peruuta</button>
+            <button class="pill primary" id="globalNoteSave" data-i18n="actions.save">Tallenna</button>
+            <button class="pill" id="globalNoteCancel" data-i18n="actions.cancel">Peruuta</button>
           </div>
         </div>
       </div>
 
       <div class="gallery" id="gallery" aria-live="polite"></div>
 
-      <div style="margin-top:1rem"><a href="index.html" class="btn ghost">← Takaisin</a></div>
+      <div style="margin-top:1rem"><a href="index.html" class="btn ghost" data-i18n="nav.back">← Takaisin</a></div>
     </section>
   </main>
 
   <aside id="cartPanel" aria-label="Ostoskori">
     <div class="cart-top">
-      <div class="cart-title">Ostoskori</div>
+      <div class="cart-title" data-i18n="cart.title">Ostoskori</div>
       <div style="display:flex; gap:.5rem">
-        <button class="btn" id="logout" type="button" title="Kirjaudu ulos">Kirjaudu ulos</button>
-        <button class="btn" id="cartClose" type="button" aria-label="Sulje kori">✕</button>
+        <button class="btn" id="logout" type="button" data-i18n-attr="title:auth.logoutTitle" title="Kirjaudu ulos" data-i18n="auth.logout">Kirjaudu ulos</button>
+        <button class="btn" id="cartClose" type="button" data-i18n-attr="aria-label:cart.closeAria" aria-label="Sulje kori">✕</button>
       </div>
     </div>
 
     <div class="cart-items" id="cart"></div>
 
-    <textarea id="note" class="note" placeholder="Lisätiedot (esim. viite, toimitus)…"></textarea>
+    <textarea id="note" class="note" data-i18n-attr="placeholder:cart.notePh" placeholder="Lisätiedot (esim. viite, toimitus)…"></textarea>
 
     <div class="cart-actions">
-      <button class="btn danger" id="cartClear" type="button">Tyhjennä kori</button>
-      <button class="btn primary" id="cartEmail" type="button">Lähetä tilaus</button>
+      <button class="btn danger" id="cartClear" type="button" data-i18n="cart.clear">Tyhjennä kori</button>
+      <button class="btn primary" id="cartEmail" type="button" data-i18n="cart.send">Lähetä tilaus</button>
     </div>
   </aside>
   <div class="cart-backdrop" id="cartBackdrop" aria-hidden="true"></div>
 
   <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="close" id="closeLb" type="button">Sulje</button>
+    <button class="close" id="closeLb" type="button" data-i18n="lightbox.close">Sulje</button>
     <img id="lightImg" alt="">
   </div>
 
 <script>
-/* ---------- ASETUKSET ---------- */
+/* ---------- ASETUKSET (pidetty koskemattomina) ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbz_0avqZOhQsteBeJ7ZLJqbunfmMPp4WTPZItPOe78XaAw1VFnVtaDkzFNwKTwXt2cr/exec";
 const GAS_SECRET     = "p7yC8sQe-3JrY2bX_Zm9L4tK1vF5wN0h";
 
@@ -221,26 +236,152 @@ const PASSWORD_PLAIN = "sala54N4";
 const ADMIN_USER     = "admin";
 const ADMIN_PASS     = "fatso";
 
-const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+/* ---------- i18n ---------- */
+const translations = {
+  fi:{
+    meta:{ title:"Suomen 585 Oy – Tukkutilaus" },
+    gate:{ title:"Tilausportaali", namePh:"Nimi / yritys", passPh:"Salasana", open:"Avaa", err:"Väärä salasana. Yritä uudelleen." },
+    search:{ placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä" },
+    cats:{ all:"Kaikki" },
+    global:{ noNote:"Ei tiedotetta.", edit:"Muokkaa", notePh:"Kirjoita tiedote…" },
+    actions:{ save:"Tallenna", cancel:"Peruuta" },
+    nav:{ back:"← Takaisin" },
+    cart:{ title:"Ostoskori", openTitle:"Avaa ostoskori", closeAria:"Sulje kori", notePh:"Lisätiedot (esim. viite, toimitus)…", clear:"Tyhjennä kori", send:"Lähetä tilaus", removeTitle:"Poista" },
+    lightbox:{ close:"Sulje" },
+    addrow:{ sizePh:"Koko", add:"Lisää koriin" },
+    auth:{ logout:"Kirjaudu ulos", logoutTitle:"Kirjaudu ulos", confirmLogout:"Kirjaudutaanko ulos?" },
+    alerts:{
+      cartEmpty:"Ostoskori on tyhjä.",
+      orderSent:"Tilaus lähetetty!",
+      saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.",
+      globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.",
+      clearCart:"Tyhjennetäänkö kori?"
+    },
+    catsLabels:{
+      "Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot"
+    }
+  },
+  en:{
+    meta:{ title:"Suomen 585 Oy – Wholesale Orders" },
+    gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
+    search:{ placeholder:"Search by name or SKU…", clear:"Clear" },
+    cats:{ all:"All" },
+    global:{ noNote:"No announcement.", edit:"Edit", notePh:"Write an announcement…" },
+    actions:{ save:"Save", cancel:"Cancel" },
+    nav:{ back:"← Back" },
+    cart:{ title:"Cart", openTitle:"Open cart", closeAria:"Close cart", notePh:"Additional info (e.g., reference, delivery)…", clear:"Empty cart", send:"Send order", removeTitle:"Remove" },
+    lightbox:{ close:"Close" },
+    addrow:{ sizePh:"Size", add:"Add to cart" },
+    auth:{ logout:"Log out", logoutTitle:"Log out", confirmLogout:"Log out now?" },
+    alerts:{
+      cartEmpty:"Your cart is empty.",
+      orderSent:"Order sent!",
+      saveFail:"Saving failed. Check GAS & SECRET.",
+      globalSaveFail:"Saving the notice failed. Check GAS & SECRET.",
+      clearCart:"Empty the cart?"
+    },
+    catsLabels:{
+      "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Watches"
+    }
+  },
+  sv:{
+    meta:{ title:"Suomen 585 Oy – Partibeställning" },
+    gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
+    search:{ placeholder:"Sök på namn eller SKU…", clear:"Rensa" },
+    cats:{ all:"Alla" },
+    global:{ noNote:"Ingen notis.", edit:"Redigera", notePh:"Skriv en notis…" },
+    actions:{ save:"Spara", cancel:"Avbryt" },
+    nav:{ back:"← Tillbaka" },
+    cart:{ title:"Varukorg", openTitle:"Öppna varukorg", closeAria:"Stäng varukorg", notePh:"Ytterligare info (t.ex. referens, leverans)…", clear:"Töm varukorg", send:"Skicka beställning", removeTitle:"Ta bort" },
+    lightbox:{ close:"Stäng" },
+    addrow:{ sizePh:"Storlek", add:"Lägg i korgen" },
+    auth:{ logout:"Logga ut", logoutTitle:"Logga ut", confirmLogout:"Logga ut nu?" },
+    alerts:{
+      cartEmpty:"Varukorgen är tom.",
+      orderSent:"Beställningen har skickats!",
+      saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.",
+      globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.",
+      clearCart:"Tömma varukorgen?"
+    },
+    catsLabels:{
+      "Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor"
+    }
+  },
+  de:{
+    meta:{ title:"Suomen 585 Oy – Großhandelsbestellung" },
+    gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
+    search:{ placeholder:"Nach Name oder SKU suchen…", clear:"Leeren" },
+    cats:{ all:"Alle" },
+    global:{ noNote:"Keine Mitteilung.", edit:"Bearbeiten", notePh:"Mitteilung schreiben…" },
+    actions:{ save:"Speichern", cancel:"Abbrechen" },
+    nav:{ back:"← Zurück" },
+    cart:{ title:"Warenkorb", openTitle:"Warenkorb öffnen", closeAria:"Warenkorb schließen", notePh:"Zusätzliche Infos (z. B. Referenz, Lieferung)…", clear:"Warenkorb leeren", send:"Bestellung senden", removeTitle:"Entfernen" },
+    lightbox:{ close:"Schließen" },
+    addrow:{ sizePh:"Größe", add:"In den Warenkorb" },
+    auth:{ logout:"Abmelden", logoutTitle:"Abmelden", confirmLogout:"Jetzt abmelden?" },
+    alerts:{
+      cartEmpty:"Ihr Warenkorb ist leer.",
+      orderSent:"Bestellung gesendet!",
+      saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.",
+      globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.",
+      clearCart:"Warenkorb leeren?"
+    },
+    catsLabels:{
+      "Magneetit":"Magnete","Lappimagneetit":"Lappland-Magnete","Sormukset":"Ringe","Ranneketjut":"Armbänder","Kaulaketjut":"Halsketten","Rocks Steel":"Rocks Steel","Riipukset":"Anhänger","Seiðr":"Seiðr","Puukorut":"Holzschmuck","Muut":"Sonstiges","Hopeakorut":"Silberschmuck","Hiuskorut":"Haaraccessoires","Kellot":"Uhren"
+    }
+  }
+};
+
+const DEFAULT_LANG='fi';
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+function currentLang(){
+  return localStorage.getItem('lang')
+      || (navigator.language||'fi').slice(0,2).replace(/^(en|sv|de)$/,'$1') || DEFAULT_LANG;
+}
+function t(key, lang){
+  const dict = translations[lang] || translations[DEFAULT_LANG];
+  return key.split('.').reduce((o,k)=>o && o[k], dict);
+}
+function setLang(lang){
+  // tekstisisällöt
+  $$('[data-i18n]').forEach(el=>{
+    const val = t(el.getAttribute('data-i18n'), lang);
+    if (typeof val === 'string') el.textContent = val;
+  });
+  // attribuutit: data-i18n-attr="attr:key"
+  $$('[data-i18n-attr]').forEach(el=>{
+    const pairs = el.getAttribute('data-i18n-attr').split(',').map(s=>s.trim());
+    pairs.forEach(p=>{
+      const [attr, key] = p.split(':');
+      const val = t(key, lang);
+      if (typeof val === 'string') el.setAttribute(attr, val);
+    });
+  });
+
+  // otsikko
+  const titleT = t('meta.title', lang);
+  if (titleT) document.title = titleT;
+
+  // kategoriat
+  renderCats(countsFrom(allFiles), lang);
+
+  // merkitse valinta
+  $$('.lang button').forEach(b=> b.classList.toggle('active', b.dataset.lang===lang));
+
+  // kieli talteen + html@lang
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang;
+}
+
+/* ---------- DOM helpers ---------- */
+const $q = s => document.querySelector(s), $$q = s => [...document.querySelectorAll(s)];
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
 
 let currentCat='all', allFiles=[], textMap={};
 
-const CATS = [
-  { key: "Magneetit",       label: "Magneetit" },
-  { key: "Lappimagneetit",  label: "Lappimagneetit" },
-  { key: "Sormukset",       label: "Sormukset" },
-  { key: "Ranneketjut",     label: "Ranneketjut" },
-  { key: "Kaulaketjut",     label: "Kaulaketjut" },
-  { key: "Rocks Steel",     label: "Rocks Steel" },
-  { key: "Riipukset",       label: "Riipukset" },
-  { key: "Seiðr",           label: "Seiðr" },
-  { key: "Puukorut",        label: "Puukorut" },
-  { key: "Muut",            label: "Muut" }, 
-  { key: "Hopeakorut",      label: "Hopeakorut" },
-  { key: "Hiuskorut",       label: "Hiuskorut" },
-  { key: "Kellot",          label: "Kellot" }
-];
+const CATS_ORDER = ["Magneetit","Lappimagneetit","Sormukset","Ranneketjut","Kaulaketjut","Rocks Steel","Riipukset","Seiðr","Puukorut","Muut","Hopeakorut","Hiuskorut","Kellot"];
 const isAdmin = ()=> (sessionStorage.getItem('b2b_admin')==='1');
 
 /* --- apuri ilman preflightia --- */
@@ -260,7 +401,7 @@ function fetchTxt(url, opt={}, timeoutMs=20000){
 function refreshUIAfterAuth(){
   loadGlobalNote();
   if(allFiles.length){
-    renderCats(countsFrom(allFiles));
+    renderCats(countsFrom(allFiles), currentLang());
     showGallery();
   }
 }
@@ -275,6 +416,7 @@ function openApp(isAdminFlag){
   refreshUIAfterAuth();
 }
 function initGate(){
+  const lang = currentLang();
   const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
   function tryOpen(){
     const name = sanitize(nameI.value)||'Tuntematon';
@@ -294,7 +436,7 @@ function initGate(){
   }catch(_){}
   btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
   $('#logout').onclick=()=>{
-    if(!confirm('Kirjaudutaanko ulos?')) return;
+    if(!confirm(t('auth.confirmLogout', currentLang()))) return;
     sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
     $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
     $('#passInput').value=''; $('#nameInput').value=''; $('#nameInput').focus(); closeCart();
@@ -303,19 +445,20 @@ function initGate(){
 
 /* ---------- Kategoriat & haku ---------- */
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
-function countsFrom(list){ const o=Object.fromEntries(CATS.map(c=>[c.key,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
+function countsFrom(list){ const o=Object.fromEntries(CATS_ORDER.map(k=>[k,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
 
-function renderCats(counts){
+function renderCats(counts, lang){
   const wrap = $('#cats');
   wrap.innerHTML = '';
 
   const total = Object.values(counts).reduce((a,b)=>a+b,0);
-  const visible = CATS.filter(c => (counts[c.key]||0) > 0);
+  const visible = CATS_ORDER.filter(k => (counts[k]||0) > 0);
 
   if (currentCat !== 'all' && (!counts[currentCat] || counts[currentCat] === 0)) {
     currentCat = 'all';
   }
 
+  const labels = translations[lang]?.catsLabels || translations[DEFAULT_LANG].catsLabels;
   const mk=(k,l,c)=>{
     const b=document.createElement('button');
     b.className='cat-btn'+(k===currentCat?' active':'');
@@ -324,8 +467,11 @@ function renderCats(counts){
     return b;
   };
 
-  wrap.appendChild(mk('all','Kaikki',total));
-  visible.forEach(c=>wrap.appendChild(mk(c.key,c.label,counts[c.key]||0)));
+  wrap.appendChild(mk('all', t('cats.all', lang), total));
+  visible.forEach(key=>{
+    const label = labels[key] || key;
+    wrap.appendChild(mk(key,label,counts[key]||0));
+  });
 }
 
 $('#cats').addEventListener('click',e=>{
@@ -361,7 +507,7 @@ function bindGlobalNoteOnce_(){
     const newText = ta.value;
     const ok = await saveGlobalNote(newText);
     if (ok){ renderGlobalNote(newText); }
-    else { alert('Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.'); }
+    else { alert(t('alerts.globalSaveFail', currentLang())); }
   };
 }
 function renderGlobalNote(text){
@@ -371,14 +517,14 @@ function renderGlobalNote(text){
   const editWrap = $('#globalNoteEditWrap');
   const ta   = $('#globalNoteTextarea');
 
-  const t = String(text||'').trim();
-  view.textContent = t || "Ei tiedotetta.";
-  wrap.classList.toggle('empty', !t);
+  const ttxt = String(text||'').trim();
+  view.textContent = ttxt || t('global.noNote', currentLang());
+  wrap.classList.toggle('empty', !ttxt);
 
   const admin = isAdmin();
   acts.style.display = admin ? '' : 'none';
   editWrap.style.display = 'none';
-  if (admin) ta.value = t;
+  if (admin) ta.value = ttxt;
 
   bindGlobalNoteOnce_();
 }
@@ -397,10 +543,10 @@ async function saveGlobalNote(text){
   const payload = { action: "setGlobal", note: String(text||''), secret: GAS_SECRET };
   try{
     const fd = new FormData(); fd.append('data', JSON.stringify(payload));
-    const {ok,text:t} = await fetchTxt(GAS_ENDPOINT, { method:'POST', body: fd });
-    const up = (t||'').trim().toUpperCase();
+    const {ok,text:tres} = await fetchTxt(GAS_ENDPOINT, { method:'POST', body: fd });
+    const up = (tres||'').trim().toUpperCase();
     if (ok && up.startsWith('OK')) return true;
-    try{ const j=JSON.parse(t||'{}'); if (j && j.ok) return true; }catch(_){}
+    try{ const j=JSON.parse(tres||'{}'); if (j && j.ok) return true; }catch(_){}
   }catch(_){}
   return false;
 }
@@ -423,10 +569,10 @@ async function saveText(sku, text){
   const payload = { action:"setNote", sku:String(sku), note:String(text), secret:GAS_SECRET };
   try{
     const fd = new FormData(); fd.append('data', JSON.stringify(payload));
-    const {ok,text:t} = await fetchTxt(GAS_ENDPOINT, { method:'POST', body: fd });
-    const up = (t||'').trim().toUpperCase();
+    const {ok,text:tres} = await fetchTxt(GAS_ENDPOINT, { method:'POST', body: fd });
+    const up = (tres||'').trim().toUpperCase();
     if (ok && up.startsWith('OK')){ textMap[sku]=String(text); return true; }
-    try{ const j=JSON.parse(t||'{}'); if (j && j.ok){ textMap[sku]=String(text); return true; } }catch(_){}
+    try{ const j=JSON.parse(tres||'{}'); if (j && j.ok){ textMap[sku]=String(text); return true; } }catch(_){}
   }catch(_){}
   return false;
 }
@@ -442,19 +588,19 @@ function addFigure(path){
     <figcaption>${title}</figcaption>
     <div class="note-line" data-sku="${sku}">
       <div class="note-text"></div>
-      ${isAdmin() ? `<button class="pill" data-act="edit">Muokkaa</button>` : ``}
+      ${isAdmin() ? `<button class="pill" data-act="edit" data-i18n="global.edit">${t('global.edit', currentLang())}</button>` : ``}
       <div class="note-edit">
         <textarea></textarea>
         <div class="note-actions">
-          <button class="pill primary" data-act="save">Tallenna</button>
-          <button class="pill" data-act="cancel">Peruuta</button>
+          <button class="pill primary" data-act="save" data-i18n="actions.save">${t('actions.save', currentLang())}</button>
+          <button class="pill" data-act="cancel" data-i18n="actions.cancel">${t('actions.cancel', currentLang())}</button>
         </div>
       </div>
     </div>
     <div class="addrow">
-      <input type="text" class="size" placeholder="Koko" />
+      <input type="text" class="size" data-i18n-attr="placeholder:addrow.sizePh" placeholder="${t('addrow.sizePh', currentLang())}" />
       <input type="number" class="qty" min="1" value="1" />
-      <button class="add" type="button">Lisää koriin</button>
+      <button class="add" type="button" data-i18n="addrow.add">${t('addrow.add', currentLang())}</button>
     </div>`;
   const view = fig.querySelector('.note-text');
   const ta   = fig.querySelector('textarea');
@@ -482,7 +628,6 @@ $('#gallery').addEventListener('click',async e=>{
 
     addToCart(fig.dataset.file,size,qty);
 
-    /* NOLLAUS LISÄYKSEN JÄLKEEN */
     sizeI.value = '';
     qtyI.value  = '1';
     return;
@@ -512,7 +657,7 @@ $('#gallery').addEventListener('click',async e=>{
         view.textContent = newText;
         edit.style.display='none'; if(editBtn) editBtn.style.display='';
       }else{
-        alert("Tallennus epäonnistui. Tarkista GAS & SECRET.");
+        alert(t('alerts.saveFail', currentLang()));
       }
       return;
     }
@@ -524,7 +669,6 @@ $('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#cl
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
 /* ---------- Ostoskori ---------- */
-/* Avain erottaa nimen ja koon: filename||size */
 let cart = new Map();
 const cartEl = $('#cart'), cartCountEl = $('#cartCount');
 
@@ -533,13 +677,14 @@ const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
 
 function renderCart(){
   cartEl.innerHTML='';
+  const lang = currentLang();
   for(const [key,item] of cart){
-    const niceName = toTitle(String(item.name).replace(/\.[^.]+$/,'')); // ilman .jpg
-    const label = item.size ? `${niceName} — ${item.size}` : niceName;  // NIMI + KOKO
+    const niceName = toTitle(String(item.name).replace(/\.[^.]+$/,'')); 
+    const label = item.size ? `${niceName} — ${item.size}` : niceName;  
     const row=document.createElement('div'); row.className='cart-row'; row.dataset.key=key;
     row.innerHTML=`<div title="${item.name}">${label}</div>
       <input class="cart-input qty" type="number" min="1" value="${Math.max(1,parseInt(item.qty)||1)}" />
-      <button class="rm" title="Poista" type="button">✕</button>`;
+      <button class="rm" title="${t('cart.removeTitle', lang)}" type="button">✕</button>`;
     cartEl.appendChild(row);
   }
   cartCountEl.textContent=[...cart.values()].reduce((a,b)=>a+(Math.max(1,parseInt(b.qty)||1)),0);
@@ -581,7 +726,7 @@ cartEl.addEventListener('click',e=>{
     cart.delete(row.dataset.key); renderCart();
   }
 });
-$('#cartClear').onclick=()=>{ if(confirm('Tyhjennetäänkö kori?')){ cart.clear(); renderCart(); } };
+$('#cartClear').onclick=()=>{ if(confirm(t('alerts.clearCart', currentLang()))){ cart.clear(); renderCart(); } };
 
 /* ---------- Liukuva kori ---------- */
 const cartPanel    = document.getElementById('cartPanel');
@@ -598,12 +743,12 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cartPane
 /* ---------- Lähetys GAS:lle ---------- */
 function sendOrder(payload){
   const fd = new FormData();
-  fd.append('data', JSON.stringify(payload)); // GAS: e.parameter.data
+  fd.append('data', JSON.stringify(payload));
   return fetchTxt(GAS_ENDPOINT, { method:'POST', body: fd });
 }
 function responseOK(text){
   const t = (text||'').trim();
-  if (t.toUpperCase().startsWith('OK')) return true; // OK_MAILAPP / OK_GMAILAPP
+  if (t.toUpperCase().startsWith('OK')) return true;
   try{ const j = JSON.parse(t); return !!(j && j.ok); }catch(_){}
   return false;
 }
@@ -611,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSend = document.getElementById('cartEmail');
   btnSend.addEventListener('click', async () => {
     try{
-      if (cart.size === 0) { alert('Ostoskori on tyhjä.'); return; }
+      if (cart.size === 0) { alert(t('alerts.cartEmpty', currentLang())); return; }
       const items  = [...cart.values()].map(it => ({ name: it.name, size: it.size || "", qty: Math.max(1, parseInt(it.qty)||1) }));
       const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
       const note   = document.getElementById('note').value || "";
@@ -619,15 +764,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const {ok,status,text} = await sendOrder(payload);
       if (ok && responseOK(text)) {
-        alert('Tilaus lähetetty!');
+        alert(t('alerts.orderSent', currentLang()));
         closeCart(); cart.clear(); renderCart(); document.getElementById('note').value='';
       } else {
         let msg = (text||'').trim();
         try{ const j=JSON.parse(text||'{}'); if(j && (j.error||j.mailStatus)){ msg = JSON.stringify(j); } }catch(_){}
-        alert('Lähetys epäonnistui ('+status+'): ' + (msg||'ei vastausta'));
+        alert('(' + status + '): ' + (msg||''));
       }
     }catch(err){
-      alert('Lähetysvirhe: ' + (err && err.message ? err.message : err));
+      alert((err && err.message ? err.message : String(err)));
     }
   });
 });
@@ -652,18 +797,18 @@ async function loadFromManifest(){
     const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
     allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
 
-    const catKeys=new Set(CATS.map(c=>c.key));
+    const catKeys=new Set(CATS_ORDER);
     allFiles=allFiles.filter(x=>catKeys.has(x.cat));
 
     const cnt = countsFrom(allFiles);
-    renderCats(cnt);
+    renderCats(cnt, currentLang());
 
     await loadTexts();
     showGallery();
 
     if (currentCat !== 'all' && (!cnt[currentCat] || cnt[currentCat] === 0)) {
       currentCat = 'all';
-      renderCats(cnt);
+      renderCats(cnt, currentLang());
     }
   }catch(e){
     // hiljainen galleriavirhe
@@ -672,6 +817,10 @@ async function loadFromManifest(){
 
 /* ---------- init ---------- */
 window.addEventListener('DOMContentLoaded', async ()=>{
+  // kielivalitsin
+  $$('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> { setLang(b.dataset.lang); showGallery(); renderCart(); }));
+  setLang(currentLang());
+
   initGate();
   loadCart();
   await loadFromManifest();
