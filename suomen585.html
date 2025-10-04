@@ -34,12 +34,9 @@
     max-width:1240px; margin:0 auto; padding:.6rem 1rem;
     display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:.75rem;
   }
-  /* kielivalinnat vasemmalle, ei kelluva */
   .lang{ display:flex; gap:.25rem; padding:.2rem; border:1px solid var(--border); border-radius:10px; background:rgba(23,25,35,.75); }
   .lang button{ border:none; background:transparent; color:var(--ink); padding:.45rem .55rem; border-radius:8px; cursor:pointer; font-weight:700 }
   .lang button.active{ background:var(--accent); color:var(--accent-ink) }
-
-  /* keskellä otsikko */
   header h1{ margin:0; text-align:center; font-size:clamp(1.05rem,3.6vw,1.7rem) }
 
   .wrap{ max-width:1240px; margin:0 auto; padding:1rem }
@@ -101,7 +98,7 @@
     font-weight:800; cursor:pointer; padding:.55rem .6rem; width:100%; font-size:1rem; line-height:1.05; white-space:nowrap;
   }
 
-  /* Ostoskorimerkki oikealla ylhäällä */
+  /* Kori-badge */
   .cart-badge{
     position:fixed; top:12px; right:12px;
     background:var(--accent); color:var(--accent-ink);
@@ -145,30 +142,47 @@
   .lightbox.show{ display:flex }
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
+
+  /* Gate */
+  .gate{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
+    background:linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)), url("images/bg.webp") center/cover no-repeat;
+  }
+  .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
+  .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
+  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
+  .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
+  .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 </style>
 </head>
 <body>
 
   <header class="site-header">
     <div class="head-inner">
-      <!-- Kielivalitsin vasemmalle -->
       <nav class="lang" aria-label="Language">
         <button data-lang="fi" aria-label="Suomi">FI</button>
         <button data-lang="en" aria-label="English">EN</button>
         <button data-lang="sv" aria-label="Svenska">SV</button>
         <button data-lang="de" aria-label="Deutsch">DE</button>
       </nav>
-
-      <!-- Otsikko keskellä -->
       <h1 data-i18n="meta.title">Tukkutilaus</h1>
-
-      <!-- Tyhjä oikea palsta (pitää otsikon keskellä) -->
       <div></div>
     </div>
   </header>
 
-  <!-- Kori-badge oikeaan yläkulmaan -->
+  <!-- Kori-badge -->
   <button class="cart-badge" id="cartBadge" data-i18n-attr="title:cart.openTitle" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
+
+  <!-- Gate / kirjautuminen -->
+  <div class="gate" id="gate" aria-hidden="false">
+    <div class="gate-card">
+      <h2 data-i18n="gate.title">Tilausportaali</h2>
+      <input id="nameInput" type="text" data-i18n-attr="placeholder:gate.namePh" placeholder="Nimi / yritys" autocomplete="name" />
+      <input id="passInput" type="password" data-i18n-attr="placeholder:gate.passPh" placeholder="Salasana" autocomplete="current-password" />
+      <button id="passBtn" type="button" data-i18n="gate.open">Avaa</button>
+      <div class="gate-err" id="gateErr" data-i18n="gate.err">Väärä salasana. Yritä uudelleen.</div>
+    </div>
+  </div>
 
   <main class="wrap" aria-hidden="true" id="app">
     <section>
@@ -236,58 +250,38 @@ const ADMIN_PASS     = "fatso";
 
 /* ---------- i18n ---------- */
 const translations = {
-  fi:{ meta:{ title:"Tukkutilaus" },
-      gate:{ title:"Tilausportaali", namePh:"Nimi / yritys", passPh:"Salasana", open:"Avaa", err:"Väärä salasana. Yritä uudelleen." },
-      search:{ placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä" },
-      cats:{ all:"Kaikki" },
+  fi:{ meta:{ title:"Tukkutilaus" }, gate:{ title:"Tilausportaali", namePh:"Nimi / yritys", passPh:"Salasana", open:"Avaa", err:"Väärä salasana. Yritä uudelleen." },
+      search:{ placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä" }, cats:{ all:"Kaikki" },
       global:{ noNote:"Ei tiedotetta.", edit:"Muokkaa", notePh:"Kirjoita tiedote…" },
-      actions:{ save:"Tallenna", cancel:"Peruuta" },
-      nav:{ back:"← Takaisin" },
+      actions:{ save:"Tallenna", cancel:"Peruuta" }, nav:{ back:"← Takaisin" },
       cart:{ title:"Ostoskori", openTitle:"Avaa ostoskori", closeAria:"Sulje kori", notePh:"Lisätiedot (esim. viite, toimitus)…", clear:"Tyhjennä kori", send:"Lähetä tilaus", removeTitle:"Poista" },
-      lightbox:{ close:"Sulje" },
-      addrow:{ sizePh:"Koko", add:"Lisää koriin" },
+      lightbox:{ close:"Sulje" }, addrow:{ sizePh:"Koko", add:"Lisää koriin" },
       auth:{ logout:"Kirjaudu ulos", logoutTitle:"Kirjaudu ulos", confirmLogout:"Kirjaudutaanko ulos?" },
-      alerts:{ cartEmpty:"Ostoskori on tyhjä.", orderSent:"Tilaus lähetetty!", saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.", globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.", clearCart:"Tyhjennetäänkö kori?" },
-      catsLabels:{ "Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot" } },
-  en:{ meta:{ title:"Wholesale orders" },
-      gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
-      search:{ placeholder:"Search by name or SKU…", clear:"Clear" },
-      cats:{ all:"All" },
+      alerts:{ cartEmpty:"Ostoskori on tyhjä.", orderSent:"Tilaus lähetetty!", saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.", globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.", clearCart:"Tyhjennetäänkö kori?" } },
+  en:{ meta:{ title:"Wholesale orders" }, gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
+      search:{ placeholder:"Search by name or SKU…", clear:"Clear" }, cats:{ all:"All" },
       global:{ noNote:"No announcement.", edit:"Edit", notePh:"Write an announcement…" },
-      actions:{ save:"Save", cancel:"Cancel" },
-      nav:{ back:"← Back" },
+      actions:{ save:"Save", cancel:"Cancel" }, nav:{ back:"← Back" },
       cart:{ title:"Cart", openTitle:"Open cart", closeAria:"Close cart", notePh:"Additional info (e.g., reference, delivery)…", clear:"Empty cart", send:"Send order", removeTitle:"Remove" },
-      lightbox:{ close:"Close" },
-      addrow:{ sizePh:"Size", add:"Add to cart" },
+      lightbox:{ close:"Close" }, addrow:{ sizePh:"Size", add:"Add to cart" },
       auth:{ logout:"Log out", logoutTitle:"Log out", confirmLogout:"Log out now?" },
-      alerts:{ cartEmpty:"Your cart is empty.", orderSent:"Order sent!", saveFail:"Saving failed. Check GAS & SECRET.", globalSaveFail:"Saving the notice failed. Check GAS & SECRET.", clearCart:"Empty the cart?" },
-      catsLabels:{ "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Watches" } },
-  sv:{ meta:{ title:"Partibeställning" },
-      gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
-      search:{ placeholder:"Sök på namn eller SKU…", clear:"Rensa" },
-      cats:{ all:"Alla" },
+      alerts:{ cartEmpty:"Your cart is empty.", orderSent:"Order sent!", saveFail:"Saving failed. Check GAS & SECRET.", globalSaveFail:"Saving the notice failed. Check GAS & SECRET.", clearCart:"Empty the cart?" } },
+  sv:{ meta:{ title:"Partibeställning" }, gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
+      search:{ placeholder:"Sök på namn eller SKU…", clear:"Rensa" }, cats:{ all:"Alla" },
       global:{ noNote:"Ingen notis.", edit:"Redigera", notePh:"Skriv en notis…" },
-      actions:{ save:"Spara", cancel:"Avbryt" },
-      nav:{ back:"← Tillbaka" },
+      actions:{ save:"Spara", cancel:"Avbryt" }, nav:{ back:"← Tillbaka" },
       cart:{ title:"Varukorg", openTitle:"Öppna varukorg", closeAria:"Stäng varukorg", notePh:"Ytterligare info (t.ex. referens, leverans)…", clear:"Töm varukorg", send:"Skicka beställning", removeTitle:"Ta bort" },
-      lightbox:{ close:"Stäng" },
-      addrow:{ sizePh:"Storlek", add:"Lägg i korgen" },
+      lightbox:{ close:"Stäng" }, addrow:{ sizePh:"Storlek", add:"Lägg i korgen" },
       auth:{ logout:"Logga ut", logoutTitle:"Logga ut", confirmLogout:"Logga ut nu?" },
-      alerts:{ cartEmpty:"Varukorgen är tom.", orderSent:"Beställningen har skickats!", saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.", globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.", clearCart:"Tömma varukorgen?" },
-      catsLabels:{ "Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor" } },
-  de:{ meta:{ title:"Großhandelsbestellung" },
-      gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
-      search:{ placeholder:"Nach Name oder SKU suchen…", clear:"Leeren" },
-      cats:{ all:"Alle" },
+      alerts:{ cartEmpty:"Varukorgen är tom.", orderSent:"Beställningen har skickats!", saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.", globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.", clearCart:"Tömma varukorgen?" } },
+  de:{ meta:{ title:"Großhandelsbestellung" }, gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
+      search:{ placeholder:"Nach Name oder SKU suchen…", clear:"Leeren" }, cats:{ all:"Alle" },
       global:{ noNote:"Keine Mitteilung.", edit:"Bearbeiten", notePh:"Mitteilung schreiben…" },
-      actions:{ save:"Speichern", cancel:"Abbrechen" },
-      nav:{ back:"← Zurück" },
+      actions:{ save:"Speichern", cancel:"Abbrechen" }, nav:{ back:"← Zurück" },
       cart:{ title:"Warenkorb", openTitle:"Warenkorb öffnen", closeAria:"Warenkorb schließen", notePh:"Zusätzliche Infos (z. B. Referenz, Lieferung)…", clear:"Warenkorb leeren", send:"Bestellung senden", removeTitle:"Entfernen" },
-      lightbox:{ close:"Schließen" },
-      addrow:{ sizePh:"Größe", add:"In den Warenkorb" },
+      lightbox:{ close:"Schließen" }, addrow:{ sizePh:"Größe", add:"In den Warenkorb" },
       auth:{ logout:"Abmelden", logoutTitle:"Abmelden", confirmLogout:"Jetzt abmelden?" },
-      alerts:{ cartEmpty:"Ihr Warenkorb ist leer.", orderSent:"Bestellung gesendet!", saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.", globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.", clearCart:"Warenkorb leeren?" },
-      catsLabels:{ "Magneetit":"Magnete","Lappimagneetit":"Lappland-Magnete","Sormukset":"Ringe","Ranneketjut":"Armbänder","Kaulaketjut":"Halsketten","Rocks Steel":"Rocks Steel","Riipukset":"Anhänger","Seiðr":"Seiðr","Puukorut":"Holzschmuck","Muut":"Sonstiges","Hopeakorut":"Silberschmuck","Hiuskorut":"Haaraccessoires","Kellot":"Uhren" } }
+      alerts:{ cartEmpty:"Ihr Warenkorb ist leer.", orderSent:"Bestellung gesendet!", saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.", globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.", clearCart:"Warenkorb leeren?" } }
 };
 
 const DEFAULT_LANG='fi';
@@ -351,9 +345,9 @@ function refreshUIAfterAuth(){
   }
 }
 function openApp(isAdminFlag){
-  document.getElementById('gate').style.display='none';
-  document.getElementById('app').setAttribute('aria-hidden','false');
-  document.getElementById('gateErr').style.display='none';
+  $('#gate').style.display='none';
+  $('#app').setAttribute('aria-hidden','false');
+  $('#gateErr').style.display='none';
   try{
     sessionStorage.setItem('b2b_authed','1');
     sessionStorage.setItem('b2b_admin', isAdminFlag ? '1' : '0');
@@ -361,75 +355,97 @@ function openApp(isAdminFlag){
   refreshUIAfterAuth();
 }
 function initGate(){
-  const btn=document.getElementById('passBtn'), nameI=document.getElementById('nameInput'), passI=document.getElementById('passInput'), err=document.getElementById('gateErr');
+  const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
   function tryOpen(){
     const name = sanitize(nameI.value)||'Tuntematon';
     const pass = (passI.value||'').trim();
-    if (name.toLowerCase()==='admin' && pass==='fatso'){ sessionStorage.setItem('b2b_name','Admin'); openApp(true); return; }
-    if (pass==='sala54N4'){ sessionStorage.setItem('b2b_name',name); openApp(false); return; }
+    if (name.toLowerCase()===ADMIN_USER && pass===ADMIN_PASS){
+      sessionStorage.setItem('b2b_name','Admin'); openApp(true); return;
+    }
+    if (pass===PASSWORD_PLAIN){
+      sessionStorage.setItem('b2b_name',name); openApp(false); return;
+    }
     err.style.display='block'; passI.focus(); passI.select?.();
   }
-  try{ if(sessionStorage.getItem('b2b_authed')==='1'){ document.getElementById('gate').style.display='none'; document.getElementById('app').setAttribute('aria-hidden','false'); } }catch(_){}
+  /* POISTETTU automaattinen ohitus -> salasana vaaditaan aina */
   btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
-  document.getElementById('logout').onclick=()=>{
+  $('#logout').onclick=()=>{
     if(!confirm(t('auth.confirmLogout', currentLang()))) return;
     sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
-    document.getElementById('gate').style.display='flex'; document.getElementById('app').setAttribute('aria-hidden','true');
-    document.getElementById('passInput').value=''; document.getElementById('nameInput').value=''; document.getElementById('nameInput').focus(); closeCart();
+    $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
+    $('#passInput').value=''; $('#nameInput').value=''; $('#nameInput').focus(); closeCart();
   };
 }
 
 /* ---------- Kategoriat & haku ---------- */
 const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUpperCase());
-function countsFrom(list){ const o=Object.fromEntries(CATS_ORDER.map(k=>[k,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
+
+/* Dynaamiset kategoriat: CATS_ORDER ensin, sitten loput */
+function countsFrom(list){
+  const map = {};
+  list.forEach(f=>{ map[f.cat] = (map[f.cat]||0)+1; });
+  return map;
+}
+function orderedKeys(counts){
+  const dynamic = Object.keys(counts);
+  const known = CATS_ORDER.filter(k=>dynamic.includes(k));
+  const rest  = dynamic.filter(k=>!known.includes(k)).sort((a,b)=>a.localeCompare(b,'fi'));
+  return ['all', ...known, ...rest];
+}
 
 function renderCats(counts, lang){
-  const wrap = document.getElementById('cats');
+  const wrap = $('#cats');
   wrap.innerHTML = '';
+  const keys = orderedKeys(counts);
   const total = Object.values(counts).reduce((a,b)=>a+b,0);
-  const visible = CATS_ORDER.filter(k => (counts[k]||0) > 0);
 
-  if (currentCat !== 'all' && (!counts[currentCat] || counts[currentCat] === 0)) currentCat = 'all';
+  const mk=(k,label,count)=>{
+    const b=document.createElement('button');
+    b.className='cat-btn'+(k===currentCat?' active':'');
+    b.dataset.key=k;
+    b.textContent=`${label} (${count})`;
+    return b;
+  };
 
-  const labels = translations[lang]?.catsLabels || translations[DEFAULT_LANG].catsLabels;
-  const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
   wrap.appendChild(mk('all', t('cats.all', lang), total));
-  visible.forEach(key=>{ const label = labels[key] || key; wrap.appendChild(mk(key,label,counts[key]||0)); });
+  keys.slice(1).forEach(k=> wrap.appendChild(mk(k, k, counts[k]||0)));
+
+  if (currentCat!=='all' && !counts[currentCat]) currentCat='all';
 }
-document.getElementById('cats').addEventListener('click',e=>{
+
+$('#cats').addEventListener('click',e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
-  const key = b.dataset.key;
-  if (key !== 'all') { const cntMap = countsFrom(allFiles); if (!cntMap[key]) return; }
-  currentCat = key;
-  [...document.querySelectorAll('#cats .cat-btn')].forEach(x=>x.classList.toggle('active',x===b));
+  currentCat = b.dataset.key;
+  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b));
   showGallery();
 });
-document.getElementById('q').addEventListener('input',()=>showGallery());
-document.getElementById('clear').onclick=()=>{ document.getElementById('q').value=''; showGallery(); };
+
+$('#q').addEventListener('input',()=>showGallery());
+$('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
 
 /* ---------- Yleisviesti ---------- */
 function bindGlobalNoteOnce_(){
-  const wrap = document.getElementById('globalNote');
+  const wrap = $('#globalNote');
   if (wrap._bound) return; wrap._bound = true;
 
-  const view = document.getElementById('globalNoteView');
-  const acts = document.getElementById('globalNoteActions');
-  const editWrap = document.getElementById('globalNoteEditWrap');
-  const ta = document.getElementById('globalNoteTextarea');
+  const view = $('#globalNoteView');
+  const acts = $('#globalNoteActions');
+  const editWrap = $('#globalNoteEditWrap');
+  const ta = $('#globalNoteTextarea');
 
-  document.getElementById('globalNoteEdit').onclick = ()=>{ editWrap.style.display=''; acts.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); };
-  document.getElementById('globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
-  document.getElementById('globalNoteSave').onclick = async ()=>{
+  $('#globalNoteEdit').onclick = ()=>{ editWrap.style.display=''; acts.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); };
+  $('#globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
+  $('#globalNoteSave').onclick = async ()=>{
     const ok = await saveGlobalNote(ta.value);
     if (ok){ renderGlobalNote(ta.value); } else { alert(t('alerts.globalSaveFail', currentLang())); }
   };
 }
 function renderGlobalNote(text){
-  const wrap = document.getElementById('globalNote');
-  const view = document.getElementById('globalNoteView');
-  const acts = document.getElementById('globalNoteActions');
-  const editWrap = document.getElementById('globalNoteEditWrap');
-  const ta   = document.getElementById('globalNoteTextarea');
+  const wrap = $('#globalNote');
+  const view = $('#globalNoteView');
+  const acts = $('#globalNoteActions');
+  const editWrap = $('#globalNoteEditWrap');
+  const ta   = $('#globalNoteTextarea');
 
   const ttxt = String(text||'').trim();
   view.textContent = ttxt || t('global.noNote', currentLang());
@@ -518,10 +534,10 @@ function addFigure(path){
   const ta   = fig.querySelector('textarea');
   view.textContent = note;
   ta.value = note;
-  document.getElementById('gallery').appendChild(fig);
+  $('#gallery').appendChild(fig);
 }
 function showGallery(){
-  const q=document.getElementById('q').value.trim().toLowerCase(); const gal=document.getElementById('gallery'); gal.innerHTML='';
+  const q=$('#q').value.trim().toLowerCase(); const gal=$('#gallery'); gal.innerHTML='';
   const list=allFiles.filter(f=>{
     if(currentCat!=='all' && f.cat!==currentCat) return false;
     if(!q) return true;
@@ -530,7 +546,7 @@ function showGallery(){
   });
   const seen=new Set(); for(const f of list){ if(seen.has(f.path)) continue; seen.add(f.path); addFigure(f.path); }
 }
-document.getElementById('gallery').addEventListener('click',async e=>{
+$('#gallery').addEventListener('click',async e=>{
   const fig=e.target.closest('figure'); if(!fig) return;
   if(e.target.classList.contains('add')){
     const sizeI = fig.querySelector('.size');
@@ -556,15 +572,15 @@ document.getElementById('gallery').addEventListener('click',async e=>{
       return;
     }
   }
-  const img=e.target.closest('img'); if(img){ document.getElementById('lightImg').src=img.src; document.getElementById('lightbox').classList.add('show'); document.getElementById('lightbox').setAttribute('aria-hidden','false'); }
+  const img=e.target.closest('img'); if(img){ $('#lightImg').src=img.src; $('#lightbox').classList.add('show'); $('#lightbox').setAttribute('aria-hidden','false'); }
 });
-document.getElementById('closeLb').onclick=()=>{ document.getElementById('lightbox').classList.remove('show'); document.getElementById('lightbox').setAttribute('aria-hidden','true'); document.getElementById('lightImg').src=''; };
-document.getElementById('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') document.getElementById('closeLb').click(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape' && document.getElementById('lightbox').classList.contains('show')) document.getElementById('closeLb').click(); });
+$('#closeLb').onclick=()=>{ $('#lightbox').classList.remove('show'); $('#lightbox').setAttribute('aria-hidden','true'); $('#lightImg').src=''; };
+$('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#closeLb').click(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
 
 /* ---------- Ostoskori ---------- */
 let cart = new Map();
-const cartEl = document.getElementById('cart'), cartCountEl = document.getElementById('cartCount');
+const cartEl = $('#cart'), cartCountEl = $('#cartCount');
 const normSize = s => (String(s||'').trim().toLowerCase());
 const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
 
@@ -589,14 +605,11 @@ function addToCart(filename,size,qty){
   const it  = cart.get(key) || {name:filename,size:size||'',qty:0};
   it.size = size || it.size;
   it.qty  = Math.max(0,parseInt(it.qty)||0) + Math.max(1,qty||1);
-  cart.set(key,it);
-  renderCart();
+  cart.set(key,it); renderCart();
 }
-
 function loadCart(){
   try{ const raw=localStorage.getItem('b2b_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch{}
 }
-
 cartEl.addEventListener('input',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
   const key=row.dataset.key; const it=cart.get(key); if(!it) return;
@@ -607,9 +620,9 @@ cartEl.addEventListener('click',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
   if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
 });
-document.getElementById('cartClear').onclick=()=>{ if(confirm(t('alerts.clearCart', currentLang()))){ cart.clear(); renderCart(); } };
+$('#cartClear').onclick=()=>{ if(confirm(t('alerts.clearCart', currentLang()))){ cart.clear(); renderCart(); } };
 
-/* ---------- Liukuva kori ---------- */
+/* ---------- Kori UI ---------- */
 const cartPanel    = document.getElementById('cartPanel');
 const cartBackdrop = document.getElementById('cartBackdrop');
 const cartCloseBtn = document.getElementById('cartClose');
@@ -642,6 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
       const note   = document.getElementById('note').value || "";
       const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
+
       const {ok,status,text} = await sendOrder(payload);
       if (ok && responseOK(text)) {
         alert(t('alerts.orderSent', currentLang()));
@@ -668,34 +682,29 @@ async function loadFromManifest(){
     const byCat=[];
     for(const p of files){
       const parts=p.split('/');
-      if(parts.length>=3){
-        const cat=parts[1]; byCat.push({path:p,cat,name:p.split('/').pop()});
-      }
+      const cat=(parts[1]||'Muut');
+      byCat.push({path:p,cat,name:p.split('/').pop()});
     }
+    /* Ei karsita kategorioita – kaikki näytetään */
     const uniq=new Map(); for(const it of byCat){ if(!uniq.has(it.path)) uniq.set(it.path,it); }
     allFiles=[...uniq.values()].sort((a,b)=> a.cat===b.cat ? a.name.localeCompare(b.name,'fi') : a.cat.localeCompare(b.cat,'fi'));
-
-    const catKeys=new Set(CATS_ORDER);
-    allFiles=allFiles.filter(x=>catKeys.has(x.cat));
 
     const cnt = countsFrom(allFiles);
     renderCats(cnt, currentLang());
 
     await loadTexts();
     showGallery();
-
-    if (currentCat !== 'all' && (!cnt[currentCat] || cnt[currentCat] === 0)) {
-      currentCat = 'all';
-      renderCats(cnt, currentLang());
-    }
-  }catch(e){ /* hiljainen galleriavirhe */ }
+  }catch(e){
+    // hiljainen galleriavirhe
+  }
 }
 
 /* ---------- init ---------- */
 window.addEventListener('DOMContentLoaded', async ()=>{
   document.querySelectorAll('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> { setLang(b.dataset.lang); showGallery(); renderCart(); }));
   setLang(currentLang());
-  initGate();
+
+  initGate();             // ei enää automaattista ohitusta
   loadCart();
   await loadFromManifest();
   await loadGlobalNote();
