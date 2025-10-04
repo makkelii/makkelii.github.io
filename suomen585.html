@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title data-i18n="meta.title">Suomen 585 Oy – Tukkutilaus</title>
+<title data-i18n="meta.title">Tukkutilaus</title>
 
 <link rel="icon" href="/favicon.ico" sizes="any">
 <meta name="theme-color" content="#1f2937">
@@ -23,21 +23,24 @@
     overflow-x:hidden;
   }
 
-  /* Kielivalitsin – siirretty hieman vasemmalle, ei osu kori-badgeteen */
-  .lang{
-    position:fixed; top:.6rem; right:72px; z-index:2000;
-    background:rgba(31,41,55,.92); border:1px solid var(--border); border-radius:10px;
-    display:flex; gap:.25rem; padding:.25rem; backdrop-filter:saturate(120%) blur(6px);
+  /* ====== HEADER ====== */
+  .site-header{
+    position:sticky; top:0; z-index:5;
+    background:rgba(31,41,55,.92);
+    backdrop-filter:saturate(120%) blur(6px);
+    color:#f3f4f6;
   }
+  .head-inner{
+    max-width:1240px; margin:0 auto; padding:.6rem 1rem;
+    display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:.75rem;
+  }
+  /* kielivalinnat vasemmalle, ei kelluva */
+  .lang{ display:flex; gap:.25rem; padding:.2rem; border:1px solid var(--border); border-radius:10px; background:rgba(23,25,35,.75); }
   .lang button{ border:none; background:transparent; color:var(--ink); padding:.45rem .55rem; border-radius:8px; cursor:pointer; font-weight:700 }
   .lang button.active{ background:var(--accent); color:var(--accent-ink) }
 
-  header{
-    background:rgba(31,41,55,.92);
-    color:#f3f4f6; padding:.9rem 1rem; text-align:center;
-    position:sticky; top:0; z-index:5; backdrop-filter:saturate(120%) blur(6px);
-  }
-  header h1{ margin:0; font-size:clamp(1.1rem,3.6vw,1.8rem) }
+  /* keskellä otsikko */
+  header h1{ margin:0; text-align:center; font-size:clamp(1.05rem,3.6vw,1.7rem) }
 
   .wrap{ max-width:1240px; margin:0 auto; padding:1rem }
 
@@ -98,16 +101,15 @@
     font-weight:800; cursor:pointer; padding:.55rem .6rem; width:100%; font-size:1rem; line-height:1.05; white-space:nowrap;
   }
 
-  /* Ostoskorimerkki */
+  /* Ostoskorimerkki oikealla ylhäällä */
   .cart-badge{
     position:fixed; top:12px; right:12px;
     background:var(--accent); color:var(--accent-ink);
     border-radius:999px; padding:.65rem 1.1rem; font-size:1.05rem; font-weight:800;
-    z-index:2101; /* yli .lang (2000), mutta alle paneelin */
-    box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
+    z-index:2101; box-shadow:0 4px 14px rgba(0,0,0,.25); cursor:pointer;
   }
 
-  /* Backdrop ja paneeli – paneeli aina ylimpänä */
+  /* Backdrop & paneeli */
   .cart-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:4000; }
   .cart-backdrop.on{ display:block; }
   body.noscroll{ overflow:hidden; }
@@ -117,16 +119,9 @@
     background:rgba(23,25,35,.96); border-left:1px solid var(--border);
     padding:1rem; border-radius:0; box-shadow:-6px 0 24px rgba(0,0,0,.35);
     transform:translateX(100%); transition:transform .25s ease;
-    z-index:4001; /* yli backdropin, kielivalitsimen ja bagden */
-    backdrop-filter: blur(6px);
+    z-index:4001; backdrop-filter: blur(6px);
   }
   #cartPanel.open{ transform:translateX(0); }
-
-  /* Valinnainen: piilota kielivalinta & badge pehmeästi paneelin ollessa auki */
-  body.cart-open .cart-badge,
-  body.cart-open .lang{
-    opacity:0; pointer-events:none; transition:opacity .15s ease;
-  }
 
   .cart-top{ display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem }
   .cart-title{ margin:.2rem 0; font-size:1.25rem; font-weight:800 }
@@ -150,44 +145,29 @@
   .lightbox.show{ display:flex }
   .lightbox img{ max-width:95vw; max-height:92vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.6) }
   .lightbox .close{ position:absolute; top:10px; right:12px; background:#fff; color:#222; border:none; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-weight:700 }
-
-  .gate{
-    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200;
-    background:linear-gradient(180deg, rgba(15,17,21,.80), rgba(15,17,21,.85)), url("images/bg.webp") center/cover no-repeat;
-  }
-  .gate-card{ background:rgba(23,25,35,.92); border:1px solid var(--border); border-radius:14px; padding:1.2rem; width:min(92vw,400px); box-shadow:0 20px 60px rgba(0,0,0,.35) }
-  .gate-card h2{ margin:.2rem 0 .8rem; text-align:center }
-  .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
-  .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
-  .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
-
-  /* Kapeat näytöt: kielivalitsin alemmas */
-  @media (max-width:420px){
-    .lang{ top:3.6rem; right:.6rem; }
-  }
 </style>
 </head>
 <body>
-  <!-- Kielivalitsin -->
-  <nav class="lang" aria-label="Language">
-    <button data-lang="fi" aria-label="Suomi">FI</button>
-    <button data-lang="en" aria-label="English">EN</button>
-    <button data-lang="sv" aria-label="Svenska">SV</button>
-    <button data-lang="de" aria-label="Deutsch">DE</button>
-  </nav>
 
-  <div class="gate" id="gate" aria-hidden="false">
-    <div class="gate-card">
-      <h2 data-i18n="gate.title">Tilausportaali</h2>
-      <input id="nameInput" type="text" data-i18n-attr="placeholder:gate.namePh" placeholder="Nimi / yritys" autocomplete="name" />
-      <input id="passInput" type="password" data-i18n-attr="placeholder:gate.passPh" placeholder="Salasana" autocomplete="current-password" />
-      <button id="passBtn" type="button" data-i18n="gate.open">Avaa</button>
-      <div class="gate-err" id="gateErr" data-i18n="gate.err">Väärä salasana. Yritä uudelleen.</div>
+  <header class="site-header">
+    <div class="head-inner">
+      <!-- Kielivalitsin vasemmalle -->
+      <nav class="lang" aria-label="Language">
+        <button data-lang="fi" aria-label="Suomi">FI</button>
+        <button data-lang="en" aria-label="English">EN</button>
+        <button data-lang="sv" aria-label="Svenska">SV</button>
+        <button data-lang="de" aria-label="Deutsch">DE</button>
+      </nav>
+
+      <!-- Otsikko keskellä -->
+      <h1 data-i18n="meta.title">Tukkutilaus</h1>
+
+      <!-- Tyhjä oikea palsta (pitää otsikon keskellä) -->
+      <div></div>
     </div>
-  </div>
+  </header>
 
-  <header><h1 data-i18n="meta.title">Suomen 585 Oy – Tukkutilaus</h1></header>
-
+  <!-- Kori-badge oikeaan yläkulmaan -->
   <button class="cart-badge" id="cartBadge" data-i18n-attr="title:cart.openTitle" title="Avaa ostoskori">🛒 <span id="cartCount">0</span></button>
 
   <main class="wrap" aria-hidden="true" id="app">
@@ -200,7 +180,6 @@
         <div class="cats" id="cats"></div>
       </div>
 
-      <!-- Yleisviesti (näkyy kaikille; admin voi muokata) -->
       <div id="globalNote" class="global-note">
         <div class="global-note-view" id="globalNoteView" data-i18n="global.noNote">Ei tiedotetta.</div>
         <div class="global-note-actions" id="globalNoteActions" style="display:none">
@@ -257,7 +236,7 @@ const ADMIN_PASS     = "fatso";
 
 /* ---------- i18n ---------- */
 const translations = {
-  fi:{ meta:{ title:"Suomen 585 Oy – Tukkutilaus" },
+  fi:{ meta:{ title:"Tukkutilaus" },
       gate:{ title:"Tilausportaali", namePh:"Nimi / yritys", passPh:"Salasana", open:"Avaa", err:"Väärä salasana. Yritä uudelleen." },
       search:{ placeholder:"Hae nimellä tai SKU:lla…", clear:"Tyhjennä" },
       cats:{ all:"Kaikki" },
@@ -270,7 +249,7 @@ const translations = {
       auth:{ logout:"Kirjaudu ulos", logoutTitle:"Kirjaudu ulos", confirmLogout:"Kirjaudutaanko ulos?" },
       alerts:{ cartEmpty:"Ostoskori on tyhjä.", orderSent:"Tilaus lähetetty!", saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.", globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.", clearCart:"Tyhjennetäänkö kori?" },
       catsLabels:{ "Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot" } },
-  en:{ meta:{ title:"Suomen 585 Oy – Wholesale Orders" },
+  en:{ meta:{ title:"Wholesale orders" },
       gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
       search:{ placeholder:"Search by name or SKU…", clear:"Clear" },
       cats:{ all:"All" },
@@ -282,8 +261,8 @@ const translations = {
       addrow:{ sizePh:"Size", add:"Add to cart" },
       auth:{ logout:"Log out", logoutTitle:"Log out", confirmLogout:"Log out now?" },
       alerts:{ cartEmpty:"Your cart is empty.", orderSent:"Order sent!", saveFail:"Saving failed. Check GAS & SECRET.", globalSaveFail:"Saving the notice failed. Check GAS & SECRET.", clearCart:"Empty the cart?" },
-      catsLabels:{ "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Clocks" } },
-  sv:{ meta:{ title:"Suomen 585 Oy – Partibeställning" },
+      catsLabels:{ "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Watches" } },
+  sv:{ meta:{ title:"Partibeställning" },
       gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
       search:{ placeholder:"Sök på namn eller SKU…", clear:"Rensa" },
       cats:{ all:"Alla" },
@@ -296,7 +275,7 @@ const translations = {
       auth:{ logout:"Logga ut", logoutTitle:"Logga ut", confirmLogout:"Logga ut nu?" },
       alerts:{ cartEmpty:"Varukorgen är tom.", orderSent:"Beställningen har skickats!", saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.", globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.", clearCart:"Tömma varukorgen?" },
       catsLabels:{ "Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor" } },
-  de:{ meta:{ title:"Suomen 585 Oy – Großhandelsbestellung" },
+  de:{ meta:{ title:"Großhandelsbestellung" },
       gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
       search:{ placeholder:"Nach Name oder SKU suchen…", clear:"Leeren" },
       cats:{ all:"Alle" },
@@ -348,23 +327,17 @@ function setLang(lang){
   document.documentElement.lang = lang;
 }
 
-/* ---------- DOM helpers ---------- */
+/* ---------- Helpers & state ---------- */
 const sanitize = s => (s||"").toString().replace(/\s+/g,' ').trim();
-
 let currentCat='all', allFiles=[], textMap={};
-
 const CATS_ORDER = ["Magneetit","Lappimagneetit","Sormukset","Ranneketjut","Kaulaketjut","Rocks Steel","Riipukset","Seiðr","Puukorut","Muut","Hopeakorut","Hiuskorut","Kellot"];
 const isAdmin = ()=> (sessionStorage.getItem('b2b_admin')==='1');
 
-/* --- apuri ilman preflightia --- */
 function fetchTxt(url, opt={}, timeoutMs=20000){
   const ac = new AbortController();
   const t = setTimeout(()=>ac.abort(), timeoutMs);
   return fetch(url, {...opt, signal: ac.signal})
-    .then(async r=>{
-      const text = await r.text().catch(()=> '');
-      return { ok:r.ok, status:r.status, text };
-    })
+    .then(async r=>{ const text = await r.text().catch(()=> ''); return { ok:r.ok, status:r.status, text }; })
     .catch(err=>({ ok:false, status:0, text:String(err && err.message || err) }))
     .finally(()=> clearTimeout(t));
 }
@@ -378,9 +351,9 @@ function refreshUIAfterAuth(){
   }
 }
 function openApp(isAdminFlag){
-  $('#gate').style.display='none';
-  $('#app').setAttribute('aria-hidden','false');
-  $('#gateErr').style.display='none';
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').setAttribute('aria-hidden','false');
+  document.getElementById('gateErr').style.display='none';
   try{
     sessionStorage.setItem('b2b_authed','1');
     sessionStorage.setItem('b2b_admin', isAdminFlag ? '1' : '0');
@@ -388,29 +361,21 @@ function openApp(isAdminFlag){
   refreshUIAfterAuth();
 }
 function initGate(){
-  const btn=$('#passBtn'), nameI=$('#nameInput'), passI=$('#passInput'), err=$('#gateErr');
+  const btn=document.getElementById('passBtn'), nameI=document.getElementById('nameInput'), passI=document.getElementById('passInput'), err=document.getElementById('gateErr');
   function tryOpen(){
     const name = sanitize(nameI.value)||'Tuntematon';
     const pass = (passI.value||'').trim();
-    if (name.toLowerCase()===ADMIN_USER && pass===ADMIN_PASS){
-      sessionStorage.setItem('b2b_name','Admin');
-      openApp(true); return;
-    }
-    if (pass===PASSWORD_PLAIN){
-      sessionStorage.setItem('b2b_name',name);
-      openApp(false); return;
-    }
+    if (name.toLowerCase()==='admin' && pass==='fatso'){ sessionStorage.setItem('b2b_name','Admin'); openApp(true); return; }
+    if (pass==='sala54N4'){ sessionStorage.setItem('b2b_name',name); openApp(false); return; }
     err.style.display='block'; passI.focus(); passI.select?.();
   }
-  try{
-    if(sessionStorage.getItem('b2b_authed')==='1'){ $('#gate').style.display='none'; $('#app').setAttribute('aria-hidden','false'); }
-  }catch(_){}
+  try{ if(sessionStorage.getItem('b2b_authed')==='1'){ document.getElementById('gate').style.display='none'; document.getElementById('app').setAttribute('aria-hidden','false'); } }catch(_){}
   btn.onclick=tryOpen; passI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); }; nameI.onkeydown=e=>{ if(e.key==='Enter') tryOpen(); };
-  $('#logout').onclick=()=>{
+  document.getElementById('logout').onclick=()=>{
     if(!confirm(t('auth.confirmLogout', currentLang()))) return;
     sessionStorage.clear(); localStorage.removeItem('b2b_cart'); cart.clear(); renderCart();
-    $('#gate').style.display='flex'; $('#app').setAttribute('aria-hidden','true');
-    $('#passInput').value=''; $('#nameInput').value=''; $('#nameInput').focus(); closeCart();
+    document.getElementById('gate').style.display='flex'; document.getElementById('app').setAttribute('aria-hidden','true');
+    document.getElementById('passInput').value=''; document.getElementById('nameInput').value=''; document.getElementById('nameInput').focus(); closeCart();
   };
 }
 
@@ -419,74 +384,52 @@ const toTitle = s=>s.replace(/[-_]/g,' ').trim().replace(/(^|\s)\S/g,m=>m.toUppe
 function countsFrom(list){ const o=Object.fromEntries(CATS_ORDER.map(k=>[k,0])); list.forEach(f=>{ if(o[f.cat]!=null) o[f.cat]++; }); return o; }
 
 function renderCats(counts, lang){
-  const wrap = $('#cats');
+  const wrap = document.getElementById('cats');
   wrap.innerHTML = '';
-
   const total = Object.values(counts).reduce((a,b)=>a+b,0);
   const visible = CATS_ORDER.filter(k => (counts[k]||0) > 0);
 
-  if (currentCat !== 'all' && (!counts[currentCat] || counts[currentCat] === 0)) {
-    currentCat = 'all';
-  }
+  if (currentCat !== 'all' && (!counts[currentCat] || counts[currentCat] === 0)) currentCat = 'all';
 
   const labels = translations[lang]?.catsLabels || translations[DEFAULT_LANG].catsLabels;
-  const mk=(k,l,c)=>{
-    const b=document.createElement('button');
-    b.className='cat-btn'+(k===currentCat?' active':'');
-    b.dataset.key=k;
-    b.textContent=`${l} (${c})`;
-    return b;
-  };
-
+  const mk=(k,l,c)=>{ const b=document.createElement('button'); b.className='cat-btn'+(k===currentCat?' active':''); b.dataset.key=k; b.textContent=`${l} (${c})`; return b; };
   wrap.appendChild(mk('all', t('cats.all', lang), total));
-  visible.forEach(key=>{
-    const label = labels[key] || key;
-    wrap.appendChild(mk(key,label,counts[key]||0));
-  });
+  visible.forEach(key=>{ const label = labels[key] || key; wrap.appendChild(mk(key,label,counts[key]||0)); });
 }
-
-$('#cats').addEventListener('click',e=>{
+document.getElementById('cats').addEventListener('click',e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
   const key = b.dataset.key;
-
-  if (key !== 'all') {
-    const cntMap = countsFrom(allFiles);
-    if (!cntMap[key]) return;
-  }
-
+  if (key !== 'all') { const cntMap = countsFrom(allFiles); if (!cntMap[key]) return; }
   currentCat = key;
-  $$('#cats .cat-btn').forEach(x=>x.classList.toggle('active',x===b));
+  [...document.querySelectorAll('#cats .cat-btn')].forEach(x=>x.classList.toggle('active',x===b));
   showGallery();
 });
-
-$('#q').addEventListener('input',()=>showGallery());
-$('#clear').onclick=()=>{ $('#q').value=''; showGallery(); };
+document.getElementById('q').addEventListener('input',()=>showGallery());
+document.getElementById('clear').onclick=()=>{ document.getElementById('q').value=''; showGallery(); };
 
 /* ---------- Yleisviesti ---------- */
 function bindGlobalNoteOnce_(){
-  const wrap = $('#globalNote');
+  const wrap = document.getElementById('globalNote');
   if (wrap._bound) return; wrap._bound = true;
 
-  const view = $('#globalNoteView');
-  const acts = $('#globalNoteActions');
-  const editWrap = $('#globalNoteEditWrap');
-  const ta = $('#globalNoteTextarea');
+  const view = document.getElementById('globalNoteView');
+  const acts = document.getElementById('globalNoteActions');
+  const editWrap = document.getElementById('globalNoteEditWrap');
+  const ta = document.getElementById('globalNoteTextarea');
 
-  $('#globalNoteEdit').onclick = ()=>{ editWrap.style.display=''; acts.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); };
-  $('#globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
-  $('#globalNoteSave').onclick = async ()=>{
-    const newText = ta.value;
-    const ok = await saveGlobalNote(newText);
-    if (ok){ renderGlobalNote(newText); }
-    else { alert(t('alerts.globalSaveFail', currentLang())); }
+  document.getElementById('globalNoteEdit').onclick = ()=>{ editWrap.style.display=''; acts.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); };
+  document.getElementById('globalNoteCancel').onclick = ()=>{ editWrap.style.display='none'; acts.style.display=''; ta.value = view.textContent; };
+  document.getElementById('globalNoteSave').onclick = async ()=>{
+    const ok = await saveGlobalNote(ta.value);
+    if (ok){ renderGlobalNote(ta.value); } else { alert(t('alerts.globalSaveFail', currentLang())); }
   };
 }
 function renderGlobalNote(text){
-  const wrap = $('#globalNote');
-  const view = $('#globalNoteView');
-  const acts = $('#globalNoteActions');
-  const editWrap = $('#globalNoteEditWrap');
-  const ta   = $('#globalNoteTextarea');
+  const wrap = document.getElementById('globalNote');
+  const view = document.getElementById('globalNoteView');
+  const acts = document.getElementById('globalNoteActions');
+  const editWrap = document.getElementById('globalNoteEditWrap');
+  const ta   = document.getElementById('globalNoteTextarea');
 
   const ttxt = String(text||'').trim();
   view.textContent = ttxt || t('global.noNote', currentLang());
@@ -506,9 +449,7 @@ async function loadGlobalNote(){
     const j = await r.json();
     const txt = (j && typeof j.note === 'string') ? j.note : "";
     renderGlobalNote(txt);
-  }catch(_){
-    renderGlobalNote("");
-  }
+  }catch(_){ renderGlobalNote(""); }
 }
 async function saveGlobalNote(text){
   const payload = { action: "setGlobal", note: String(text||''), secret: GAS_SECRET };
@@ -577,10 +518,10 @@ function addFigure(path){
   const ta   = fig.querySelector('textarea');
   view.textContent = note;
   ta.value = note;
-  $('#gallery').appendChild(fig);
+  document.getElementById('gallery').appendChild(fig);
 }
 function showGallery(){
-  const q=$('#q').value.trim().toLowerCase(); const gal=$('#gallery'); gal.innerHTML='';
+  const q=document.getElementById('q').value.trim().toLowerCase(); const gal=document.getElementById('gallery'); gal.innerHTML='';
   const list=allFiles.filter(f=>{
     if(currentCat!=='all' && f.cat!==currentCat) return false;
     if(!q) return true;
@@ -589,19 +530,15 @@ function showGallery(){
   });
   const seen=new Set(); for(const f of list){ if(seen.has(f.path)) continue; seen.add(f.path); addFigure(f.path); }
 }
-$('#gallery').addEventListener('click',async e=>{
+document.getElementById('gallery').addEventListener('click',async e=>{
   const fig=e.target.closest('figure'); if(!fig) return;
   if(e.target.classList.contains('add')){
     const sizeI = fig.querySelector('.size');
     const qtyI  = fig.querySelector('.qty');
     const size  = (sizeI.value||'').trim();
     const qty   = Math.max(1,parseInt(qtyI.value)||1);
-
     addToCart(fig.dataset.file,size,qty);
-
-    sizeI.value = '';
-    qtyI.value  = '1';
-    return;
+    sizeI.value = ''; qtyI.value  = '1'; return;
   }
   if (e.target.dataset.act){
     const line = e.target.closest('.note-line');
@@ -610,39 +547,24 @@ $('#gallery').addEventListener('click',async e=>{
     const edit = line.querySelector('.note-edit');
     const ta   = line.querySelector('textarea');
     const editBtn = line.querySelector('[data-act="edit"]');
-
-    if (e.target.dataset.act==='edit'){
-      edit.style.display='block'; if(editBtn) editBtn.style.display='none';
-      ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);
-      return;
-    }
-    if (e.target.dataset.act==='cancel'){
-      edit.style.display='none'; if(editBtn) editBtn.style.display='';
-      ta.value = textMap[sku] || "";
-      return;
-    }
+    if (e.target.dataset.act==='edit'){ edit.style.display='block'; if(editBtn) editBtn.style.display='none'; ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); return; }
+    if (e.target.dataset.act==='cancel'){ edit.style.display='none'; if(editBtn) editBtn.style.display=''; ta.value = textMap[sku] || ""; return; }
     if (e.target.dataset.act==='save'){
-      const newText = ta.value;
-      const ok = await saveText(sku, newText);
-      if (ok){
-        view.textContent = newText;
-        edit.style.display='none'; if(editBtn) editBtn.style.display='';
-      }else{
-        alert(t('alerts.saveFail', currentLang()));
-      }
+      const ok = await saveText(sku, ta.value);
+      if (ok){ view.textContent = ta.value; edit.style.display='none'; if(editBtn) editBtn.style.display=''; }
+      else{ alert(t('alerts.saveFail', currentLang())); }
       return;
     }
   }
-  const img=e.target.closest('img'); if(img){ $('#lightImg').src=img.src; $('#lightbox').classList.add('show'); $('#lightbox').setAttribute('aria-hidden','false'); }
+  const img=e.target.closest('img'); if(img){ document.getElementById('lightImg').src=img.src; document.getElementById('lightbox').classList.add('show'); document.getElementById('lightbox').setAttribute('aria-hidden','false'); }
 });
-$('#closeLb').onclick=()=>{ $('#lightbox').classList.remove('show'); $('#lightbox').setAttribute('aria-hidden','true'); $('#lightImg').src=''; };
-$('#lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') $('#closeLb').click(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('#lightbox').classList.contains('show')) $('#closeLb').click(); });
+document.getElementById('closeLb').onclick=()=>{ document.getElementById('lightbox').classList.remove('show'); document.getElementById('lightbox').setAttribute('aria-hidden','true'); document.getElementById('lightImg').src=''; };
+document.getElementById('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') document.getElementById('closeLb').click(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && document.getElementById('lightbox').classList.contains('show')) document.getElementById('closeLb').click(); });
 
 /* ---------- Ostoskori ---------- */
 let cart = new Map();
-const cartEl = $('#cart'), cartCountEl = $('#cartCount');
-
+const cartEl = document.getElementById('cart'), cartCountEl = document.getElementById('cartCount');
 const normSize = s => (String(s||'').trim().toLowerCase());
 const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
 
@@ -672,40 +594,28 @@ function addToCart(filename,size,qty){
 }
 
 function loadCart(){
-  try{
-    const raw=localStorage.getItem('b2b_cart'); if(!raw) return;
-    cart=new Map(JSON.parse(raw));
-    renderCart();
-  }catch{}
+  try{ const raw=localStorage.getItem('b2b_cart'); if(!raw) return; cart=new Map(JSON.parse(raw)); renderCart(); }catch{}
 }
 
 cartEl.addEventListener('input',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
   const key=row.dataset.key; const it=cart.get(key); if(!it) return;
-
-  if(e.target.classList.contains('qty')){
-    it.qty=Math.max(1,parseInt(e.target.value)||1);
-    cart.set(key,it);
-  }
-
+  if(e.target.classList.contains('qty')){ it.qty=Math.max(1,parseInt(e.target.value)||1); cart.set(key,it); }
   renderCart();
 });
-
 cartEl.addEventListener('click',e=>{
   const row=e.target.closest('.cart-row'); if(!row) return;
-  if(e.target.classList.contains('rm')){
-    cart.delete(row.dataset.key); renderCart();
-  }
+  if(e.target.classList.contains('rm')){ cart.delete(row.dataset.key); renderCart(); }
 });
-$('#cartClear').onclick=()=>{ if(confirm(t('alerts.clearCart', currentLang()))){ cart.clear(); renderCart(); } };
+document.getElementById('cartClear').onclick=()=>{ if(confirm(t('alerts.clearCart', currentLang()))){ cart.clear(); renderCart(); } };
 
 /* ---------- Liukuva kori ---------- */
 const cartPanel    = document.getElementById('cartPanel');
 const cartBackdrop = document.getElementById('cartBackdrop');
 const cartCloseBtn = document.getElementById('cartClose');
 const cartBadgeBtn = document.getElementById('cartBadge');
-function openCart(){ cartPanel.classList.add('open'); cartBackdrop.classList.add('on'); document.body.classList.add('noscroll','cart-open'); }
-function closeCart(){ cartPanel.classList.remove('open'); cartBackdrop.classList.remove('on'); document.body.classList.remove('noscroll','cart-open'); }
+function openCart(){ cartPanel.classList.add('open'); cartBackdrop.classList.add('on'); document.body.classList.add('noscroll'); }
+function closeCart(){ cartPanel.classList.remove('open'); cartBackdrop.classList.remove('on'); document.body.classList.remove('noscroll'); }
 if (cartBadgeBtn) cartBadgeBtn.onclick = openCart;
 if (cartCloseBtn) cartCloseBtn.onclick = closeCart;
 if (cartBackdrop) cartBackdrop.onclick = closeCart;
@@ -732,7 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const sender = sessionStorage.getItem('b2b_name') || "Tuntematon";
       const note   = document.getElementById('note').value || "";
       const payload = { action:'order', secret: GAS_SECRET, items, sender, note };
-
       const {ok,status,text} = await sendOrder(payload);
       if (ok && responseOK(text)) {
         alert(t('alerts.orderSent', currentLang()));
@@ -742,9 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try{ const j=JSON.parse(text||'{}'); if(j && (j.error||j.mailStatus)){ msg = JSON.stringify(j); } }catch(_){}
         alert('(' + status + '): ' + (msg||''));
       }
-    }catch(err){
-      alert((err && err.message ? err.message : String(err)));
-    }
+    }catch(err){ alert((err && err.message ? err.message : String(err))); }
   });
 });
 
@@ -781,16 +688,13 @@ async function loadFromManifest(){
       currentCat = 'all';
       renderCats(cnt, currentLang());
     }
-  }catch(e){
-    // hiljainen galleriavirhe
-  }
+  }catch(e){ /* hiljainen galleriavirhe */ }
 }
 
 /* ---------- init ---------- */
 window.addEventListener('DOMContentLoaded', async ()=>{
-  $$('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> { setLang(b.dataset.lang); showGallery(); renderCart(); }));
+  document.querySelectorAll('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> { setLang(b.dataset.lang); showGallery(); renderCart(); }));
   setLang(currentLang());
-
   initGate();
   loadCart();
   await loadFromManifest();
