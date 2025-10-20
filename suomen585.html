@@ -159,6 +159,19 @@
   .gate-card input{ width:100%; padding:.7rem .9rem; border:1px solid var(--border); border-radius:10px; margin-bottom:.6rem; background:transparent; color:var(--ink) }
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
   .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
+
+  /* --- Lisätty: ostoskoriin lisätty -ilmoitus + korimerkin pomppu --- */
+  .toast{
+    position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px);
+    background:var(--accent); color:var(--accent-ink);
+    padding:.7rem 1rem; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.35);
+    font-weight:800; opacity:0; pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease; z-index:5000;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) }
+
+  @keyframes badge-bump{ 0%{transform:scale(1)} 35%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  .cart-badge.bump{ animation:badge-bump .33s ease }
 </style>
 </head>
 <body>
@@ -250,6 +263,9 @@
     <img id="lightImg" alt="">
   </div>
 
+  <!-- Lisätty: toast-elementti -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <script>
 /* ---------- ASETUKSET ---------- */
 const GAS_ENDPOINT   = "https://script.google.com/macros/s/AKfycbz_0avqZOhQsteBeJ7ZLJqbunfmMPp4WTPZItPOe78XaAw1VFnVtaDkzFNwKTwXt2cr/exec";
@@ -272,7 +288,7 @@ const translations = {
       lightbox:{ close:"Sulje" },
       addrow:{ sizePh:"Koko", add:"Lisää koriin" },
       auth:{ logout:"Kirjaudu ulos", logoutTitle:"Kirjaudu ulos", confirmLogout:"Kirjaudutaanko ulos?" },
-      alerts:{ cartEmpty:"Ostoskori on tyhjä.", orderSent:"Tilaus lähetetty!", saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.", globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.", clearCart:"Tyhjennetäänkö kori?" },
+      alerts:{ cartEmpty:"Ostoskori on tyhjä.", orderSent:"Tilaus lähetetty!", saveFail:"Tallennus epäonnistui. Tarkista GAS & SECRET.", globalSaveFail:"Tiedotteen tallennus epäonnistui. Tarkista GAS & SECRET.", clearCart:"Tyhjennetäänkö kori?", added:"Tuote lisätty koriin" },
       catsLabels:{ "Magneetit":"Magneetit","Lappimagneetit":"Lappimagneetit","Sormukset":"Sormukset","Ranneketjut":"Ranneketjut","Kaulaketjut":"Kaulaketjut","Rocks Steel":"Rocks Steel","Riipukset":"Riipukset","Seiðr":"Seiðr","Puukorut":"Puukorut","Muut":"Muut","Hopeakorut":"Hopeakorut","Hiuskorut":"Hiuskorut","Kellot":"Kellot" } },
   en:{ meta:{ title:"Ordering Portal" }, header:{ title:"Ordering Portal" },
       gate:{ title:"Ordering Portal", namePh:"Name / company", passPh:"Password", open:"Open", err:"Wrong password. Try again." },
@@ -285,7 +301,7 @@ const translations = {
       lightbox:{ close:"Close" },
       addrow:{ sizePh:"Size", add:"Add to cart" },
       auth:{ logout:"Log out", logoutTitle:"Log out", confirmLogout:"Log out now?" },
-      alerts:{ cartEmpty:"Your cart is empty.", orderSent:"Order sent!", saveFail:"Saving failed. Check GAS & SECRET.", globalSaveFail:"Saving the notice failed. Check GAS & SECRET.", clearCart:"Empty the cart?" },
+      alerts:{ cartEmpty:"Your cart is empty.", orderSent:"Order sent!", saveFail:"Saving failed. Check GAS & SECRET.", globalSaveFail:"Saving the notice failed. Check GAS & SECRET.", clearCart:"Empty the cart?", added:"Added to cart" },
       catsLabels:{ "Magneetit":"Magnets","Lappimagneetit":"Lapland magnets","Sormukset":"Rings","Ranneketjut":"Bracelets","Kaulaketjut":"Necklaces","Rocks Steel":"Rocks Steel","Riipukset":"Pendants","Seiðr":"Seiðr","Puukorut":"Wooden jewelry","Muut":"Other","Hopeakorut":"Silver jewelry","Hiuskorut":"Hair accessories","Kellot":"Clocks" } },
   sv:{ meta:{ title:"Beställningsportal" }, header:{ title:"Beställningsportal" },
       gate:{ title:"Beställningsportal", namePh:"Namn / företag", passPh:"Lösenord", open:"Öppna", err:"Fel lösenord. Försök igen." },
@@ -298,7 +314,7 @@ const translations = {
       lightbox:{ close:"Stäng" },
       addrow:{ sizePh:"Storlek", add:"Lägg i korgen" },
       auth:{ logout:"Logga ut", logoutTitle:"Logga ut", confirmLogout:"Logga ut nu?" },
-      alerts:{ cartEmpty:"Varukorgen är tom.", orderSent:"Beställningen har skickats!", saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.", globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.", clearCart:"Tömma varukorgen?" },
+      alerts:{ cartEmpty:"Varukorgen är tom.", orderSent:"Beställningen har skickats!", saveFail:"Sparande misslyckades. Kontrollera GAS & SECRET.", globalSaveFail:"Misslyckades att spara notisen. Kontrollera GAS & SECRET.", clearCart:"Tömma varukorgen?", added:"Tillagd i varukorgen" },
       catsLabels:{ "Magneetit":"Magneter","Lappimagneetit":"Lappland-magneter","Sormukset":"Ringar","Ranneketjut":"Armband","Kaulaketjut":"Halskedjor","Rocks Steel":"Rocks Steel","Riipukset":"Hängen","Seiðr":"Seiðr","Puukorut":"Smycken i trä","Muut":"Övrigt","Hopeakorut":"Smycken i silver","Hiuskorut":"Håraccessoarer","Kellot":"Klockor" } },
   de:{ meta:{ title:"Bestellportal" }, header:{ title:"Bestellportal" },
       gate:{ title:"Bestellportal", namePh:"Name / Unternehmen", passPh:"Passwort", open:"Öffnen", err:"Falsches Passwort. Bitte erneut versuchen." },
@@ -311,7 +327,7 @@ const translations = {
       lightbox:{ close:"Schließen" },
       addrow:{ sizePh:"Größe", add:"In den Warenkorb" },
       auth:{ logout:"Abmelden", logoutTitle:"Abmelden", confirmLogout:"Jetzt abmelden?" },
-      alerts:{ cartEmpty:"Ihr Warenkorb ist leer.", orderSent:"Bestellung gesendet!", saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.", globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.", clearCart:"Warenkorb leeren?" },
+      alerts:{ cartEmpty:"Ihr Warenkorb ist leer.", orderSent:"Bestellung gesendet!", saveFail:"Speichern fehlgeschlagen. GAS & SECRET prüfen.", globalSaveFail:"Mitteilung konnte nicht gespeichert werden. GAS & SECRET prüfen.", clearCart:"Warenkorb leeren?", added:"Zum Warenkorb hinzugefügt" },
       catsLabels:{ "Magneetit":"Magnete","Lappimagneetit":"Lappland-Magnete","Sormukset":"Ringe","Ranneketjut":"Armbänder","Kaulaketjut":"Halsketten","Rocks Steel":"Rocks Steel","Riipukset":"Anhänger","Seiðr":"Seiðr","Puukorut":"Holzschmuck","Muut":"Sonstiges","Hopeakorut":"Silberschmuck","Hiuskorut":"Haaraccessoires","Kellot":"Uhren" } }
 };
 
@@ -658,6 +674,22 @@ const cartEl = $('#cart'), cartCountEl = $('#cartCount');
 const normSize = s => (String(s||'').trim().toLowerCase());
 const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
 
+/* --- Lisätty: toast-ilmoitusapu --- */
+let _toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  if(!el) return;
+  el.textContent = msg || '';
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=> el.classList.remove('show'), 1500);
+  try{
+    const badge = document.getElementById('cartBadge');
+    badge?.classList.add('bump');
+    setTimeout(()=> badge?.classList.remove('bump'), 350);
+  }catch(_){}
+}
+
 function renderCart(){
   cartEl.innerHTML='';
   const lang = currentLang();
@@ -681,6 +713,9 @@ function addToCart(filename,size,qty){
   it.qty  = Math.max(0,parseInt(it.qty)||0) + Math.max(1,qty||1);
   cart.set(key,it);
   renderCart();
+
+  // Lisätty: näytä ilmoitus käyttäjän kielellä
+  toast(t('alerts.added', currentLang()));
 }
 
 function loadCart(){
