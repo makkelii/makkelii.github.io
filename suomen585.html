@@ -160,15 +160,30 @@
   .gate-card button{ width:100%; padding:.85rem; border:none; border-radius:10px; background:var(--accent); color:var(--accent-ink); font-weight:800; cursor:pointer }
   .gate-err{ color:#ffb5b5; background:#2b0000; border:1px solid #7a0000; border-radius:8px; padding:.5rem .7rem; font-size:.9rem; margin-top:.5rem; display:none; text-align:center }
 
-  /* --- Lisätty: ostoskoriin lisätty -ilmoitus + korimerkin pomppu --- */
+  /* --- Keskelle näyttöä, isompi ja selkeä toast --- */
   .toast{
-    position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px);
-    background:var(--accent); color:var(--accent-ink);
-    padding:.7rem 1rem; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.35);
-    font-weight:800; opacity:0; pointer-events:none;
-    transition:opacity .18s ease, transform .18s ease; z-index:5000;
+    position:fixed;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%) scale(.96);
+    background:var(--accent);
+    color:var(--accent-ink);
+    padding:1rem 1.25rem;
+    border-radius:18px;
+    box-shadow:0 22px 80px rgba(0,0,0,.55);
+    font-weight:900;
+    font-size:1.05rem;
+    letter-spacing:.2px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:5000;
+    text-align:center;
+    min-width:min(92vw, 380px);
   }
-  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0) }
+  .toast.show{
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+  }
 
   @keyframes badge-bump{ 0%{transform:scale(1)} 35%{transform:scale(1.08)} 100%{transform:scale(1)} }
   .cart-badge.bump{ animation:badge-bump .33s ease }
@@ -263,7 +278,7 @@
     <img id="lightImg" alt="">
   </div>
 
-  <!-- Lisätty: toast-elementti -->
+  <!-- Toast-elementti (keskellä) -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -674,15 +689,22 @@ const cartEl = $('#cart'), cartCountEl = $('#cartCount');
 const normSize = s => (String(s||'').trim().toLowerCase());
 const makeKey  = (filename, size) => `${filename}||${normSize(size)}`;
 
-/* --- Lisätty: toast-ilmoitusapu --- */
+/* --- Päivitetty: keskellä näkyvä, selkeä toast --- */
 let _toastTimer;
 function toast(msg){
   const el = document.getElementById('toast');
   if(!el) return;
-  el.textContent = msg || '';
+
+  const m = msg || '';
+  el.setAttribute('role','status');
+  el.setAttribute('aria-live','assertive');
+  el.innerHTML = `✅ ${m}`;
+
   el.classList.add('show');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(()=> el.classList.remove('show'), 1500);
+  _toastTimer = setTimeout(()=> el.classList.remove('show'), 1700);
+
+  // pieni pomppu ostoskorin merkille
   try{
     const badge = document.getElementById('cartBadge');
     badge?.classList.add('bump');
@@ -714,7 +736,7 @@ function addToCart(filename,size,qty){
   cart.set(key,it);
   renderCart();
 
-  // Lisätty: näytä ilmoitus käyttäjän kielellä
+  // Näytä ilmoitus käyttäjän kielellä
   toast(t('alerts.added', currentLang()));
 }
 
