@@ -62,10 +62,7 @@
       line-height:1.6;
       font-size:1.05rem;
     }
-    .contact a{
-      color:var(--text);
-      text-decoration:none;
-    }
+    .contact a{ color:var(--text); text-decoration:none; }
     .contact a:hover{ text-decoration:underline }
 
     .btnrow{ display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; margin-top:1.8rem }
@@ -82,6 +79,14 @@
     }
     .portal-btn:active{ transform:translateY(1px) }
     .portal-btn:hover{ background:#d6c597 }
+
+    .info-text{
+      margin-top:1.2rem;
+      font-size:.95rem;
+      color:var(--text);
+      opacity:0.85;
+      line-height:1.5;
+    }
 
     footer{
       position:fixed;
@@ -115,6 +120,10 @@
         <a href="suomen585.html" class="portal-btn" data-i18n="actions.openPortal">Kirjaudu tilausportaaliin</a>
         <a href="gallery.html" class="portal-btn" data-i18n="actions.openGallery">Avaa kuvagalleria</a>
       </div>
+
+      <p class="info-text" data-i18n="info.portalNote">
+        Tilausportaalin käyttäjätunnuksia voit tiedustella ottamalla yhteyttä. Tunnusten saaminen edellyttää Y-tunnusta.
+      </p>
     </section>
   </main>
 
@@ -129,6 +138,9 @@
       actions:{
         openPortal:"Kirjaudu tilausportaaliin",
         openGallery:"Avaa kuvagalleria"
+      },
+      info:{
+        portalNote:"Tilausportaalin käyttäjätunnuksia voit tiedustella ottamalla yhteyttä. Tunnusten saaminen edellyttää Y-tunnusta."
       }
     },
     en:{
@@ -137,6 +149,9 @@
       actions:{
         openPortal:"Open ordering portal",
         openGallery:"Open image gallery"
+      },
+      info:{
+        portalNote:"You may request ordering portal credentials by contacting us. A valid business ID is required."
       }
     },
     sv:{
@@ -145,6 +160,9 @@
       actions:{
         openPortal:"Öppna beställningsportalen",
         openGallery:"Öppna bildgalleriet"
+      },
+      info:{
+        portalNote:"Inloggningsuppgifter till beställningsportalen fås genom att kontakta oss. Ett FO-nummer krävs."
       }
     },
     de:{
@@ -153,6 +171,9 @@
       actions:{
         openPortal:"Zum Bestellportal",
         openGallery:"Bildergalerie öffnen"
+      },
+      info:{
+        portalNote:"Zugangsdaten für das Bestellportal erhalten Sie auf Anfrage. Eine gültige Unternehmens-ID ist erforderlich."
       }
     }
   };
@@ -167,17 +188,15 @@
   }
   function setLang(lang){
     const dict = translations[lang]||translations[DEFAULT_LANG];
-    // data-i18n -> textContent
+
     $$('[data-i18n]').forEach(el=>{
       const key = el.getAttribute('data-i18n');
       const val = key.split('.').reduce((o,k)=>o&&o[k], dict);
       if (typeof val === 'string') el.textContent = val;
     });
-    // document title
-    const titleKey = $('[data-i18n][data-i18n="meta.title"]');
+
     document.title = dict?.meta?.title || document.title;
 
-    // mark buttons
     $$('.lang button').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
