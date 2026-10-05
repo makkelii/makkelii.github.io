@@ -21,13 +21,23 @@
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
+
+    html{
+      min-height:100%;
+      margin:0;
+      background:var(--bg);
+    }
 
     body{
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      min-height:100vh;
+      min-height:100svh;
+      margin:0;
+      padding:4.5rem 1rem 1rem;
+      font-family:"Segoe UI", Roboto, Arial, sans-serif;
       color:var(--text);
-      display:grid;
-      place-items:center;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
       text-align:center;
       background:
         linear-gradient(rgba(28,28,28,.7),rgba(28,28,28,.7)),
@@ -35,37 +45,78 @@
     }
 
     .lang{
-      position:fixed; top:.6rem; right:.6rem; z-index:20;
-      background:rgba(40,40,40,.85); border:1px solid var(--accent-wash); border-radius:10px;
-      display:flex; gap:.25rem; padding:.25rem;
+      position:fixed;
+      top:.6rem;
+      right:.6rem;
+      z-index:20;
+      background:rgba(40,40,40,.85);
+      border:1px solid var(--accent-wash);
+      border-radius:10px;
+      display:flex;
+      gap:.25rem;
+      padding:.25rem;
     }
+
     .lang button{
-      border:none; background:transparent; color:var(--text); padding:.45rem .55rem; border-radius:8px; cursor:pointer; font-weight:700;
+      border:none;
+      background:transparent;
+      color:var(--text);
+      padding:.45rem .55rem;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
     }
-    .lang button.active{ background:var(--accent); color:#1c1c1c }
+
+    .lang button.active{
+      background:var(--accent);
+      color:#1c1c1c;
+    }
+
+    main{
+      width:100%;
+      max-width:520px;
+      margin:auto 0;
+      flex-shrink:0;
+    }
 
     .card{
+      width:100%;
       background:rgba(40,40,40,.85);
       border:2px solid var(--accent-wash);
       border-radius:1.25rem;
       padding:2.5rem 2rem;
-      max-width:520px;
       box-shadow:0 8px 28px rgba(0,0,0,.55);
     }
+
     h1{
       margin:0 0 1rem;
       font-size:clamp(2rem,6vw,3.2rem);
       letter-spacing:.03em;
       color:var(--accent);
     }
+
     .contact{
       line-height:1.6;
       font-size:1.05rem;
     }
-    .contact a{ color:var(--text); text-decoration:none; }
-    .contact a:hover{ text-decoration:underline }
 
-    .btnrow{ display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; margin-top:1.8rem }
+    .contact a{
+      color:var(--text);
+      text-decoration:none;
+    }
+
+    .contact a:hover{
+      text-decoration:underline;
+    }
+
+    .btnrow{
+      display:flex;
+      gap:.8rem;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:1.8rem;
+    }
+
     .portal-btn{
       display:inline-block;
       padding:0.9rem 1.5rem;
@@ -77,8 +128,14 @@
       box-shadow:0 3px 8px rgba(0,0,0,.35);
       transition:transform .04s ease, background .2s;
     }
-    .portal-btn:active{ transform:translateY(1px) }
-    .portal-btn:hover{ background:#d6c597 }
+
+    .portal-btn:active{
+      transform:translateY(1px);
+    }
+
+    .portal-btn:hover{
+      background:#d6c597;
+    }
 
     .info-text{
       margin-top:1.2rem;
@@ -88,22 +145,67 @@
       line-height:1.5;
     }
 
+    .video-section{
+      margin-top:2rem;
+      padding-top:1.5rem;
+      border-top:1px solid var(--accent-wash);
+    }
+
+    .video-section h2{
+      margin:0 0 1rem;
+      font-size:clamp(1.3rem,4vw,1.65rem);
+      color:var(--accent);
+    }
+
+    .video-wrapper{
+      position:relative;
+      width:100%;
+      aspect-ratio:16 / 9;
+      overflow:hidden;
+      border-radius:10px;
+      background:#000;
+      box-shadow:0 3px 12px rgba(0,0,0,.35);
+    }
+
+    .video-wrapper iframe{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:0;
+    }
+
+    .video-link{
+      display:inline-block;
+      margin-top:.85rem;
+      color:var(--accent);
+      font-size:.9rem;
+      text-underline-offset:3px;
+    }
+
     footer{
-      position:fixed;
-      bottom:.6rem; left:0; right:0;
+      flex-shrink:0;
+      padding-top:1.5rem;
       text-align:center;
       font-size:.9rem;
-      color:var(--accent-wash);
+      color:var(--accent);
+      opacity:.6;
+    }
+
+    @media (max-width:480px){
+      .card{
+        padding:2rem 1rem;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Kielivalitsin -->
   <nav class="lang" aria-label="Language">
-    <button data-lang="fi" aria-label="Suomi">FI</button>
-    <button data-lang="en" aria-label="English">EN</button>
-    <button data-lang="sv" aria-label="Svenska">SV</button>
-    <button data-lang="de" aria-label="Deutsch">DE</button>
+    <button type="button" data-lang="fi" aria-label="Suomi">FI</button>
+    <button type="button" data-lang="en" aria-label="English">EN</button>
+    <button type="button" data-lang="sv" aria-label="Svenska">SV</button>
+    <button type="button" data-lang="de" aria-label="Deutsch">DE</button>
   </nav>
 
   <main>
@@ -117,95 +219,208 @@
       </div>
 
       <div class="btnrow">
-        <a href="suomen585.html" class="portal-btn" data-i18n="actions.openPortal">Kirjaudu tilausportaaliin</a>
-        <a href="gallery.html" class="portal-btn" data-i18n="actions.openGallery">Avaa kuvagalleria</a>
+        <a
+          href="suomen585.html"
+          class="portal-btn"
+          data-i18n="actions.openPortal"
+        >Kirjaudu tilausportaaliin</a>
+
+        <a
+          href="gallery.html"
+          class="portal-btn"
+          data-i18n="actions.openGallery"
+        >Avaa kuvagalleria</a>
       </div>
 
       <p class="info-text" data-i18n="info.portalNote">
-        Tilausportaalin käyttäjätunnuksia voit tiedustella ottamalla yhteyttä. Tunnusten saaminen edellyttää Y-tunnusta.
+        Tilausportaalin käyttäjätunnuksia voit tiedustella ottamalla yhteyttä.
+        Tunnusten saaminen edellyttää Y-tunnusta.
       </p>
+
+      <!-- Caravan seinäkello -->
+      <section class="video-section" aria-labelledby="video-heading">
+        <h2 id="video-heading" data-i18n="video.title">
+          Caravan seinäkello
+        </h2>
+
+        <div class="video-wrapper">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/8tkeg675b00"
+            title="Caravan seinäkello – esittelyvideo"
+            data-i18n-title="video.iframeTitle"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <a
+          class="video-link"
+          href="https://youtu.be/8tkeg675b00"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-i18n="video.watchOnYoutube"
+        >Katso YouTubessa</a>
+      </section>
     </section>
   </main>
 
   <footer>© <span id="y"></span> Suomen 585 Oy</footer>
 
   <script>
-  /* -------- i18n -------- */
-  const translations = {
-    fi: {
-      meta:{ title:"Suomen 585 Oy" },
-      hero:{ title:"Suomen 585 Oy" },
-      actions:{
-        openPortal:"Kirjaudu tilausportaaliin",
-        openGallery:"Avaa kuvagalleria"
+    /* -------- i18n -------- */
+    const translations = {
+      fi:{
+        meta:{ title:"Suomen 585 Oy" },
+        hero:{ title:"Suomen 585 Oy" },
+        actions:{
+          openPortal:"Kirjaudu tilausportaaliin",
+          openGallery:"Avaa kuvagalleria"
+        },
+        info:{
+          portalNote:"Tilausportaalin käyttäjätunnuksia voit tiedustella ottamalla yhteyttä. Tunnusten saaminen edellyttää Y-tunnusta."
+        },
+        video:{
+          title:"Caravan seinäkello",
+          iframeTitle:"Caravan seinäkello – esittelyvideo",
+          watchOnYoutube:"Katso YouTubessa"
+        }
       },
-      info:{
-        portalNote:"Tilausportaalin käyttäjätunnuksia voit tiedustella ottamalla yhteyttä. Tunnusten saaminen edellyttää Y-tunnusta."
-      }
-    },
-    en:{
-      meta:{ title:"Suomen 585 Oy" },
-      hero:{ title:"Suomen 585 Oy" },
-      actions:{
-        openPortal:"Open ordering portal",
-        openGallery:"Open image gallery"
+      en:{
+        meta:{ title:"Suomen 585 Oy" },
+        hero:{ title:"Suomen 585 Oy" },
+        actions:{
+          openPortal:"Open ordering portal",
+          openGallery:"Open image gallery"
+        },
+        info:{
+          portalNote:"You may request ordering portal credentials by contacting us. A valid business ID is required."
+        },
+        video:{
+          title:"Caravan wall clock",
+          iframeTitle:"Caravan wall clock – product video",
+          watchOnYoutube:"Watch on YouTube"
+        }
       },
-      info:{
-        portalNote:"You may request ordering portal credentials by contacting us. A valid business ID is required."
-      }
-    },
-    sv:{
-      meta:{ title:"Suomen 585 Oy" },
-      hero:{ title:"Suomen 585 Oy" },
-      actions:{
-        openPortal:"Öppna beställningsportalen",
-        openGallery:"Öppna bildgalleriet"
+      sv:{
+        meta:{ title:"Suomen 585 Oy" },
+        hero:{ title:"Suomen 585 Oy" },
+        actions:{
+          openPortal:"Öppna beställningsportalen",
+          openGallery:"Öppna bildgalleriet"
+        },
+        info:{
+          portalNote:"Inloggningsuppgifter till beställningsportalen fås genom att kontakta oss. Ett FO-nummer krävs."
+        },
+        video:{
+          title:"Caravan väggklocka",
+          iframeTitle:"Caravan väggklocka – produktvideo",
+          watchOnYoutube:"Se på YouTube"
+        }
       },
-      info:{
-        portalNote:"Inloggningsuppgifter till beställningsportalen fås genom att kontakta oss. Ett FO-nummer krävs."
+      de:{
+        meta:{ title:"Suomen 585 Oy" },
+        hero:{ title:"Suomen 585 Oy" },
+        actions:{
+          openPortal:"Zum Bestellportal",
+          openGallery:"Bildergalerie öffnen"
+        },
+        info:{
+          portalNote:"Zugangsdaten für das Bestellportal erhalten Sie auf Anfrage. Eine gültige Unternehmens-ID ist erforderlich."
+        },
+        video:{
+          title:"Caravan-Wanduhr",
+          iframeTitle:"Caravan-Wanduhr – Produktvideo",
+          watchOnYoutube:"Auf YouTube ansehen"
+        }
       }
-    },
-    de:{
-      meta:{ title:"Suomen 585 Oy" },
-      hero:{ title:"Suomen 585 Oy" },
-      actions:{
-        openPortal:"Zum Bestellportal",
-        openGallery:"Bildergalerie öffnen"
-      },
-      info:{
-        portalNote:"Zugangsdaten für das Bestellportal erhalten Sie auf Anfrage. Eine gültige Unternehmens-ID ist erforderlich."
-      }
+    };
+
+    const DEFAULT_LANG = 'fi';
+    const $$ = selector => [...document.querySelectorAll(selector)];
+
+    function isSupportedLang(lang){
+      return Object.prototype.hasOwnProperty.call(translations, lang);
     }
-  };
 
-  const DEFAULT_LANG = 'fi';
-  const $ = s=>document.querySelector(s);
-  const $$= s=>[...document.querySelectorAll(s)];
+    function getLang(){
+      let savedLang = null;
 
-  function getLang(){
-    return localStorage.getItem('lang')
-        || (navigator.language||'fi').slice(0,2).replace(/^(en|sv|de)$/,'$1') || DEFAULT_LANG;
-  }
-  function setLang(lang){
-    const dict = translations[lang]||translations[DEFAULT_LANG];
+      try{
+        savedLang = localStorage.getItem('lang');
+      }catch(error){
+        // Kielivalinta toimii myös ilman localStoragea.
+      }
 
-    $$('[data-i18n]').forEach(el=>{
-      const key = el.getAttribute('data-i18n');
-      const val = key.split('.').reduce((o,k)=>o&&o[k], dict);
-      if (typeof val === 'string') el.textContent = val;
+      if(isSupportedLang(savedLang)){
+        return savedLang;
+      }
+
+      const browserLang = (navigator.language || DEFAULT_LANG)
+        .slice(0, 2)
+        .toLowerCase();
+
+      return isSupportedLang(browserLang) ? browserLang : DEFAULT_LANG;
+    }
+
+    function getTranslation(dict, key){
+      return key.split('.').reduce((value, part) => {
+        return value && value[part];
+      }, dict);
+    }
+
+    function setLang(lang){
+      if(!isSupportedLang(lang)){
+        lang = DEFAULT_LANG;
+      }
+
+      const dict = translations[lang];
+
+      $$('[data-i18n]').forEach(el => {
+        const value = getTranslation(dict, el.getAttribute('data-i18n'));
+
+        if(typeof value === 'string'){
+          el.textContent = value;
+        }
+      });
+
+      // Päivitetään myös videokehyksen saavutettava otsikko.
+      $$('[data-i18n-title]').forEach(el => {
+        const value = getTranslation(
+          dict,
+          el.getAttribute('data-i18n-title')
+        );
+
+        if(typeof value === 'string'){
+          el.setAttribute('title', value);
+        }
+      });
+
+      document.title = dict.meta.title;
+
+      $$('.lang button').forEach(button => {
+        const active = button.dataset.lang === lang;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+
+      try{
+        localStorage.setItem('lang', lang);
+      }catch(error){
+        // Tallennuksen estyminen ei estä kielen vaihtamista.
+      }
+
+      document.documentElement.lang = lang;
+    }
+
+    $$('.lang [data-lang]').forEach(button => {
+      button.addEventListener('click', () => {
+        setLang(button.dataset.lang);
+      });
     });
 
-    document.title = dict?.meta?.title || document.title;
-
-    $$('.lang button').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
-    localStorage.setItem('lang', lang);
-    document.documentElement.lang = lang;
-  }
-
-  $$('.lang [data-lang]').forEach(b=> b.addEventListener('click', ()=> setLang(b.dataset.lang)));
-
-  document.getElementById('y').textContent = new Date().getFullYear();
-  setLang(getLang());
+    document.getElementById('y').textContent = new Date().getFullYear();
+    setLang(getLang());
   </script>
 </body>
 </html>
